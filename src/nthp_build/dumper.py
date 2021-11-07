@@ -4,7 +4,7 @@ import shutil
 from pathlib import Path
 from typing import List
 
-from nthp_build import database, schema, years
+from nthp_build import database, schema, years, people
 from nthp_build.config import settings
 
 log = logging.getLogger(__name__)
@@ -69,10 +69,21 @@ def dump_year_index(year_details: List[schema.YearDetail]):
         f.write(year_collection.json(by_alias=True))
 
 
-def dump_real_person(person_inst: database.Person) -> Path:
+def dump_real_person(person_inst: database.Person) -> schema.PersonDetail:
     path = make_out_path(Path("people"), person_inst.id)
     person_detail = schema.PersonDetail(
         **{"content": person_inst.content, **json.loads(person_inst.data)}
+    )
+    with open(path, "w") as f:
+        f.write(person_detail.json(by_alias=True))
+    return person_detail
+
+
+def dump_virtual_person(ref) -> None:
+    path = make_out_path(Path("people"), ref.person_id)
+    person_detail = schema.PersonDetail(
+        id=ref.person_id,
+        title=ref.person_name,
     )
     with open(path, "w") as f:
         f.write(person_detail.json(by_alias=True))
@@ -92,5 +103,11 @@ def dump_all():
     dump_year_index(years_detail)
 
     log.info("Dumping people with records")
-    for person_inst in database.Person.select():
-        dump_real_person(person_inst)
+    real_people = [
+        dump_real_person(person_inst) for person_inst in database.Person.select()
+    ]
+
+    log.info("Dumping people without records")
+    real_people_ids = list(map(lambda x: x.id, real_people))
+    virtual_people_query = people.get_people_from_roles(real_people_ids)
+    [dump_virtual_person(ref) for ref in virtual_people_query]

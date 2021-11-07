@@ -1,5 +1,6 @@
-from typing import List
+from typing import List, Optional, Iterable
 
+import peewee
 from slugify import slugify
 
 import nthp_build.models
@@ -33,3 +34,19 @@ def save_person_roles(
             is_person=person_role.is_person,
             data=person_role.json(),
         )
+
+def get_people_from_roles(
+    excluded_ids: Optional[Iterable[str]] = None,
+) -> peewee.ModelSelect:
+    """
+    Get people from person roles, optionally excluding a list of person ids.
+    """
+    return (
+        database.PersonRole.select(
+            database.PersonRole.person_id, database.PersonRole.person_name
+        )
+        .where(database.PersonRole.person_id.not_in(excluded_ids or []))
+        .where(database.PersonRole.person_id.is_null(False))
+        .where(database.PersonRole.is_person == True)
+        .group_by(database.PersonRole.person_id)
+    )
