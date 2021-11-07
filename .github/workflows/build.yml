@@ -29,4 +29,5 @@ jobs:
           repository: newtheatre/history-project
           path: content
       - run: poetry run python nthp load
+      - run: poetry run python nthp stats
       - run: poetry run python nthp dump

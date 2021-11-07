@@ -1,14 +1,9 @@
+import logging
+
 import peewee
 
+log = logging.getLogger(__name__)
 db = peewee.SqliteDatabase("nthp.db")
-
-
-def init_db(create: bool = False):
-    MODELS = [PersonRole, Show, Venue, Person]
-    db.connect()
-    if create:
-        db.drop_tables(MODELS)
-        db.create_tables(MODELS)
 
 
 class NthpDbModel(peewee.Model):
@@ -54,3 +49,18 @@ class Person(NthpDbModel):
     graduated = peewee.IntegerField(index=True, null=True)
     data = peewee.TextField()
     content = peewee.TextField(null=True)
+
+
+MODELS = [Show, Venue, PersonRole, Person]
+
+
+def init_db(create: bool = False):
+    db.connect()
+    if create:
+        db.drop_tables(MODELS)
+        db.create_tables(MODELS)
+
+
+def show_stats():
+    for model in MODELS:
+        log.info(f"{model.__name__} has {model.select().count()} records")
