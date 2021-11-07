@@ -1,0 +1,32 @@
+name: build
+on: [push]
+
+env:
+  # Task vars
+  python-version: 3.9
+  poetry-version: 1.1.11
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.python-version }}
+      - uses: abatilo/actions-poetry@v2.1.0
+        with:
+          poetry-version: ${{ env.poetry-version }}
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache/pypoetry
+          key: ${{ runner.os }}-poetry-2-${{ hashFiles('src/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-2-
+      - run: poetry install --no-root
+      - uses: actions/checkout@v2
+        with:
+          repository: newtheatre/history-project
+          path: content
+      - run: poetry run python nthp load
+      - run: poetry run python nthp dump
