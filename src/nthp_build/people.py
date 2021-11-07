@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, Optional, Iterable, Dict, Any
+from typing import Any, Dict, Iterable, List, Optional
 
 import peewee
 from slugify import slugify

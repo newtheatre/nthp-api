@@ -19,6 +19,12 @@ def load():
 
 
 @cli.command()
+def stats():
+    database.init_db()
+    database.show_stats()
+
+
+@cli.command()
 def dump():
     database.init_db()
     dumper.clean_dist()
