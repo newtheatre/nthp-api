@@ -5,7 +5,7 @@ import peewee
 from slugify import slugify
 
 import nthp_build.models
-from nthp_build import database, schema
+from nthp_build import database, schema, years
 
 
 def get_person_id(name: str):
@@ -73,6 +73,27 @@ def get_person_show_roles(person_id: str) -> List[schema.PersonShowRoles]:
             ],
         )
         for show_id, roles in results_by_show_id.items()
+    ]
+
+
+def get_person_committee_roles(person_id: str) -> List[schema.PersonCommitteeRole]:
+    query = database.PersonRole.select().where(
+        database.PersonRole.person_id == person_id,
+        database.PersonRole.target_type == database.PersonRoleType.COMMITTEE,
+    )
+
+    return [
+        schema.PersonCommitteeRole(
+            year_id=person_role.target_id,
+            year_title=years.get_year_title(
+                years.get_year_from_year_id(person_role.target_id)
+            ),
+            year_decade=years.get_year_decade(
+                years.get_year_from_year_id(person_role.target_id)
+            ),
+            role=person_role.role,
+        )
+        for person_role in query
     ]
 
 

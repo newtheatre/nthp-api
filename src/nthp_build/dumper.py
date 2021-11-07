@@ -41,8 +41,8 @@ def dump_year(year: int) -> schema.YearDetail:
         database.PersonRole.target_id == year_id,
     )
     year_detail = schema.YearDetail(
-        title=f"{year}–{str(year + 1)[-2:]}",
-        decade=int(str(year)[-2:]),
+        title=years.get_year_title(year),
+        decade=years.get_year_decade(year),
         year_id=year_id,
         start_year=year,
         grad_year=year + 1,
@@ -75,6 +75,7 @@ def dump_real_person(person_inst: database.Person) -> schema.PersonDetail:
         **{
             "content": person_inst.content,
             "show_roles": people.get_person_show_roles(person_inst.id),
+            "committee_roles": people.get_person_committee_roles(person_inst.id),
             **json.loads(person_inst.data),
         }
     )
@@ -89,6 +90,7 @@ def dump_virtual_person(ref) -> None:
         id=ref.person_id,
         title=ref.person_name,
         show_roles=people.get_person_show_roles(ref.person_id),
+        committee_roles=people.get_person_committee_roles(ref.person_id),
     )
     with open(path, "w") as f:
         f.write(person_detail.json(by_alias=True))
