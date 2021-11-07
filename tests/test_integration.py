@@ -10,5 +10,5 @@ def test_load():
 
 @pytest.mark.depends(on=["test_load"])
 def test_dump():
-    dumper.clean_dist()
+    dumper.delete_output_dir()
     dumper.dump_all()

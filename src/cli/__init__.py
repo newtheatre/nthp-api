@@ -27,5 +27,5 @@ def stats():
 @cli.command()
 def dump():
     database.init_db()
-    dumper.clean_dist()
+    dumper.delete_output_dir()
     dumper.dump_all()

@@ -1,8 +1,11 @@
+import datetime
 import json
 import logging
 import shutil
 from pathlib import Path
 from typing import List
+
+import pydantic
 
 from nthp_build import database, people, schema, years
 from nthp_build.config import settings
@@ -11,11 +14,8 @@ log = logging.getLogger(__name__)
 OUTPUT_DIR = Path("dist")
 
 
-def clean_dist():
-    try:
-        shutil.rmtree(OUTPUT_DIR)
-    except FileNotFoundError:
-        pass
+def delete_output_dir():
+    shutil.rmtree(OUTPUT_DIR, ignore_errors=True)
 
 
 def make_out_path(directory: Path, file: str) -> Path:
@@ -24,12 +24,16 @@ def make_out_path(directory: Path, file: str) -> Path:
     return path
 
 
-def dump_show(inst: database.Show) -> Path:
+def write_file(path: Path, obj: pydantic.BaseModel) -> None:
+    with open(path, "w") as f:
+        f.write(obj.json(by_alias=True))
+
+
+def dump_show(inst: database.Show) -> schema.ShowDetail:
     show = schema.ShowDetail(**{"content": inst.content, **json.loads(inst.data)})
     path = make_out_path(Path("shows"), inst.id)
-    with open(path, "w") as f:
-        f.write(show.json(by_alias=True))
-    return path
+    write_file(path, show)
+    return show
 
 
 def dump_year(year: int) -> schema.YearDetail:
@@ -55,8 +59,7 @@ def dump_year(year: int) -> schema.YearDetail:
         fellows=[],
         commendations=[],
     )
-    with open(path, "w") as f:
-        f.write(year_detail.json(by_alias=True))
+    write_file(path, year_detail)
     return year_detail
 
 
@@ -65,8 +68,7 @@ def dump_year_index(year_details: List[schema.YearDetail]):
     year_collection = schema.YearListCollection(
         [schema.YearList(**year_detail.dict()) for year_detail in year_details]
     )
-    with open(path, "w") as f:
-        f.write(year_collection.json(by_alias=True))
+    write_file(path, year_collection)
 
 
 def dump_real_person(person_inst: database.Person) -> schema.PersonDetail:
@@ -79,12 +81,11 @@ def dump_real_person(person_inst: database.Person) -> schema.PersonDetail:
             **json.loads(person_inst.data),
         }
     )
-    with open(path, "w") as f:
-        f.write(person_detail.json(by_alias=True))
+    write_file(path, person_detail)
     return person_detail
 
 
-def dump_virtual_person(ref) -> None:
+def dump_virtual_person(ref) -> schema.PersonDetail:
     path = make_out_path(Path("people"), ref.person_id)
     person_detail = schema.PersonDetail(
         id=ref.person_id,
@@ -92,14 +93,18 @@ def dump_virtual_person(ref) -> None:
         show_roles=people.get_person_show_roles(ref.person_id),
         committee_roles=people.get_person_committee_roles(ref.person_id),
     )
-    with open(path, "w") as f:
-        f.write(person_detail.json(by_alias=True))
+    write_file(path, person_detail)
+    return person_detail
+
+
+def dump_site_stats(site_stats: schema.SiteStats) -> None:
+    path = make_out_path(Path(""), "index")
+    write_file(path, site_stats)
 
 
 def dump_all():
     log.info("Dumping shows")
-    for show_inst in database.Show.select():
-        dump_show(show_inst)
+    shows = [dump_show(show_inst) for show_inst in database.Show.select()]
 
     log.info("Dumping years")
     years_detail = [
@@ -117,4 +122,14 @@ def dump_all():
     log.info("Dumping people without records")
     real_people_ids = list(map(lambda x: x.id, real_people))
     virtual_people_query = people.get_people_from_roles(real_people_ids)
-    [dump_virtual_person(ref) for ref in virtual_people_query]
+    virtual_people = [dump_virtual_person(ref) for ref in virtual_people_query]
+
+    log.info("Dumping site stats")
+    dump_site_stats(
+        schema.SiteStats(
+            build_time=datetime.datetime.now(),
+            branch=settings.branch,
+            show_count=len(shows),
+            person_count=len(real_people) + len(virtual_people),
+        )
+    )

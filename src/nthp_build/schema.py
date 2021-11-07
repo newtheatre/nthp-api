@@ -95,3 +95,13 @@ class PersonDetail(models.Person):
     show_roles: List[PersonShowRoles]
     committee_roles: List[PersonCommitteeRole]
     content: Optional[str] = None
+
+
+class SiteStats(models.NthpModel):
+    class Config(ResponseConfig):
+        pass
+
+    build_time: datetime.datetime
+    branch: str
+    show_count: int
+    person_count: int
