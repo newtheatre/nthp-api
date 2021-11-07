@@ -17,6 +17,23 @@ class PersonRoleList(models.PersonRole):
         pass
 
 
+class PersonShowRoleItem(models.NthpModel):
+    class Config(ResponseConfig):
+        pass
+
+    role: Optional[str] = None
+    role_type: str
+
+
+class PersonShowRoles(models.NthpModel):
+    class Config(ResponseConfig):
+        pass
+
+    show_id: str
+    show_title: str
+    roles: List[PersonShowRoleItem]
+
+
 class ShowDetail(models.Show):
     class Config(ResponseConfig):
         pass
@@ -65,4 +82,5 @@ class PersonDetail(models.Person):
     class Config(ResponseConfig):
         pass
 
+    show_roles: List[PersonShowRoles] = []
     content: Optional[str] = None

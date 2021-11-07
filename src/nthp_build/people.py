@@ -1,4 +1,5 @@
-from typing import List, Optional, Iterable
+from collections import defaultdict
+from typing import List, Optional, Iterable, Dict, Any
 
 import peewee
 from slugify import slugify
@@ -34,6 +35,46 @@ def save_person_roles(
             is_person=person_role.is_person,
             data=person_role.json(),
         )
+
+
+def get_real_people() -> peewee.ModelSelect:
+    return database.Person.select()
+
+
+def get_person_show_roles(person_id: str) -> List[schema.PersonShowRoles]:
+    query = (
+        database.PersonRole.select(database.PersonRole, database.Show)
+        .where(
+            database.PersonRole.person_id == person_id,
+            database.PersonRole.target_type.in_(
+                [database.PersonRoleType.CAST, database.PersonRoleType.CREW]
+            ),
+        )
+        .join(
+            database.Show,
+            on=(database.PersonRole.target_id == database.Show.id),
+            attr="show",
+        )
+    )
+    # Collect all results by show_id
+    results_by_show_id: Dict[str, List] = defaultdict(list)
+    shows: Dict[str, Any] = defaultdict(list)
+    for result in query:
+        results_by_show_id[result.target_id].append(result)
+        shows[result.target_id] = result.show
+
+    return [
+        schema.PersonShowRoles(
+            show_id=show_id,
+            show_title=shows[show_id].title,
+            roles=[
+                schema.PersonShowRoleItem(role=role.role, role_type=role.target_type)
+                for role in roles
+            ],
+        )
+        for show_id, roles in results_by_show_id.items()
+    ]
+
 
 def get_people_from_roles(
     excluded_ids: Optional[Iterable[str]] = None,

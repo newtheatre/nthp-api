@@ -72,7 +72,11 @@ def dump_year_index(year_details: List[schema.YearDetail]):
 def dump_real_person(person_inst: database.Person) -> schema.PersonDetail:
     path = make_out_path(Path("people"), person_inst.id)
     person_detail = schema.PersonDetail(
-        **{"content": person_inst.content, **json.loads(person_inst.data)}
+        **{
+            "content": person_inst.content,
+            "show_roles": people.get_person_show_roles(person_inst.id),
+            **json.loads(person_inst.data),
+        }
     )
     with open(path, "w") as f:
         f.write(person_detail.json(by_alias=True))
@@ -84,6 +88,7 @@ def dump_virtual_person(ref) -> None:
     person_detail = schema.PersonDetail(
         id=ref.person_id,
         title=ref.person_name,
+        show_roles=people.get_person_show_roles(ref.person_id),
     )
     with open(path, "w") as f:
         f.write(person_detail.json(by_alias=True))
@@ -104,7 +109,7 @@ def dump_all():
 
     log.info("Dumping people with records")
     real_people = [
-        dump_real_person(person_inst) for person_inst in database.Person.select()
+        dump_real_person(person_inst) for person_inst in people.get_real_people()
     ]
 
     log.info("Dumping people without records")
