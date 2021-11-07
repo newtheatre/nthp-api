@@ -4,7 +4,7 @@ from typing import List, Optional, Union
 import humps
 from pydantic_collections import BaseCollectionModel
 
-from nthp_build.models import NthpModel, PersonRole, Show
+from nthp_build import models
 
 
 class ResponseConfig:
@@ -12,17 +12,19 @@ class ResponseConfig:
     alias_generator = humps.camelize
 
 
-class PersonRoleList(PersonRole):
+class PersonRoleList(models.PersonRole):
     class Config(ResponseConfig):
         pass
 
 
-class ShowDetail(Show):
+class ShowDetail(models.Show):
     class Config(ResponseConfig):
         pass
 
+    content: Optional[str] = None
 
-class ShowList(NthpModel):
+
+class ShowList(models.NthpModel):
     id: str
     title: str
     playwright: Optional[str] = None
@@ -36,7 +38,7 @@ class ShowList(NthpModel):
         pass
 
 
-class YearList(NthpModel):
+class YearList(models.NthpModel):
     class Config(ResponseConfig):
         pass
 
@@ -57,3 +59,10 @@ class YearDetail(YearList):
     committee: List[PersonRoleList]
     fellows: List[PersonRoleList]
     commendations: List[PersonRoleList]
+
+
+class PersonDetail(models.Person):
+    class Config(ResponseConfig):
+        pass
+
+    content: Optional[str] = None

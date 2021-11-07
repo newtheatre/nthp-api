@@ -4,14 +4,14 @@ db = peewee.SqliteDatabase("nthp.db")
 
 
 def init_db(create: bool = False):
-    MODELS = [PersonRole, Show, Venue]
+    MODELS = [PersonRole, Show, Venue, Person]
     db.connect()
     if create:
         db.drop_tables(MODELS)
         db.create_tables(MODELS)
 
 
-class NTDB(peewee.Model):
+class NthpDbModel(peewee.Model):
     class Meta:
         database = db
 
@@ -22,7 +22,7 @@ class PersonRoleType:
     COMMITTEE = "COMMITTEE"
 
 
-class PersonRole(NTDB):
+class PersonRole(NthpDbModel):
     target_id = peewee.CharField(index=True)
     target_type = peewee.CharField(index=True)
 
@@ -33,7 +33,7 @@ class PersonRole(NTDB):
     data = peewee.TextField()
 
 
-class Show(NTDB):
+class Show(NthpDbModel):
     id = peewee.CharField(primary_key=True)
     year_id = peewee.CharField(index=True)
     title = peewee.CharField()
@@ -42,7 +42,15 @@ class Show(NTDB):
     content = peewee.TextField(null=True)
 
 
-class Venue(NTDB):
+class Venue(NthpDbModel):
     id = peewee.CharField(primary_key=True)
     title = peewee.CharField()
     data = peewee.TextField()
+
+
+class Person(NthpDbModel):
+    id = peewee.CharField(primary_key=True)
+    title = peewee.CharField()
+    graduated = peewee.IntegerField(index=True, null=True)
+    data = peewee.TextField()
+    content = peewee.TextField(null=True)

@@ -1,7 +1,7 @@
 import datetime
 from typing import List, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class NthpModel(BaseModel):
@@ -108,4 +108,18 @@ class Venue(NthpModel):
     location: Optional[Location] = None
     city: Optional[str] = None
     sort: Optional[int] = None
+    comment: Optional[str] = None
+
+
+class Person(NthpModel):
+    id: Optional[str] = None
+    title: str
+    submitted: Optional[datetime.date] = None
+    headshot: Optional[str] = None
+    # course: List[str] = [] TODO: both lists and strings
+    graduated: Optional[int] = None
+    award: Optional[str] = None
+    # career: Optional[str] = None TODO: both lists and strings
+    links: List[Link] = []
+    news: List[Link] = []
     comment: Optional[str] = None

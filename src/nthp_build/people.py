@@ -7,7 +7,7 @@ from nthp_build import database, schema
 
 
 def get_person_id(name: str):
-    return slugify(name)
+    return slugify(name, separator="_")
 
 
 def save_person_roles(

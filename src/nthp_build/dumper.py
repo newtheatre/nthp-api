@@ -25,8 +25,8 @@ def make_out_path(directory: Path, file: str) -> Path:
 
 
 def dump_show(inst: database.Show) -> Path:
-    show = schema.ShowDetail(**json.loads(inst.data))
-    path = make_out_path(Path("shows"), show.id)
+    show = schema.ShowDetail(**{"content": inst.content, **json.loads(inst.data)})
+    path = make_out_path(Path("shows"), inst.id)
     with open(path, "w") as f:
         f.write(show.json(by_alias=True))
     return path
@@ -41,7 +41,7 @@ def dump_year(year: int) -> schema.YearDetail:
         database.PersonRole.target_id == year_id,
     )
     year_detail = schema.YearDetail(
-        title=f"{year}–{str(year+1)[-2:]}",
+        title=f"{year}–{str(year + 1)[-2:]}",
         decade=int(str(year)[-2:]),
         year_id=year_id,
         start_year=year,
@@ -69,6 +69,15 @@ def dump_year_index(year_details: List[schema.YearDetail]):
         f.write(year_collection.json(by_alias=True))
 
 
+def dump_real_person(person_inst: database.Person) -> Path:
+    path = make_out_path(Path("people"), person_inst.id)
+    person_detail = schema.PersonDetail(
+        **{"content": person_inst.content, **json.loads(person_inst.data)}
+    )
+    with open(path, "w") as f:
+        f.write(person_detail.json(by_alias=True))
+
+
 def dump_all():
     log.info("Dumping shows")
     for show_inst in database.Show.select():
@@ -81,3 +90,7 @@ def dump_all():
 
     log.info("Dumping year index")
     dump_year_index(years_detail)
+
+    log.info("Dumping people with records")
+    for person_inst in database.Person.select():
+        dump_real_person(person_inst)

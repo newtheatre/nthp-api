@@ -2,19 +2,18 @@ import logging
 from typing import Any, List, NamedTuple, Protocol, Type
 
 import frontmatter
+import peewee
 from pydantic import ValidationError
 
-import nthp_build.models
-from nthp_build import database, schema, years
+from nthp_build import database, years, people
+from nthp_build import models
 from nthp_build.documents import DocumentPath, find_documents, load_document
 from nthp_build.people import save_person_roles
 
 log = logging.getLogger(__name__)
 
 
-def load_show(
-    path: DocumentPath, document: frontmatter.Post, data: nthp_build.models.Show
-):
+def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show):
     database.Show.create(
         id=path.id,
         year_id=years.get_year_id_from_show_path(path),
@@ -36,7 +35,7 @@ def load_show(
 
 
 def load_committee(
-    path: DocumentPath, document: frontmatter.Post, data: nthp_build.models.Committee
+    path: DocumentPath, document: frontmatter.Post, data: models.Committee
 ):
     save_person_roles(
         target=path.id,
@@ -45,14 +44,28 @@ def load_committee(
     )
 
 
-def load_venue(
-    path: DocumentPath, document: frontmatter.Post, data: nthp_build.models.Venue
-):
+def load_venue(path: DocumentPath, document: frontmatter.Post, data: models.Venue):
     database.Venue.create(
         id=path.id,
         title=data.title,
         data=data.json(),
     )
+
+
+def load_person(path: DocumentPath, document: frontmatter.Post, data: models.Person):
+    try:
+        database.Person.create(
+            id=data.id,
+            title=data.title,
+            graduated=data.graduated,
+            data=data.json(),
+            content=document.content,
+        )
+    except peewee.IntegrityError:
+        log.error(
+            f"Person ID {data.id} is already in use, please explicitly set `id` on "
+            f"these people to disambiguate them."
+        )
 
 
 class LoaderFunc(Protocol):
@@ -64,25 +77,30 @@ class LoaderFunc(Protocol):
 
 class Loader(NamedTuple):
     content_directory: str
-    schema_type: Type[nthp_build.models.NthpModel]
+    schema_type: Type[models.NthpModel]
     func: LoaderFunc
 
 
 LOADERS: List[Loader] = [
     Loader(
         content_directory="_shows",
-        schema_type=nthp_build.models.Show,
+        schema_type=models.Show,
         func=load_show,
     ),
     Loader(
         content_directory="_committees",
-        schema_type=nthp_build.models.Committee,
+        schema_type=models.Committee,
         func=load_committee,
     ),
     Loader(
         content_directory="_venues",
-        schema_type=nthp_build.models.Venue,
+        schema_type=models.Venue,
         func=load_venue,
+    ),
+    Loader(
+        content_directory="_people",
+        schema_type=models.Person,
+        func=load_person,
     ),
 ]
 
