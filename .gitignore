@@ -140,6 +140,7 @@ cython_debug/
 # Project specific
 content/
 *.db
+*.db-journal
 bin/s3deploy
 openapi.json
 dist*/

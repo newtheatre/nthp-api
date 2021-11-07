@@ -1,0 +1,105 @@
+interactions:
+  - request:
+      body: null
+      headers:
+        Accept:
+          - application/json
+        Accept-Encoding:
+          - gzip, deflate
+        Connection:
+          - keep-alive
+        User-Agent:
+          - python-requests/2.26.0
+      method: GET
+      uri: https://api.smugmug.com/api/v2/album/W38sb3!images?count=100&start=1
+    response:
+      body:
+        string: !!binary |
+          H4sIAAAAAAAAA6xYbW/bNhD+K4w+DC2WRIrj9MVDMXhOmnprEqNxmg1FUdASbXGRSI2kkmaB//vu
+          KFGSY1u2iwUBTFL38tzx4emoJ+8qM1wK7fWevAtmYhnB8It3fjb2vu57I6poygxTp0yHiltRlPxM
+          VRhT5fVwxOkkYSRhYmZiYth3Q6ZKpuRiePlt8KH/6ZoYSS76f5aTF/XwHRlevh9eDsd/kZRRwcWM
+          UDXhRlH1WNp76c0bKCxKhNb78uRdwhoAeM8ThkPt7Xuf2D85VyzyelOaaIYLNLoSyWO1cMqmNE8M
+          6Hk4aQTl9UnCtSFySqZgUqBJ8iJjKmTCHDARyohFhIqIhDJN6YFmGcAyLHr5C+FTkmsW7cNjwlM6
+          Y+SBJwmR4JlMGOEiTHLU5oKYmBHFNGAgmhnU5EZbjwRdEq6dFKIBkOPHjBV5thnf96q8er0AZi6b
+          IOOy6c2/zucYvM5gZxkm7UZxEPBpxv37jk+TSZ76t8dv9OR4zwLWv2pDlXl39FMocwG/QQCuPsqQ
+          Gonb3EeNIUrWyyWyq8nfLDSY/oYQbtCYm4QVmR5Ql2WY/MEeH6RCnjVmfaUobNMXIN0tZFWlVN2B
+          wKVEf9RwAwmEeXAYLPxZNGLW8rifOGXI1gceRUxUbBjHeToRlCc3KgHt2JhM93w/i6WR+lCn+Qz+
+          D2G/yyWfH5zOXp+fP3z0A38c19ODcXz4dzYDd46OYM7qfNOxfPiWizshH0QpM1IyZFoD3yskN1ki
+          aQS5AL1uN3jTOT55e9JBjkIyYK0THJ0cHAUHwcn46HWv2+2dHP8cBD0bIYqMecoKG8j+VvH3EpKL
+          J+D30TlMrxSfcUGTD4zPYljunhzXi7c8MrHXexV067Vr/i8getXtvO3i1mhzk0V4Dla67VZuBzJJ
+          gCdYK7yeUTkEPdR9IDW/Z1Uahvozj5is5gOZAoXhAGJakW+6oMiAirOIm1qOit/y+pRDgg34ahSC
+          ilONNcvUIuXlNgLMawb1LLFkAaPXcOQquAAmBSjaza9hZ2suF2tFcsHzZ5rkzNarivtPQLA0KViP
+          ZRJH8yZjKoG1zCnV1jzHQz9SbMoU1MBTrrOEPqL1s++GCV2cv2LT15cD35YD3/E6KIQXK6VNXFHk
+          rWohY4P9SBUUE1MWged155ntvaSQ5ot1BRQWzKwuOKuAlWpEA0UJvYeDbV9NU6mI83EmokxyYUpb
+          C47mJSeQ4Xozem3FmrAb2tuDtvLboW3Yb2I9ZQaUt0QclcIrcZ8+f7gRfaEB7zabcy6m9gDAs63i
+          cP6QuPj8ajoUcFBhRzYEs2fNySl34s1wnpvaPhqriS2As9sWxXM3y0EMlMw2bQtGElq5lhAGiwKO
+          vEWHsDqKWplY7R0iKbzZDmLmesO2CFQp1gygUG1pFpZQl87acDo8jvx1RW4HGDq5JsJSeReIzh90
+          dq3UrnA5oNBZU3hJ0k1AUye3dDovlp5sJLNT2XgSK9sO7kjxcGMF3MsKqYWcgpVEzq7vcmtil9yO
+          cmxwtS2BoK/XYC2hLSDFTvnsO/TYehu2Zk6F1SpL6V5ld4cy4rSXCiJtJ84qt/OysW5v45e79R3w
+          WnkyeSR30A0tISusuYxvfMssJ3MHJEVrsQ5J9ZqubxpbEaCtwdnIh3Zf/xMpLMJ11GhHsJCO9YWm
+          NQcr684Kqz9YfBZuj2uDa5ahetW24K693CEkjXo56q2Oqba7fVA3n4Ya7ubUENDFK/80T2yA6Ayv
+          cy3R1f6wTb+Q982bUHG3apzcWzYpYn12JxXswcSMGsUOpZod5nd+Jwjewp3LP4+ZMbK+knrzr+vO
+          l17s3ddCxtSM7C+kfiwN3ouO4N6DXwrsaIDfCuwIv7xA58AitxQEeLNR2oxszdj90wP9QVXM7kDi
+          fb+DGC7gol2Yubrz5v8BAAD//wMALaf1Qe8SAAA=
+      headers:
+        Connection:
+          - keep-alive
+        Content-Length:
+          - "1454"
+        Content-Type:
+          - application/json; charset=utf-8
+        Via:
+          - 1.1 325491a666fd60e1d15254e969c68c85.cloudfront.net (CloudFront)
+        X-Amz-Cf-Id:
+          - bPh_ipPOYFGySS6wOC4hgEtdPjr2QKorokwmYRLojuYmd-WUc2HA7w==
+        X-Amz-Cf-Pop:
+          - DUB2-C1
+        X-Cache:
+          - Miss from cloudfront
+        cache-control:
+          - private, no-store, no-cache, max-age=0
+        content-encoding:
+          - gzip
+        date:
+          - Sun, 07 Nov 2021 23:43:57 GMT
+        expires:
+          - Sun, 07 Nov 2021 23:43:57 GMT
+        p3p:
+          - CP="This is not a P3P policy. SmugMug respects your privacy. Learn more at
+            https://www.smugmug.com/about/privacy"
+        server:
+          - nginx
+        smug-cdn:
+          - cloudfront (via api.smugmug.com)
+        strict-transport-security:
+          - max-age=31536000
+        vary:
+          - Accept-Encoding
+        x-env:
+          - a=live, b=www, c=ec58e149, d=i-0fbbb372dec276f29
+        x-frame-options:
+          - DENY
+        x-powered-by:
+          - SmugMug/1.0
+        x-ratelimit-remaining:
+          - "99992"
+        x-ratelimit-reset:
+          - "1636329115"
+        x-request-id:
+          - 19b70c8a
+        x-s:
+          - 100.10.205:5121
+        x-smugmug-hiring:
+          - "How to love what you do: https://jobs.smugmug.com/"
+        x-smugmug-values:
+          - 4/5 - Dare
+        x-ttfb:
+          - "0.0537"
+        x-ttfb-l:
+          - "4847"
+        x-ua-compatible:
+          - IE=edge
+      status:
+        code: 200
+        message: OK
+version: 1

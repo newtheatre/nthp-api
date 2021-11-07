@@ -1,0 +1,83 @@
+interactions:
+  - request:
+      body: null
+      headers:
+        Accept:
+          - application/json
+        Accept-Encoding:
+          - gzip, deflate
+        Connection:
+          - keep-alive
+        User-Agent:
+          - python-requests/2.26.0
+      method: GET
+      uri: https://api.smugmug.com/api/v2/album/abc123!images?count=100&start=1
+    response:
+      body:
+        string: !!binary |
+          H4sIAAAAAAAAA0SO24rCMBCGX6XOhVeFtlZBCiKlKhSPu7iwXqZpKhGbCZlUFPHddyoLXg388x++
+          J3wrsmhIQfaEH6chg0hYHd1GkbhWXRuJSiajdKBbcVY0Jy+cnyVDiZ3hG8fD/FCu1WPWFL8YT6p7
+          3hR4SpNycvOyPbhpvjyl3dfRQQgblMKj44W8by77xo98fFhmgH11UdIT6wyzUCSdtl6j4dc7QEHj
+          sA3ebGxamtqiNv4//SkmeIVQYM3qOB6HsFVE/V4GO/TBivFreP0BAAD//wMAWWZt6v4AAAA=
+      headers:
+        Connection:
+          - keep-alive
+        Content-Length:
+          - "224"
+        Content-Type:
+          - application/json; charset=utf-8
+        Via:
+          - 1.1 77aa8087323921dee0b130bc0589bda9.cloudfront.net (CloudFront)
+        X-Amz-Cf-Id:
+          - zFnZYY2oOs2-9g9Gsmj1hch8RMmvGmyoz0u-2q3_T5120pcxRNMvIg==
+        X-Amz-Cf-Pop:
+          - MUC50-P1
+        X-Cache:
+          - Error from cloudfront
+        cache-control:
+          - private, no-store, no-cache, max-age=0
+        content-encoding:
+          - gzip
+        date:
+          - Sun, 07 Nov 2021 23:29:49 GMT
+        expires:
+          - Sun, 07 Nov 2021 23:29:49 GMT
+        p3p:
+          - CP="This is not a P3P policy. SmugMug respects your privacy. Learn more at
+            https://www.smugmug.com/about/privacy"
+        server:
+          - nginx
+        smug-cdn:
+          - cloudfront (via api.smugmug.com)
+        strict-transport-security:
+          - max-age=31536000
+        vary:
+          - Accept-Encoding
+        x-env:
+          - a=live, b=www, c=e8889be1, d=i-011b9b5e04e6bd307
+        x-frame-options:
+          - DENY
+        x-powered-by:
+          - SmugMug/1.0
+        x-ratelimit-remaining:
+          - "99995"
+        x-ratelimit-reset:
+          - "1636329340"
+        x-request-id:
+          - dc986289
+        x-s:
+          - 100.13.46:21983
+        x-smugmug-hiring:
+          - "How to love what you do: https://jobs.smugmug.com/"
+        x-smugmug-values:
+          - 4/5 - Dare
+        x-ttfb:
+          - "0.0331"
+        x-ttfb-l:
+          - "254"
+        x-ua-compatible:
+          - IE=edge
+      status:
+        code: 404
+        message: Not Found
+version: 1

@@ -1,0 +1,98 @@
+interactions:
+  - request:
+      body: null
+      headers:
+        Accept:
+          - application/json
+        Accept-Encoding:
+          - gzip, deflate
+        Connection:
+          - keep-alive
+        User-Agent:
+          - python-requests/2.26.0
+      method: GET
+      uri: https://api.smugmug.com/api/v2/album/dvVPZh
+    response:
+      body:
+        string: !!binary |
+          H4sIAAAAAAAAA6yXbXPiNhDHv4riV+2UACHNdco7DkiTaZJjLqHt9J2wF1tFtlxJhmNu+O63kiyD
+          Yx7bm0ky49U+/Hb1t6x8DT6DykWmIOh/DaaSBf2gQ3PWWfY6lM+KtBMt/5j8nQSt4EmEVAuJDgOz
+          sLW8rXOMDj7N/oFQo9ktY7oXFsILTc3imCp93eve3OL6VPI91jemubeR0rbj5k0DzsVqJFYZFzRS
+          QX9OuYJWMAIVSpZrJjIMQL/xX4/3QV/LAhfHXzTIjHL/fM84ZJh6G/4biFjSPFl7l99hvRLSFDDJ
+          JlQp8/jAMl1apNDYLURVilch9YhJNDqGgQohi1gWB27tGXQi0D2YCMWsD9ohLCTT63KCLyIDPz8E
+          QEs1/CHNPhbrqhg+3tOlwFiobE84pWkeUQsV4Ljurm9urrsf3m4+9O9+7t/2fup2+90uJntMaQzq
+          qP9dv7f1fxERPI7QSa5m4euzzzAUhRnH7S+/2j2dUJ0Y9WCm3vXNbWd3c5H3NaES/HgfqPJ76Gdb
+          9TGh4cLwVYajqvwTZm490TpX/U4nT4QWqp3BSidAtYS2kHG7WOzlwtC6cuzsyWxNFjh/u66Mkq3Z
+          duAth6GulPErjF/jpdmmOPj2NJCmnx8V0QnVBGNJoWBecDIXkpg6Tl/jLMoFarPM9a7Uxu1gkzpD
+          a6fa0y2q9T4f0LiTFdMJUgKJ2RIywqJ2k8vmLWmGYgnSyugo11Vo/Gp0Luh8PFuJMBNlx0bxL49A
+          tojdtRZBW+5S7uHd4UTyqUKYBi/uiexsBVejtREXbDa6k49rgkfnwhxRTSibEFHubRNNGNfceyav
+          /hpbmeJ8ukE5OjMyDjEN1+QHVcx+xGiIhVybF8efBA3wstrGvOESMu2e97xMxzu4ym20Or8Tta+V
+          N5Sqgn8LyEIgYk5c1rI/1SJzKdIdPZd9a2FtUgjdbLDeFvb5wOKE468+oPPErx98Ey/VelXxP+n9
+          He+m/BSdaqN2+FU9sTq6P5a+S0fl/WPfsXegB/fJO8HOnNNFzHvF5ao5DR2DLak85ETkBafyGSJG
+          T6DmzjW1rv8fuKzsZnwGeI3U4+Ml6hz0GMT3wsaKmsYxRGeDV4weeijS1B4nx6FD77YLXcZeQuzL
+          EZEd5aywKm1IvEyfosydU42RaspF/LoobIaLRFHIMKGKzjgQjFeHtOCK1kA5U3r8JeSFwlRnUZsI
+          2EY0tLEv7fmnSBVNWIYnSEqN3Z0lGRkcE/qeshts1f/X9ARL4HZWM85Ce0U4caXcVwXNIxHW77E4
+          qbZKixh/2qg+P7lIhB0Jc5Dmw+Xm2E50yk3pob3l9brdVvAMStnDOvi0CDbfAAAA//8DAG5jPJDm
+          DQAA
+      headers:
+        Connection:
+          - keep-alive
+        Content-Length:
+          - "1029"
+        Content-Type:
+          - application/json; charset=utf-8
+        Via:
+          - 1.1 355f72364b4c8f8829ae95f886a03f57.cloudfront.net (CloudFront)
+        X-Amz-Cf-Id:
+          - z3butzF-mY6Oj_ybx5maltV6wb9tFsejHZ-OqLn5fdFZkt8ZfjzM4w==
+        X-Amz-Cf-Pop:
+          - MUC50-P1
+        X-Cache:
+          - Miss from cloudfront
+        cache-control:
+          - private, no-store, no-cache, max-age=0
+        content-encoding:
+          - gzip
+        date:
+          - Sun, 07 Nov 2021 23:36:45 GMT
+        expires:
+          - Sun, 07 Nov 2021 23:36:45 GMT
+        p3p:
+          - CP="This is not a P3P policy. SmugMug respects your privacy. Learn more at
+            https://www.smugmug.com/about/privacy"
+        server:
+          - nginx
+        smug-cdn:
+          - cloudfront (via api.smugmug.com)
+        strict-transport-security:
+          - max-age=31536000
+        vary:
+          - Accept-Encoding
+        x-env:
+          - a=live, b=www, c=e8889be1, d=i-0c9bf1bd99de10454
+        x-frame-options:
+          - DENY
+        x-powered-by:
+          - SmugMug/1.0
+        x-ratelimit-remaining:
+          - "99994"
+        x-ratelimit-reset:
+          - "1636329152"
+        x-request-id:
+          - 5e6f9472
+        x-s:
+          - 100.14.143:6124
+        x-smugmug-hiring:
+          - "How to love what you do: https://jobs.smugmug.com/"
+        x-smugmug-values:
+          - 2/5 - Thrill Our Customers
+        x-ttfb:
+          - "0.0481"
+        x-ttfb-l:
+          - "3558"
+        x-ua-compatible:
+          - IE=edge
+      status:
+        code: 200
+        message: OK
+version: 1
