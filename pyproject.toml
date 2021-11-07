@@ -22,6 +22,7 @@ pytest = "^6.2.5"
 pytest-vcr = "^1.0.2"
 mypy = "^0.910"
 pytest-depends = "^1.0.1"
+types-python-slugify = "^5.0.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
