@@ -140,3 +140,4 @@ cython_debug/
 # Project specific
 content/
 *.db
+bin/s3deploy

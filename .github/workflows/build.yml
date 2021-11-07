@@ -13,24 +13,39 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - name: Clone code repo
+        uses: actions/checkout@v2
+      - name: Install python
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ env.python-version }}
-      - uses: abatilo/actions-poetry@v2.1.0
+      - name: Install poetry
+        uses: abatilo/actions-poetry@v2.1.0
         with:
           poetry-version: ${{ env.poetry-version }}
-      - uses: actions/cache@v1
+      - name: Download poetry cache
+        uses: actions/cache@v1
         with:
           path: ~/.cache/pypoetry
           key: ${{ runner.os }}-poetry-2-${{ hashFiles('src/poetry.lock') }}
           restore-keys: |
             ${{ runner.os }}-poetry-2-
-      - run: poetry install --no-root
-      - uses: actions/checkout@v2
+      - name: Install python dependencies
+        run: poetry install --no-root
+      - name: Clone content repo
+        uses: actions/checkout@v2
         with:
           repository: newtheatre/history-project
           path: content
-      - run: poetry run python nthp load
-      - run: poetry run python nthp stats
-      - run: poetry run python nthp dump
+      - name: Build content database
+        run: poetry run python nthp load
+      - name: Report database stats
+        run: poetry run python nthp stats
+      - name: Build API
+        run: poetry run python nthp dump
+      - name: Deploy to S3
+        run: bin/deploy.sh
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
