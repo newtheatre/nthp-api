@@ -5,8 +5,7 @@ import frontmatter
 import peewee
 from pydantic import ValidationError
 
-from nthp_build import database, years, people
-from nthp_build import models
+from nthp_build import database, models, people, years
 from nthp_build.documents import DocumentPath, find_documents, load_document
 from nthp_build.people import save_person_roles
 

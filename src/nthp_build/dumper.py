@@ -4,7 +4,7 @@ import shutil
 from pathlib import Path
 from typing import List
 
-from nthp_build import database, schema, years, people
+from nthp_build import database, people, schema, years
 from nthp_build.config import settings
 
 log = logging.getLogger(__name__)
