@@ -17,6 +17,7 @@ def save_person_roles(
     target_type: database.PersonRoleType,
     person_list: List[nthp_build.models.PersonRef],
 ):
+    rows = []
     for person_ref in person_list:
         person_role = nthp_build.models.PersonRole(
             person_id=get_person_id(person_ref.name) if person_ref.name else None,
@@ -26,15 +27,18 @@ def save_person_roles(
             is_person=person_ref.person,
             comment=person_ref.comment,
         )
-        database.PersonRole.create(
-            target_id=target,
-            target_type=target_type,
-            person_id=person_role.person_id,
-            person_name=person_role.person_name,
-            role=person_role.role,
-            is_person=person_role.is_person,
-            data=person_role.json(),
+        rows.append(
+            {
+                "target_id": target,
+                "target_type": target_type,
+                "person_id": person_role.person_id,
+                "person_name": person_role.person_name,
+                "role": person_role.role,
+                "is_person": person_role.is_person,
+                "data": person_role.json(),
+            }
         )
+    database.PersonRole.insert_many(rows).execute()
 
 
 def get_real_people() -> peewee.ModelSelect:
