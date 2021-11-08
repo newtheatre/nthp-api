@@ -79,6 +79,7 @@ class Show(NthpModel):
     company_sort: Optional[str] = None
     period: Optional[str] = None
     season: str
+    season_sort: Optional[int] = None
     venue: Optional[str] = None
     date_start: Optional[datetime.date] = None
     date_end: Optional[datetime.date] = None

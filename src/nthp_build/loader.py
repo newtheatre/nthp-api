@@ -7,7 +7,6 @@ from pydantic import ValidationError
 
 from nthp_build import database, models, people, years
 from nthp_build.documents import DocumentPath, find_documents, load_document
-from nthp_build.people import save_person_roles
 
 log = logging.getLogger(__name__)
 
@@ -15,18 +14,21 @@ log = logging.getLogger(__name__)
 def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show):
     database.Show.create(
         id=path.id,
+        source_path=path.path,
         year_id=years.get_year_id_from_show_path(path),
         title=data.title,
+        season_sort=data.season_sort,
+        date_start=data.date_start,
+        date_end=data.date_end,
         data=data.json(),
-        source_path=path.path,
         content=document.content,
     )
-    save_person_roles(
+    people.save_person_roles(
         target=path.id,
         target_type=database.PersonRoleType.CAST,
         person_list=data.cast,
     )
-    save_person_roles(
+    people.save_person_roles(
         target=path.id,
         target_type=database.PersonRoleType.CREW,
         person_list=data.crew,
@@ -36,7 +38,7 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
 def load_committee(
     path: DocumentPath, document: frontmatter.Post, data: models.Committee
 ):
-    save_person_roles(
+    people.save_person_roles(
         target=path.id,
         target_type=database.PersonRoleType.COMMITTEE,
         person_list=data.committee,

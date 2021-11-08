@@ -9,7 +9,7 @@ from typing import List
 
 import pydantic
 
-from nthp_build import database, people, roles, schema, spec, years
+from nthp_build import database, people, roles, schema, shows, spec, years
 from nthp_build.config import settings
 
 log = logging.getLogger(__name__)
@@ -42,8 +42,8 @@ def dump_show(inst: database.Show) -> schema.ShowDetail:
 def dump_year(year: int) -> schema.YearDetail:
     year_id = years.get_year_id(year)
     path = make_out_path(Path("years"), year_id)
-    shows = database.Show.select().where(database.Show.year_id == year_id)
-    committee = database.PersonRole.select().where(
+    year_shows = shows.get_show_query().where(database.Show.year_id == year_id)
+    year_committee = database.PersonRole.select().where(
         database.PersonRole.target_type == database.PersonRoleType.COMMITTEE,
         database.PersonRole.target_id == year_id,
     )
@@ -53,11 +53,11 @@ def dump_year(year: int) -> schema.YearDetail:
         year_id=year_id,
         start_year=year,
         grad_year=year + 1,
-        show_count=len(shows),
-        shows=[json.loads(show_inst.data) for show_inst in shows],
+        show_count=len(year_shows),
+        shows=[json.loads(show_inst.data) for show_inst in year_shows],
         committee=[
             schema.PersonRoleList(**json.loads(person_inst.data))
-            for person_inst in committee
+            for person_inst in year_committee
         ],
         fellows=[],
         commendations=[],
