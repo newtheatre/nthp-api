@@ -5,6 +5,11 @@ This project generates a JSON API from the [history-project](https://github.com/
 - **load**: Generate a sqlite database from the source files.
 - **dump**: Use that database to generate a JSON API.
 
+## Endpoints
+
+- The API is currently hosted at <https://nthp-api.wjdp.uk/v1>.
+- The specification is available at <https://nthp-api.wjdp.uk/v1/master/openapi.json>.
+
 ## Install
 
 - Ensure you have [Poetry](https://python-poetry.org/) installed.
