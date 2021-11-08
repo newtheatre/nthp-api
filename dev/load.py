@@ -1,9 +1,5 @@
-import coloredlogs
+from nthp_build import database, loader, logging
 
-from nthp_build import database, loader
-from nthp_build.config import settings
-
-coloredlogs.install(level=settings.log_level)
-
+logging.init()
 database.init_db(create=True)
 loader.run_loaders()

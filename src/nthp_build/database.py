@@ -47,6 +47,7 @@ class Person(NthpDbModel):
     id = peewee.CharField(primary_key=True)
     title = peewee.CharField()
     graduated = peewee.IntegerField(index=True, null=True)
+    headshot = peewee.CharField(null=True)
     data = peewee.TextField()
     content = peewee.TextField(null=True)
 

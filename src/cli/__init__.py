@@ -1,10 +1,8 @@
 import click
-import coloredlogs
 
-from nthp_build import database, dumper, loader
-from nthp_build.config import settings
+from nthp_build import database, dumper, loader, logging
 
-coloredlogs.install(level=settings.log_level)
+logging.init()
 
 
 @click.group()

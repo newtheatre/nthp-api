@@ -17,33 +17,6 @@ class PersonRoleList(models.PersonRole):
         pass
 
 
-class PersonShowRoleItem(models.NthpModel):
-    class Config(ResponseConfig):
-        pass
-
-    role: Optional[str] = None
-    role_type: str
-
-
-class PersonShowRoles(models.NthpModel):
-    class Config(ResponseConfig):
-        pass
-
-    show_id: str
-    show_title: str
-    roles: List[PersonShowRoleItem]
-
-
-class PersonCommitteeRole(models.NthpModel):
-    class Config(ResponseConfig):
-        pass
-
-    year_title: str
-    year_decade: int
-    year_id: str
-    role: str
-
-
 class ShowDetail(models.Show):
     class Config(ResponseConfig):
         pass
@@ -86,6 +59,65 @@ class YearDetail(YearList):
     committee: List[PersonRoleList]
     fellows: List[PersonRoleList]
     commendations: List[PersonRoleList]
+
+
+class PersonShowRoleItem(models.NthpModel):
+    class Config(ResponseConfig):
+        pass
+
+    role: Optional[str] = None
+    role_type: str
+
+
+class PersonShowRoles(models.NthpModel):
+    class Config(ResponseConfig):
+        pass
+
+    show_id: str
+    show_title: str
+    roles: List[PersonShowRoleItem]
+
+
+class PersonCommitteeRole(models.NthpModel):
+    class Config(ResponseConfig):
+        pass
+
+    year_title: str
+    year_decade: int
+    year_id: str
+    role: str
+
+
+class PersonCommitteeRoleList(models.NthpModel):
+    class Config(ResponseConfig):
+        pass
+
+    id: str
+    title: str
+    headshot: Optional[str] = None
+    year_title: str
+    year_decade: int
+    year_id: str
+    role: str
+
+
+class PersonCommitteeRoleListCollection(BaseCollectionModel[PersonCommitteeRoleList]):
+    pass
+
+
+class PersonShowRoleList(models.NthpModel):
+    class Config(ResponseConfig):
+        pass
+
+    id: str
+    title: str
+    headshot: Optional[str] = None
+    role: str
+    show_count: int
+
+
+class PersonShowRoleListCollection(BaseCollectionModel[PersonShowRoleList]):
+    pass
 
 
 class PersonDetail(models.Person):

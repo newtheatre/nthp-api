@@ -1,13 +1,15 @@
+import contextlib
 import datetime
 import json
 import logging
 import shutil
+import time
 from pathlib import Path
 from typing import List
 
 import pydantic
 
-from nthp_build import database, people, schema, spec, years
+from nthp_build import database, people, roles, schema, spec, years
 from nthp_build.config import settings
 
 log = logging.getLogger(__name__)
@@ -98,42 +100,82 @@ def dump_virtual_person(ref) -> schema.PersonDetail:
     return person_detail
 
 
+def dump_people_by_committee_role(role_name: str):
+    path = make_out_path(Path("roles/committee"), roles.get_role_id(role_name))
+    collection = schema.PersonCommitteeRoleListCollection(
+        roles.get_people_committee_roles_by_role(role_name)
+    )
+    write_file(path, collection)
+
+
+def dump_people_by_crew_role(role_name: str):
+    path = make_out_path(Path("roles/crew"), roles.get_role_id(role_name))
+    collection = schema.PersonShowRoleListCollection(
+        roles.get_people_crew_roles_by_role(role_name)
+    )
+    write_file(path, collection)
+
+
+def dump_people_if_cast():
+    path = make_out_path(Path("roles"), "cast")
+    collection = schema.PersonShowRoleListCollection(roles.get_people_cast())
+    write_file(path, collection)
+
+
 def dump_site_stats(site_stats: schema.SiteStats) -> None:
     path = make_out_path(Path(""), "index")
     write_file(path, site_stats)
 
 
+@contextlib.contextmanager
+def dump_action(title: str):
+    log.info(title)
+    tick = time.perf_counter()
+    yield
+    tock = time.perf_counter()
+    log.debug(f"Took {tock - tick:.4f} seconds")
+
+
 def dump_all():
-    log.info("Writing OpenAPI spec")
-    spec.write_spec(OUTPUT_DIR / "openapi.json")
+    with dump_action("Writing OpenAPI spec"):
+        spec.write_spec(OUTPUT_DIR / "openapi.json")
 
-    log.info("Dumping shows")
-    shows = [dump_show(show_inst) for show_inst in database.Show.select()]
+    with dump_action("Dumping shows"):
+        shows = [dump_show(show_inst) for show_inst in database.Show.select()]
 
-    log.info("Dumping years")
-    years_detail = [
-        dump_year(year) for year in range(settings.year_start, settings.year_end)
-    ]
+    with dump_action("Dumping years"):
+        years_detail = [
+            dump_year(year) for year in range(settings.year_start, settings.year_end)
+        ]
 
-    log.info("Dumping year index")
-    dump_year_index(years_detail)
+    with dump_action("Dumping year index"):
+        dump_year_index(years_detail)
 
-    log.info("Dumping people with records")
-    real_people = [
-        dump_real_person(person_inst) for person_inst in people.get_real_people()
-    ]
+    with dump_action("Dumping people with records"):
+        real_people = [
+            dump_real_person(person_inst) for person_inst in people.get_real_people()
+        ]
 
-    log.info("Dumping people without records")
-    real_people_ids = list(map(lambda x: x.id, real_people))
-    virtual_people_query = people.get_people_from_roles(real_people_ids)
-    virtual_people = [dump_virtual_person(ref) for ref in virtual_people_query]
+    with dump_action("Dumping people without records"):
+        real_people_ids = list(map(lambda x: x.id, real_people))
+        virtual_people_query = people.get_people_from_roles(real_people_ids)
+        virtual_people = [dump_virtual_person(ref) for ref in virtual_people_query]
 
-    log.info("Dumping site stats")
-    dump_site_stats(
-        schema.SiteStats(
-            build_time=datetime.datetime.now(),
-            branch=settings.branch,
-            show_count=len(shows),
-            person_count=len(real_people) + len(virtual_people),
+    with dump_action("Dumping people by committee role"):
+        [dump_people_by_committee_role(role) for role in roles.COMMITTEE_ROLES]
+
+    with dump_action("Dumping people by crew role"):
+        [dump_people_by_crew_role(role) for role in roles.CREW_ROLES]
+
+    with dump_action("Dumping people if cast"):
+        dump_people_if_cast()
+
+    with dump_action("Dumping site stats"):
+        dump_site_stats(
+            schema.SiteStats(
+                build_time=datetime.datetime.now(),
+                branch=settings.branch,
+                show_count=len(shows),
+                person_count=len(real_people) + len(virtual_people),
+            )
         )
-    )
