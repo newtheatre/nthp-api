@@ -57,6 +57,7 @@ def load_person(path: DocumentPath, document: frontmatter.Post, data: models.Per
             id=data.id,
             title=data.title,
             graduated=data.graduated,
+            headshot=data.headshot,
             data=data.json(),
             content=document.content,
         )
