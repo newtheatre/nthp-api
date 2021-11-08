@@ -7,7 +7,7 @@ from typing import List
 
 import pydantic
 
-from nthp_build import database, people, schema, years
+from nthp_build import database, people, schema, spec, years
 from nthp_build.config import settings
 
 log = logging.getLogger(__name__)
@@ -16,6 +16,7 @@ OUTPUT_DIR = Path("dist")
 
 def delete_output_dir():
     shutil.rmtree(OUTPUT_DIR, ignore_errors=True)
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def make_out_path(directory: Path, file: str) -> Path:
@@ -103,6 +104,9 @@ def dump_site_stats(site_stats: schema.SiteStats) -> None:
 
 
 def dump_all():
+    log.info("Writing OpenAPI spec")
+    spec.write_spec(OUTPUT_DIR / "openapi.json")
+
     log.info("Dumping shows")
     shows = [dump_show(show_inst) for show_inst in database.Show.select()]
 
