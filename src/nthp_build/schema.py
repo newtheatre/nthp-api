@@ -120,6 +120,18 @@ class PersonShowRoleListCollection(BaseCollectionModel[PersonShowRoleList]):
     pass
 
 
+class Role(models.NthpModel):
+    class Config(ResponseConfig):
+        pass
+
+    role: str
+    aliases: List[str]
+
+
+class RoleCollection(BaseCollectionModel[Role]):
+    pass
+
+
 class PersonDetail(models.Person):
     class Config(ResponseConfig):
         pass

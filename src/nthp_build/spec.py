@@ -11,6 +11,7 @@ JSON_SCHEMA = pydantic.schema.schema(
         schema.PersonCommitteeRoleListCollection,
         schema.PersonDetail,
         schema.PersonShowRoleListCollection,
+        schema.RoleCollection,
         schema.ShowDetail,
         schema.SiteStats,
         schema.YearDetail,
@@ -159,6 +160,13 @@ SPEC = {
             description="People are duplicated if they have held the position "
             "multiple times.",
             model="PersonCommitteeRoleListCollection",
+            key="name",
+        ),
+        "/roles/crew/index.json": make_detail_get_operation(
+            operation_id="getCrewRoles",
+            tags=["roles"],
+            summary="Get list of crew roles",
+            model="RoleCollection",
             key="name",
         ),
         "/roles/crew/{name}.json": make_detail_get_operation(

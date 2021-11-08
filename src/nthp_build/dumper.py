@@ -108,6 +108,18 @@ def dump_people_by_committee_role(role_name: str):
     write_file(path, collection)
 
 
+def dump_crew_roles():
+    write_file(
+        path=make_out_path(Path("roles/crew"), "index"),
+        obj=schema.RoleCollection(
+            [
+                schema.Role(role=role.name, aliases=list(role.aliases))
+                for role in roles.CREW_ROLE_DEFINITIONS
+            ]
+        ),
+    )
+
+
 def dump_people_by_crew_role(role_name: str):
     path = make_out_path(Path("roles/crew"), roles.get_role_id(role_name))
     collection = schema.PersonShowRoleListCollection(
@@ -165,6 +177,7 @@ def dump_all():
         [dump_people_by_committee_role(role) for role in roles.COMMITTEE_ROLES]
 
     with dump_action("Dumping people by crew role"):
+        dump_crew_roles()
         [dump_people_by_crew_role(role) for role in roles.CREW_ROLES]
 
     with dump_action("Dumping people if cast"):
