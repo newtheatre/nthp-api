@@ -1,7 +1,9 @@
+"""The models for ingesting data"""
+
 import datetime
 from typing import List, Optional, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class NthpModel(BaseModel):
@@ -10,16 +12,16 @@ class NthpModel(BaseModel):
 
 class Link(NthpModel):
     type: str
-    href: Optional[str] = None
-    snapshot: Optional[str] = None
-    username: Optional[str] = None
-    title: Optional[str] = None
-    date: Optional[datetime.date] = None
-    publisher: Optional[str] = None
-    rating: Optional[str] = None
-    quote: Optional[str] = None
-    note: Optional[str] = None
-    comment: Optional[str] = None
+    href: Optional[str]
+    snapshot: Optional[str]
+    username: Optional[str]
+    title: Optional[str]
+    date: Optional[datetime.date]
+    publisher: Optional[str]
+    rating: Optional[str]
+    quote: Optional[str]
+    note: Optional[str]
+    comment: Optional[str]
 
 
 class Location(NthpModel):
@@ -28,73 +30,73 @@ class Location(NthpModel):
 
 
 class PersonRef(NthpModel):
-    role: Optional[str] = None
-    name: Optional[str] = None
-    note: Optional[str] = None
+    role: Optional[str]
+    name: Optional[str]
+    note: Optional[str]
     person: bool = True
-    comment: Optional[str] = None
+    comment: Optional[str]
 
 
 class PersonRole(NthpModel):
-    person_id: Optional[str] = None
-    person_name: Optional[str] = None
-    role: Optional[str] = None
-    note: Optional[str] = None
+    person_id: Optional[str]
+    person_name: Optional[str]
+    role: Optional[str]
+    note: Optional[str]
     is_person: bool = True
-    comment: Optional[str] = None
+    comment: Optional[str]
 
 
 class ShowCanonical(NthpModel):
-    title: Optional[str] = None
-    playwright: Optional[str] = None
+    title: Optional[str]
+    playwright: Optional[str]
 
 
 class Asset(NthpModel):
     type: str
-    image: Optional[str] = None
-    video: Optional[str] = None
-    filename: Optional[str] = None
-    title: Optional[str] = None
-    page: Optional[int] = None
+    image: Optional[str]
+    video: Optional[str]
+    filename: Optional[str]
+    title: Optional[str]
+    page: Optional[int]
     display_image: bool = False
 
 
 class Trivia(NthpModel):
     quote: str
-    name: Optional[str] = None
-    submitted: Optional[datetime.date] = None
+    name: Optional[str]
+    submitted: Optional[datetime.date]
 
 
 class Show(NthpModel):
     id: str
     title: str
-    playwright: Optional[str] = None
+    playwright: Optional[str]
     devised: Union[str, bool] = False
     improvised: bool = False
-    adaptor: Optional[str] = None
-    translator: Optional[str] = None
+    adaptor: Optional[str]
+    translator: Optional[str]
     canonical: List[ShowCanonical] = []
     student_written: bool = False
-    company: Optional[str] = None
-    company_sort: Optional[str] = None
-    period: Optional[str] = None
+    company: Optional[str]
+    company_sort: Optional[str]
+    period: Optional[str]
     season: str
-    season_sort: Optional[int] = None
-    venue: Optional[str] = None
-    date_start: Optional[datetime.date] = None
-    date_end: Optional[datetime.date] = None
+    season_sort: Optional[int]
+    venue: Optional[str]
+    date_start: Optional[datetime.date]
+    date_end: Optional[datetime.date]
     # tour TODO
     trivia: List[Trivia] = []
     cast: List[PersonRef] = []
     crew: List[PersonRef] = []
     cast_incomplete: bool = False
-    cast_note: Optional[str] = None
+    cast_note: Optional[str]
     crew_incomplete: bool = False
-    crew_note: Optional[str] = None
-    prod_shots: Optional[str] = None
+    crew_note: Optional[str]
+    prod_shots: Optional[str]
     assets: List[Asset] = []
     links: List[Link] = []
-    comment: Optional[str] = None
+    comment: Optional[str]
 
 
 class Committee(NthpModel):
@@ -104,23 +106,23 @@ class Committee(NthpModel):
 class Venue(NthpModel):
     title: str
     links: List[Link] = []
-    built: Optional[int] = None
+    built: Optional[int]
     images: List[str] = []
-    location: Optional[Location] = None
-    city: Optional[str] = None
-    sort: Optional[int] = None
-    comment: Optional[str] = None
+    location: Optional[Location]
+    city: Optional[str]
+    sort: Optional[int]
+    comment: Optional[str]
 
 
 class Person(NthpModel):
-    id: Optional[str] = None
+    id: Optional[str]
     title: str
-    submitted: Optional[datetime.date] = None
-    headshot: Optional[str] = None
+    submitted: Optional[datetime.date]
+    headshot: Optional[str]
     # course: List[str] = [] TODO: both lists and strings
-    graduated: Optional[int] = None
-    award: Optional[str] = None
-    # career: Optional[str] = None TODO: both lists and strings
+    graduated: Optional[int]
+    award: Optional[str]
+    # career: Optional[str] TODO: both lists and strings
     links: List[Link] = []
     news: List[Link] = []
-    comment: Optional[str] = None
+    comment: Optional[str]

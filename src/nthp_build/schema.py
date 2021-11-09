@@ -1,3 +1,5 @@
+"""The schema for outputting data"""
+
 import datetime
 from typing import List, Optional, Union
 
@@ -21,18 +23,18 @@ class ShowDetail(models.Show):
     class Config(ResponseConfig):
         pass
 
-    content: Optional[str] = None
+    content: Optional[str]
 
 
 class ShowList(models.NthpModel):
     id: str
     title: str
-    playwright: Optional[str] = None
-    adaptor: Optional[str] = None
-    devised: Union[str, bool] = False
-    season: Optional[str] = None
-    date_start: Optional[datetime.date] = None
-    date_end: Optional[datetime.date] = None
+    playwright: Optional[str]
+    adaptor: Optional[str]
+    devised: Union[str, bool]
+    season: Optional[str]
+    date_start: Optional[datetime.date]
+    date_end: Optional[datetime.date]
 
     class Config(ResponseConfig):
         pass
@@ -65,7 +67,7 @@ class PersonShowRoleItem(models.NthpModel):
     class Config(ResponseConfig):
         pass
 
-    role: Optional[str] = None
+    role: Optional[str]
     role_type: str
 
 
@@ -94,7 +96,7 @@ class PersonCommitteeRoleList(models.NthpModel):
 
     id: str
     title: str
-    headshot: Optional[str] = None
+    headshot: Optional[str]
     year_title: str
     year_decade: int
     year_id: str
@@ -111,7 +113,7 @@ class PersonShowRoleList(models.NthpModel):
 
     id: str
     title: str
-    headshot: Optional[str] = None
+    headshot: Optional[str]
     role: str
     show_count: int
 
@@ -138,7 +140,7 @@ class PersonDetail(models.Person):
 
     show_roles: List[PersonShowRoles]
     committee_roles: List[PersonCommitteeRole]
-    content: Optional[str] = None
+    content: Optional[str]
 
 
 class SiteStats(models.NthpModel):
