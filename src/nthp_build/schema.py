@@ -28,6 +28,7 @@ class PersonRoleList(models.PersonRole):
 class PersonList(NthpSchema):
     id: str
     name: str
+    is_person: bool
     headshot: Optional[str]
     has_bio: bool
 

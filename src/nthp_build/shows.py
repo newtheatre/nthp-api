@@ -36,11 +36,13 @@ def get_show_roles(person_refs: List[models.PersonRef]) -> List[schema.ShowRole]
                 person=schema.PersonList(
                     id=person_id,
                     name=person_ref.name,
+                    is_person=person_ref.person,
                     headshot=person_id_to_headshot.get(person_id, None),
                     has_bio=has_bio,
                 )
                 if person_id
                 else None,
+                note=person_ref.note,
             )
         )
     return show_roles
