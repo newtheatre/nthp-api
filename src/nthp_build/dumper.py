@@ -54,7 +54,7 @@ def dump_year(year: int) -> schema.YearDetail:
         start_year=year,
         grad_year=year + 1,
         show_count=len(year_shows),
-        shows=[json.loads(show_inst.data) for show_inst in year_shows],
+        shows=[shows.get_show_list_item(show_inst) for show_inst in year_shows],
         committee=[
             schema.PersonRoleList(**json.loads(person_inst.data))
             for person_inst in year_committee

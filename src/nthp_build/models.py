@@ -3,7 +3,7 @@
 import datetime
 from typing import List, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, root_validator, validator
 
 
 class NthpModel(BaseModel):
@@ -59,6 +59,35 @@ class Asset(NthpModel):
     title: Optional[str]
     page: Optional[int]
     display_image: bool = False
+
+    @root_validator()
+    def require_image_xor_video_xor_filename(cls, values: dict) -> dict:
+        if (
+            sum(
+                (
+                    1 if values.get("image") else 0,
+                    1 if values.get("video") else 0,
+                    1 if values.get("filename") else 0,
+                )
+            )
+            != 1
+        ):
+            raise ValueError("Must have exactly one of image, video, or filename")
+        return values
+
+    @validator("title", always=True)
+    def require_title_with_filename(
+        cls, value: Optional[str], values: dict
+    ) -> Optional[str]:
+        if values.get("filename") is not None and value is None:
+            raise ValueError("title is required if filename is provided")
+        return value
+
+    @validator("display_image")
+    def display_image_only_for_images(cls, value: bool, values: dict) -> bool:
+        if value and not values.get("image"):
+            raise ValueError("Can only set display_image for images")
+        return value
 
 
 class Trivia(NthpModel):

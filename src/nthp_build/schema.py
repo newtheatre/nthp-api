@@ -39,6 +39,16 @@ class ShowRole(NthpSchema):
     note: Optional[str]
 
 
+class Asset(NthpSchema):
+    type: str
+    image: Optional[str]
+    video: Optional[str]
+    filename: Optional[str]
+    title: Optional[str]
+    page: Optional[int]
+    display_image: bool
+
+
 class ShowDetail(NthpSchema):
     id: str
     title: str
@@ -66,7 +76,8 @@ class ShowDetail(NthpSchema):
     crew_incomplete: bool
     crew_note: Optional[str]
     prod_shots: Optional[str]
-    # assets: List[Asset] = []
+    assets: List[Asset]
+    primary_image: Optional[str]
     # links: List[Link] = []
 
     content: Optional[str]
@@ -81,6 +92,7 @@ class ShowList(NthpSchema):
     season: Optional[str]
     date_start: Optional[datetime.date]
     date_end: Optional[datetime.date]
+    primary_image: Optional[str]
 
 
 class YearList(NthpSchema):

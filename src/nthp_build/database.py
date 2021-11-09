@@ -38,6 +38,7 @@ class Show(NthpDbModel):
     season_sort = peewee.IntegerField(null=True, index=True)
     date_start = peewee.DateField(null=True, index=True)
     date_end = peewee.DateField(null=True)
+    primary_image = peewee.CharField(null=True)
     data = peewee.TextField()
     content = peewee.TextField(null=True)
 

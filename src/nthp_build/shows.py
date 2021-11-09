@@ -3,7 +3,7 @@ from typing import List
 
 import peewee
 
-from nthp_build import database, models, people, schema
+from nthp_build import assets, database, models, people, schema
 
 
 def get_show_query() -> peewee.Query:
@@ -48,6 +48,21 @@ def get_show_roles(person_refs: List[models.PersonRef]) -> List[schema.ShowRole]
     return show_roles
 
 
+def get_show_list_item(show_inst: database.Show) -> schema.ShowList:
+    source_data = models.Show(**json.loads(show_inst.data))
+    return schema.ShowList(
+        id=show_inst.id,
+        title=show_inst.title,
+        playwright=source_data.playwright,
+        adaptor=source_data.adaptor,
+        devised=source_data.devised,
+        season=source_data.season,
+        date_start=show_inst.date_start,
+        date_end=show_inst.date_end,
+        primary_image=show_inst.primary_image,
+    )
+
+
 def get_show_detail(show_inst: database.Show) -> schema.ShowDetail:
     source_data = models.Show(**json.loads(show_inst.data))
     return schema.ShowDetail(
@@ -62,8 +77,8 @@ def get_show_detail(show_inst: database.Show) -> schema.ShowDetail:
         company=source_data.company,
         period=source_data.period,
         season=source_data.season,
-        date_start=source_data.date_start,
-        date_end=source_data.date_end,
+        date_start=show_inst.date_start,
+        date_end=show_inst.date_end,
         cast=get_show_roles(source_data.cast),
         crew=get_show_roles(source_data.crew),
         cast_incomplete=source_data.cast_incomplete,
@@ -71,5 +86,7 @@ def get_show_detail(show_inst: database.Show) -> schema.ShowDetail:
         crew_incomplete=source_data.crew_incomplete,
         crew_note=source_data.crew_note,
         prod_shots=source_data.prod_shots,
+        assets=assets.get_show_assets(source_data),
+        primary_image=show_inst.primary_image,
         content=show_inst.content,
     )

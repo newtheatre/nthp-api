@@ -5,7 +5,7 @@ import frontmatter
 import peewee
 from pydantic import ValidationError
 
-from nthp_build import database, models, people, years
+from nthp_build import assets, database, models, people, years
 from nthp_build.documents import DocumentPath, find_documents, load_document
 
 log = logging.getLogger(__name__)
@@ -20,6 +20,9 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
         season_sort=data.season_sort,
         date_start=data.date_start,
         date_end=data.date_end,
+        primary_image=assets.pick_show_primary_image(data.assets)
+        if data.assets
+        else None,
         data=data.json(),
         content=document.content,
     )
