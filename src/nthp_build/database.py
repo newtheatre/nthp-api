@@ -2,8 +2,10 @@ import logging
 
 import peewee
 
+from nthp_build.config import settings
+
 log = logging.getLogger(__name__)
-db = peewee.SqliteDatabase("nthp.db")
+db = peewee.SqliteDatabase(settings.db_uri)
 
 
 class NthpDbModel(peewee.Model):
@@ -59,6 +61,8 @@ MODELS = [Show, Venue, PersonRole, Person]
 
 
 def init_db(create: bool = False):
+    log.info(f"Initializing database: {db.database}")
+
     db.connect()
     if create:
         db.drop_tables(MODELS)
