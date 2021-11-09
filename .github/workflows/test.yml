@@ -15,6 +15,7 @@ jobs:
         with:
           python-version: ${{ env.python-version }}
       - uses: pre-commit/action@v2.0.3
+
   pytest:
     runs-on: ubuntu-latest
     steps:
@@ -37,3 +38,22 @@ jobs:
           repository: newtheatre/history-project
           path: content
       - run: PYTHONPATH=src poetry run pytest
+
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.python-version }}
+      - uses: abatilo/actions-poetry@v2.1.0
+        with:
+          poetry-version: ${{ env.poetry-version }}
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache/pypoetry
+          key: ${{ runner.os }}-poetry-2-${{ hashFiles('src/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-2-
+      - run: poetry install --no-root
+      - run: poetry run mypy
