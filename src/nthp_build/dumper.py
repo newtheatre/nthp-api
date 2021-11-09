@@ -59,8 +59,6 @@ def dump_year(year: int) -> schema.YearDetail:
             schema.PersonRoleList(**json.loads(person_inst.data))
             for person_inst in year_committee
         ],
-        fellows=[],
-        commendations=[],
     )
     write_file(path, year_detail)
     return year_detail

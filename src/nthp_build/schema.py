@@ -99,8 +99,8 @@ class YearListCollection(BaseCollectionModel[YearList]):
 class YearDetail(YearList):
     shows: List[ShowList]
     committee: List[PersonRoleList]
-    fellows: List[PersonRoleList]
-    commendations: List[PersonRoleList]
+    # fellows: List[PersonRoleList]
+    # commendations: List[PersonRoleList]
 
 
 class PersonShowRoleItem(NthpSchema):
