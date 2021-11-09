@@ -14,7 +14,7 @@ def get_person_id(name: str) -> str:
 
 def save_person_roles(
     target: str,
-    target_type: database.PersonRoleType,
+    target_type: str,
     person_list: List[nthp_build.models.PersonRef],
 ):
     rows = []

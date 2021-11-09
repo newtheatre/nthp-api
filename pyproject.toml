@@ -31,6 +31,5 @@ build-backend = "poetry.core.masonry.api"
 [tool.mypy]
 python_version = "3.9" 
 files = "src"
-show_error_context = true
 pretty = true
 ignore_missing_imports = true

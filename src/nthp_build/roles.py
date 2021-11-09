@@ -75,7 +75,7 @@ def get_role_id(role_name: str) -> str:
 
 
 def _get_people_role_conditions(
-    target_type: database.PersonRoleType,
+    target_type: str,
 ) -> List[peewee.Expression]:
     return [
         database.PersonRole.target_type == target_type,

@@ -29,10 +29,13 @@ def find_documents(content_directory: Union[Path, str]) -> Iterable[DocumentPath
             basename=path.stem,
         )
 
-    return filter(
-        lambda x: x is not None,
-        map(map_path, (CONTENT_ROOT / Path(content_directory)).rglob("*.md")),
-    )
+    return [
+        doc_path
+        for doc_path in map(
+            map_path, (CONTENT_ROOT / Path(content_directory)).rglob("*.md")
+        )
+        if doc_path is not None
+    ]
 
 
 def load_document(path: Path) -> frontmatter.Post:

@@ -21,7 +21,8 @@ def get_show_roles(person_refs: List[models.PersonRef]) -> List[schema.ShowRole]
         database.Person.id.in_(
             [
                 people.get_person_id(person_ref.name)
-                for person_ref in filter(lambda x: x.name, person_refs)
+                for person_ref in person_refs
+                if person_ref.name is not None
             ]
         )
     )
