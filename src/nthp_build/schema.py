@@ -4,6 +4,7 @@ import datetime
 from typing import List, Optional, Union
 
 import humps
+from pydantic import BaseModel
 from pydantic_collections import BaseCollectionModel
 
 from nthp_build import models
@@ -14,19 +15,63 @@ class ResponseConfig:
     alias_generator = humps.camelize
 
 
+class NthpSchema(BaseModel):
+    class Config(ResponseConfig):
+        pass
+
+
 class PersonRoleList(models.PersonRole):
     class Config(ResponseConfig):
         pass
 
 
-class ShowDetail(models.Show):
-    class Config(ResponseConfig):
-        pass
+class PersonList(NthpSchema):
+    id: str
+    name: str
+    headshot: Optional[str]
+    has_bio: bool
+
+
+class ShowRole(NthpSchema):
+    role: Optional[str]
+    person: Optional[PersonList]
+    note: Optional[str]
+
+
+class ShowDetail(NthpSchema):
+    id: str
+    title: str
+    playwright: Optional[str]
+    devised: Union[str, bool]
+    improvised: bool
+    adaptor: Optional[str]
+    translator: Optional[str]
+    # canonical: List[ShowCanonical] = []
+    student_written: bool
+    company: Optional[str]
+    # company_sort: Optional[str]
+    period: Optional[str]
+    season: str
+    # season_sort: Optional[int]
+    # venue: Optional[str]
+    date_start: Optional[datetime.date]
+    date_end: Optional[datetime.date]
+    # tour TODO
+    # trivia: List[Trivia] = []
+    cast: List[ShowRole]
+    crew: List[ShowRole]
+    cast_incomplete: bool
+    cast_note: Optional[str]
+    crew_incomplete: bool
+    crew_note: Optional[str]
+    prod_shots: Optional[str]
+    # assets: List[Asset] = []
+    # links: List[Link] = []
 
     content: Optional[str]
 
 
-class ShowList(models.NthpModel):
+class ShowList(NthpSchema):
     id: str
     title: str
     playwright: Optional[str]
@@ -36,14 +81,8 @@ class ShowList(models.NthpModel):
     date_start: Optional[datetime.date]
     date_end: Optional[datetime.date]
 
-    class Config(ResponseConfig):
-        pass
 
-
-class YearList(models.NthpModel):
-    class Config(ResponseConfig):
-        pass
-
+class YearList(NthpSchema):
     title: str
     decade: int
     year_id: str
@@ -63,37 +102,25 @@ class YearDetail(YearList):
     commendations: List[PersonRoleList]
 
 
-class PersonShowRoleItem(models.NthpModel):
-    class Config(ResponseConfig):
-        pass
-
+class PersonShowRoleItem(NthpSchema):
     role: Optional[str]
     role_type: str
 
 
-class PersonShowRoles(models.NthpModel):
-    class Config(ResponseConfig):
-        pass
-
+class PersonShowRoles(NthpSchema):
     show_id: str
     show_title: str
     roles: List[PersonShowRoleItem]
 
 
-class PersonCommitteeRole(models.NthpModel):
-    class Config(ResponseConfig):
-        pass
-
+class PersonCommitteeRole(NthpSchema):
     year_title: str
     year_decade: int
     year_id: str
     role: str
 
 
-class PersonCommitteeRoleList(models.NthpModel):
-    class Config(ResponseConfig):
-        pass
-
+class PersonCommitteeRoleList(NthpSchema):
     id: str
     title: str
     headshot: Optional[str]
@@ -107,10 +134,7 @@ class PersonCommitteeRoleListCollection(BaseCollectionModel[PersonCommitteeRoleL
     pass
 
 
-class PersonShowRoleList(models.NthpModel):
-    class Config(ResponseConfig):
-        pass
-
+class PersonShowRoleList(NthpSchema):
     id: str
     title: str
     headshot: Optional[str]
@@ -122,10 +146,7 @@ class PersonShowRoleListCollection(BaseCollectionModel[PersonShowRoleList]):
     pass
 
 
-class Role(models.NthpModel):
-    class Config(ResponseConfig):
-        pass
-
+class Role(NthpSchema):
     role: str
     aliases: List[str]
 
@@ -143,10 +164,7 @@ class PersonDetail(models.Person):
     content: Optional[str]
 
 
-class SiteStats(models.NthpModel):
-    class Config(ResponseConfig):
-        pass
-
+class SiteStats(NthpSchema):
     build_time: datetime.datetime
     branch: str
     show_count: int

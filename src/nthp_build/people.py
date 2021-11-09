@@ -8,7 +8,7 @@ import nthp_build.models
 from nthp_build import database, schema, years
 
 
-def get_person_id(name: str):
+def get_person_id(name: str) -> str:
     return slugify(name, separator="_")
 
 

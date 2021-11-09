@@ -33,8 +33,8 @@ def write_file(path: Path, obj: pydantic.BaseModel) -> None:
 
 
 def dump_show(inst: database.Show) -> schema.ShowDetail:
-    show = schema.ShowDetail(**{"content": inst.content, **json.loads(inst.data)})
     path = make_out_path(Path("shows"), inst.id)
+    show = shows.get_show_detail(inst)
     write_file(path, show)
     return show
 
