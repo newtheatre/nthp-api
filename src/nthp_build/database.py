@@ -41,6 +41,7 @@ class Show(NthpDbModel):
     primary_image = peewee.CharField(null=True)
     data = peewee.TextField()
     content = peewee.TextField(null=True)
+    plaintext = peewee.TextField(null=True)
 
 
 class Venue(NthpDbModel):
@@ -48,6 +49,7 @@ class Venue(NthpDbModel):
     title = peewee.CharField()
     data = peewee.TextField()
     content = peewee.TextField(null=True)
+    plaintext = peewee.TextField(null=True)
 
 
 class Person(NthpDbModel):
@@ -57,6 +59,7 @@ class Person(NthpDbModel):
     headshot = peewee.CharField(null=True)
     data = peewee.TextField()
     content = peewee.TextField(null=True)
+    plaintext = peewee.TextField(null=True)
 
 
 MODELS = [Show, Venue, PersonRole, Person]

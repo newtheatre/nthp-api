@@ -6,7 +6,7 @@ import peewee
 from pydantic import ValidationError
 
 from nthp_build import assets, database, models, people, years
-from nthp_build.content import markdown_to_html
+from nthp_build.content import markdown_to_html, markdown_to_plaintext
 from nthp_build.documents import DocumentPath, find_documents, load_document
 
 log = logging.getLogger(__name__)
@@ -26,6 +26,7 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
         else None,
         data=data.json(),
         content=markdown_to_html(document.content),
+        plaintext=markdown_to_plaintext(document.content),
     )
     people.save_person_roles(
         target=path.id,
@@ -55,6 +56,7 @@ def load_venue(path: DocumentPath, document: frontmatter.Post, data: models.Venu
         title=data.title,
         data=data.json(),
         content=markdown_to_html(document.content),
+        plaintext=markdown_to_plaintext(document.content),
     )
 
 
@@ -67,6 +69,7 @@ def load_person(path: DocumentPath, document: frontmatter.Post, data: models.Per
             headshot=data.headshot,
             data=data.json(),
             content=markdown_to_html(document.content),
+            plaintext=markdown_to_plaintext(document.content),
         )
     except peewee.IntegrityError:
         log.error(
