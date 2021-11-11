@@ -91,3 +91,14 @@ def get_show_detail(show_inst: database.Show) -> schema.ShowDetail:
         primary_image=show_inst.primary_image,
         content=show_inst.content,
     )
+
+
+def get_show_people_names(show: schema.ShowDetail) -> List[str]:
+    people_names = []
+    for credit in show.cast:
+        if credit.person:
+            people_names.append(credit.person.name)
+    for person in show.crew:
+        if person.person:
+            people_names.append(person.person.name)
+    return people_names

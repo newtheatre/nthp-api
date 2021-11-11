@@ -1,6 +1,7 @@
 """The schema for outputting data"""
 
 import datetime
+from enum import Enum
 from typing import List, Optional, Union
 
 import humps
@@ -175,6 +176,27 @@ class PersonDetail(models.Person):
     show_roles: List[PersonShowRoles]
     committee_roles: List[PersonCommitteeRole]
     content: Optional[str]
+
+
+class SearchDocumentType(Enum):
+    YEAR = "year"
+    SHOW = "show"
+    PERSON = "person"
+    VENUE = "venue"
+
+
+class SearchDocument(NthpSchema):
+    type: SearchDocumentType
+    title: str
+    id: str
+    playwright: Optional[str]
+    company: Optional[str]
+    people: Optional[List[str]]
+    plaintext: Optional[str]
+
+
+class SearchDocumentCollection(BaseCollectionModel[SearchDocument]):
+    pass
 
 
 class SiteStats(NthpSchema):

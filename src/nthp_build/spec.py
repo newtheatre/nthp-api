@@ -1,8 +1,9 @@
 import json
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Optional, Type, Union
 
 import pydantic.schema
+from pydantic_collections import BaseCollectionModel
 
 from nthp_build import schema
 
@@ -12,6 +13,7 @@ JSON_SCHEMA = pydantic.schema.schema(
         schema.PersonDetail,
         schema.PersonShowRoleListCollection,
         schema.RoleCollection,
+        schema.SearchDocumentCollection,
         schema.ShowDetail,
         schema.SiteStats,
         schema.YearDetail,
@@ -22,9 +24,11 @@ JSON_SCHEMA = pydantic.schema.schema(
     ref_prefix="#/components/schemas/",
 )
 
+Model = Union[Type[schema.NthpSchema], Type[BaseCollectionModel]]
 
-def check_model_present(model: str):
-    if not model in JSON_SCHEMA["definitions"]:
+
+def check_model_present(model: Model):
+    if not model.__name__ in JSON_SCHEMA["definitions"]:
         raise ValueError(f"Model {model} not found in JSON_SCHEMA")
 
 
@@ -32,7 +36,7 @@ def make_basic_get_operation(
     operation_id: str,
     tags: List[str],
     summary: str,
-    model: str,
+    model: Model,
     description: Optional[str] = None,
 ):
     check_model_present(model)
@@ -47,7 +51,7 @@ def make_basic_get_operation(
                     "description": "OK",
                     "content": {
                         "application/json": {
-                            "schema": {"$ref": f"#/components/schemas/{model}"}
+                            "schema": {"$ref": f"#/components/schemas/{model.__name__}"}
                         }
                     },
                 }
@@ -60,7 +64,7 @@ def make_detail_get_operation(
     operation_id: str,
     tags: List[str],
     summary: str,
-    model: str,
+    model: Model,
     key: str,
     description: Optional[str] = None,
 ):
@@ -86,7 +90,7 @@ def make_detail_get_operation(
                     "description": "OK",
                     "content": {
                         "application/json": {
-                            "schema": {"$ref": f"#/components/schemas/{model}"}
+                            "schema": {"$ref": f"#/components/schemas/{model.__name__}"}
                         }
                     },
                 },
@@ -124,33 +128,33 @@ SPEC = {
             operation_id="getSiteStats",
             tags=["site"],
             summary="Get site stats",
-            model="SiteStats",
+            model=schema.SiteStats,
         ),
         "/years/index.json": make_basic_get_operation(
             operation_id="getYearList",
             tags=["years"],
             summary="Get year list",
-            model="YearListCollection",
+            model=schema.YearListCollection,
         ),
         "/years/{id}.json": make_detail_get_operation(
             operation_id="getYearDetail",
             tags=["years"],
             summary="Get year detail",
-            model="YearDetail",
+            model=schema.YearDetail,
             key="id",
         ),
         "/shows/{id}.json": make_detail_get_operation(
             operation_id="getShowDetail",
             tags=["shows"],
             summary="Get show detail",
-            model="ShowDetail",
+            model=schema.ShowDetail,
             key="id",
         ),
         "/people/{id}.json": make_detail_get_operation(
             operation_id="getPersonDetail",
             tags=["people"],
             summary="Get person detail",
-            model="PersonDetail",
+            model=schema.PersonDetail,  # type: ignore
             key="id",
         ),
         "/roles/committee/{name}.json": make_detail_get_operation(
@@ -159,31 +163,35 @@ SPEC = {
             summary="Get people by committee role",
             description="People are duplicated if they have held the position "
             "multiple times.",
-            model="PersonCommitteeRoleListCollection",
+            model=schema.PersonCommitteeRoleListCollection,
             key="name",
         ),
-        "/roles/crew/index.json": make_detail_get_operation(
+        "/roles/crew/index.json": make_basic_get_operation(
             operation_id="getCrewRoles",
             tags=["roles"],
             summary="Get list of crew roles",
-            model="RoleCollection",
-            key="name",
+            model=schema.RoleCollection,
         ),
         "/roles/crew/{name}.json": make_detail_get_operation(
             operation_id="getPeopleByCrewRole",
             tags=["roles"],
             summary="Get people by committee role",
             description="People are not duplicated.",
-            model="PersonShowRoleListCollection",
+            model=schema.PersonShowRoleListCollection,
             key="name",
         ),
-        "/roles/cast.json": make_detail_get_operation(
+        "/roles/cast.json": make_basic_get_operation(
             operation_id="getPeopleCast",
             tags=["roles"],
             summary="Get people if cast in any show",
             description="People are not duplicated. ",
-            model="PersonShowRoleListCollection",
-            key="name",
+            model=schema.PersonShowRoleListCollection,
+        ),
+        "/search/documents.json": make_basic_get_operation(
+            operation_id="getSearchDocuments",
+            tags=["search"],
+            summary="Get search documents",
+            model=schema.SearchDocumentCollection,
         ),
     },
     "components": {"schemas": JSON_SCHEMA["definitions"]},

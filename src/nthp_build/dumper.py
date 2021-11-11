@@ -9,7 +9,7 @@ from typing import List
 
 import pydantic
 
-from nthp_build import database, people, roles, schema, shows, spec, years
+from nthp_build import database, people, roles, schema, search, shows, spec, years
 from nthp_build.config import settings
 
 log = logging.getLogger(__name__)
@@ -35,6 +35,15 @@ def write_file(path: Path, obj: pydantic.BaseModel) -> None:
 def dump_show(inst: database.Show) -> schema.ShowDetail:
     path = make_out_path(Path("shows"), inst.id)
     show = shows.get_show_detail(inst)
+    search.add_document(
+        type=schema.SearchDocumentType.SHOW,
+        title=show.title,
+        id=inst.id,
+        playwright=show.playwright,
+        company=show.company,
+        people=shows.get_show_people_names(show),
+        plaintext=inst.plaintext,
+    )
     write_file(path, show)
     return show
 
@@ -60,6 +69,11 @@ def dump_year(year: int) -> schema.YearDetail:
             for person_inst in year_committee
         ],
     )
+    search.add_document(
+        type=schema.SearchDocumentType.YEAR,
+        title=year_detail.title,
+        id=year_id,
+    )
     write_file(path, year_detail)
     return year_detail
 
@@ -72,15 +86,20 @@ def dump_year_index(year_details: List[schema.YearDetail]):
     write_file(path, year_collection)
 
 
-def dump_real_person(person_inst: database.Person) -> schema.PersonDetail:
-    path = make_out_path(Path("people"), person_inst.id)
+def dump_real_person(inst: database.Person) -> schema.PersonDetail:
+    path = make_out_path(Path("people"), inst.id)
     person_detail = schema.PersonDetail(
         **{
-            "content": person_inst.content,
-            "show_roles": people.get_person_show_roles(person_inst.id),
-            "committee_roles": people.get_person_committee_roles(person_inst.id),
-            **json.loads(person_inst.data),
+            "content": inst.content,
+            "show_roles": people.get_person_show_roles(inst.id),
+            "committee_roles": people.get_person_committee_roles(inst.id),
+            **json.loads(inst.data),
         }
+    )
+    search.add_document(
+        type=schema.SearchDocumentType.PERSON,
+        title=person_detail.title,
+        id=inst.id,
     )
     write_file(path, person_detail)
     return person_detail
@@ -93,6 +112,11 @@ def dump_virtual_person(ref) -> schema.PersonDetail:
         title=ref.person_name,
         show_roles=people.get_person_show_roles(ref.person_id),
         committee_roles=people.get_person_committee_roles(ref.person_id),
+    )
+    search.add_document(
+        type=schema.SearchDocumentType.PERSON,
+        title=person_detail.title,
+        id=ref.person_id,
     )
     write_file(path, person_detail)
     return person_detail
@@ -129,6 +153,12 @@ def dump_people_by_crew_role(role_name: str):
 def dump_people_if_cast():
     path = make_out_path(Path("roles"), "cast")
     collection = schema.PersonShowRoleListCollection(roles.get_people_cast())
+    write_file(path, collection)
+
+
+def dump_search_documents():
+    path = make_out_path(Path("search"), "documents")
+    collection = schema.SearchDocumentCollection(search.get_search_documents())
     write_file(path, collection)
 
 
@@ -180,6 +210,9 @@ def dump_all():
 
     with dump_action("Dumping people if cast"):
         dump_people_if_cast()
+
+    with dump_action("Dumping search documents"):
+        dump_search_documents()
 
     with dump_action("Dumping site stats"):
         dump_site_stats(
