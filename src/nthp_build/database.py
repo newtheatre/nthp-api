@@ -47,10 +47,11 @@ class Show(NthpDbModel):
 
 class PlaywrightShow(NthpDbModel):
     play_id = peewee.CharField(index=True)
-    play_name = peewee.CharField(index=True)
+    play_name = peewee.CharField()
     playwright_id = peewee.CharField(index=True)
     playwright_name = peewee.CharField()
     show_id = peewee.CharField(index=True)
+    person_id = peewee.CharField(null=True, index=True)
 
 
 class Venue(NthpDbModel):

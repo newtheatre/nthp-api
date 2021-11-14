@@ -3,7 +3,7 @@ from typing import Dict, List, NamedTuple, Tuple
 
 from slugify import slugify
 
-from nthp_build import database, schema
+from nthp_build import database, people, schema
 
 
 def get_play_id(name: str) -> str:
@@ -14,13 +14,16 @@ def get_playwright_id(name: str) -> str:
     return slugify(name, separator="_")
 
 
-def save_playwright_show(play_name: str, playwright_name: str, show_id: str) -> None:
+def save_playwright_show(
+    play_name: str, playwright_name: str, show_id: str, student_written: bool
+) -> None:
     database.PlaywrightShow.create(
         play_id=get_play_id(play_name),
         play_name=play_name,
         playwright_id=get_playwright_id(playwright_name),
         playwright_name=playwright_name,
         show_id=show_id,
+        person_id=people.get_person_id(playwright_name) if student_written else None,
     )
 
 

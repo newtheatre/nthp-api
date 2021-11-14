@@ -32,6 +32,8 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
         content=markdown_to_html(document.content),
         plaintext=markdown_to_plaintext(document.content),
     )
+
+    # Record person roles
     people.save_person_roles(
         target=path.id,
         target_type=database.PersonRoleType.CAST,
@@ -42,10 +44,15 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
         target_type=database.PersonRoleType.CREW,
         person_list=data.crew,
     )
+
+    # Record playwright, if show has one
     show_playwright = shows.get_show_playwright(data)
     if show_playwright and show_playwright.name:
         playwrights.save_playwright_show(
-            play_name=data.title, playwright_name=show_playwright.name, show_id=path.id
+            play_name=data.title,
+            playwright_name=show_playwright.name,
+            show_id=path.id,
+            student_written=data.student_written,
         )
 
 
