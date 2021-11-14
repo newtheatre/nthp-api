@@ -12,6 +12,7 @@ JSON_SCHEMA = pydantic.schema.schema(
         schema.PersonCommitteeRoleListCollection,
         schema.PersonDetail,
         schema.PersonShowRoleListCollection,
+        schema.PlayCollection,
         schema.PlaywrightCollection,
         schema.RoleCollection,
         schema.SearchDocumentCollection,
@@ -193,6 +194,12 @@ SPEC = {
             tags=["playwrights"],
             summary="Get list of playwrights and shows performed",
             model=schema.PlaywrightCollection,
+        ),
+        "/plays/index.json": make_basic_get_operation(
+            operation_id="getPlays",
+            tags=["plays"],
+            summary="Get list of plays and shows performed",
+            model=schema.PlayCollection,
         ),
         "/search/documents.json": make_basic_get_operation(
             operation_id="getSearchDocuments",
