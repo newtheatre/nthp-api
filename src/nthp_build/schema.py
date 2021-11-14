@@ -42,12 +42,15 @@ class PlaywrightType(Enum):
     IMPROVISED = "improvised"
 
 
-class PlaywrightShow(NthpSchema):
-    type: PlaywrightType
+class Playwright(NthpSchema):
     id: Optional[str]
     name: Optional[str]
-    descriptor: Optional[str]
     person_id: Optional[str]
+
+
+class PlaywrightShow(Playwright):
+    type: PlaywrightType
+    descriptor: Optional[str]
     student_written: bool
 
 
@@ -118,14 +121,22 @@ class PlaywrightShowListItem(NthpSchema):
     primary_image: Optional[str]
 
 
-class PlaywrightListItem(NthpSchema):
-    id: str
-    name: str
-    person_id: Optional[str]
+class PlaywrightListItem(Playwright):
     shows: List[PlaywrightShowListItem]
 
 
 class PlaywrightCollection(BaseCollectionModel[PlaywrightListItem]):
+    pass
+
+
+class PlayListItem(NthpSchema):
+    id: str
+    title: str
+    playwright: Playwright
+    shows: List[PlaywrightShowListItem]
+
+
+class PlayCollection(BaseCollectionModel[PlayListItem]):
     pass
 
 

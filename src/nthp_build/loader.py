@@ -44,7 +44,9 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
     )
     show_playwright = shows.get_show_playwright(data)
     if show_playwright and show_playwright.name:
-        playwrights.save_playwright_show(show_playwright.name, path.id)
+        playwrights.save_playwright_show(
+            play_name=data.title, playwright_name=show_playwright.name, show_id=path.id
+        )
 
 
 def load_committee(

@@ -174,6 +174,14 @@ def dump_playwrights():
     write_file(path, collection)
 
 
+def dump_plays():
+    path = make_out_path(Path("plays"), "index")
+    collection = schema.PlayCollection(
+        playwrights.get_play_list(playwrights.get_play_shows())
+    )
+    write_file(path, collection)
+
+
 def dump_search_documents():
     path = make_out_path(Path("search"), "documents")
     collection = schema.SearchDocumentCollection(search.get_search_documents())
@@ -231,6 +239,9 @@ def dump_all():
 
     with dump_action("Dumping playwrights"):
         dump_playwrights()
+
+    with dump_action("Dumping plays"):
+        dump_plays()
 
     with dump_action("Dumping search documents"):
         dump_search_documents()
