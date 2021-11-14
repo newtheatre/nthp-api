@@ -3,7 +3,7 @@ from typing import List, Optional
 
 import peewee
 
-from nthp_build import assets, database, models, people, schema
+from nthp_build import assets, database, models, people, playwrights, schema
 
 
 def get_show_query() -> peewee.Query:
@@ -16,11 +16,7 @@ def get_show_query() -> peewee.Query:
     )
 
 
-def get_playwright_id(name: str) -> str:
-    return slugify(name, separator="_")
-
-
-def get_show_playwright(show: models.Show) -> Optional[schema.Playwright]:
+def get_show_playwright(show: models.Show) -> Optional[schema.PlaywrightShow]:
     if show.devised:
         if show.devised is True:
             return schema.PlaywrightShow(
@@ -56,7 +52,7 @@ def get_show_playwright(show: models.Show) -> Optional[schema.Playwright]:
         else:
             return schema.PlaywrightShow(
                 type=schema.PlaywrightType.PLAYWRIGHT,
-                id=get_playwright_id(show.playwright),
+                id=playwrights.get_playwright_id(show.playwright),
                 name=show.playwright,
                 descriptor=f"by {show.playwright}",
             )

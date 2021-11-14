@@ -7,7 +7,7 @@ import frontmatter
 import peewee
 from pydantic import ValidationError
 
-from nthp_build import assets, database, models, people, years
+from nthp_build import assets, database, models, people, playwrights, shows, years
 from nthp_build.content import markdown_to_html, markdown_to_plaintext
 from nthp_build.documents import DocumentPath, find_documents, load_document
 
@@ -40,6 +40,9 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
         target_type=database.PersonRoleType.CREW,
         person_list=data.crew,
     )
+    show_playwright = shows.get_show_playwright(data)
+    if show_playwright and show_playwright.name:
+        playwrights.save_playwright_show(show_playwright.name, path.id)
 
 
 def load_committee(

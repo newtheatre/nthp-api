@@ -44,6 +44,12 @@ class Show(NthpDbModel):
     plaintext = peewee.TextField(null=True)
 
 
+class PlaywrightShow(NthpDbModel):
+    playwright_id = peewee.CharField(index=True)
+    playwright_name = peewee.CharField()
+    show_id = peewee.CharField(index=True)
+
+
 class Venue(NthpDbModel):
     id = peewee.CharField(primary_key=True)
     title = peewee.CharField()
@@ -62,7 +68,7 @@ class Person(NthpDbModel):
     plaintext = peewee.TextField(null=True)
 
 
-MODELS = [Show, Venue, PersonRole, Person]
+MODELS = [Show, PlaywrightShow, Venue, PersonRole, Person]
 
 
 def init_db(create: bool = False):
