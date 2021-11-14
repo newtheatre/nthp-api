@@ -1,4 +1,6 @@
+import contextlib
 import logging
+import time
 from typing import Any, List, NamedTuple, Protocol, Type
 
 import frontmatter
@@ -115,18 +117,27 @@ LOADERS: List[Loader] = [
 ]
 
 
+@contextlib.contextmanager
+def load_action(loader: Loader):
+    log.info(f"Running loader for {loader.schema_type.__name__}")
+    tick = time.perf_counter()
+    yield
+    tock = time.perf_counter()
+    log.debug(f"Took {tock - tick:.4f} seconds")
+
+
 def run_loaders():
     for loader in LOADERS:
-        log.info(f"Running loader for {loader.schema_type.__name__}")
-        doc_paths = find_documents(loader.content_directory)
-        with database.db.atomic():
-            for doc_path in doc_paths:
-                document = load_document(doc_path.path)
-                try:
-                    data = loader.schema_type(
-                        **{"id": doc_path.id, **document.metadata}
-                    )
-                except ValidationError as e:
-                    log.error(f"Failed validation: {doc_path.content_path} : {e}")
-                    continue
-                loader.func(path=doc_path, document=document, data=data)
+        with load_action(loader):
+            doc_paths = find_documents(loader.content_directory)
+            with database.db.atomic():
+                for doc_path in doc_paths:
+                    document = load_document(doc_path.path)
+                    try:
+                        data = loader.schema_type(
+                            **{"id": doc_path.id, **document.metadata}
+                        )
+                    except ValidationError as e:
+                        log.error(f"Failed validation: {doc_path.content_path} : {e}")
+                        continue
+                    loader.func(path=doc_path, document=document, data=data)
