@@ -15,10 +15,12 @@ log = logging.getLogger(__name__)
 
 
 def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show):
+    year_id = years.get_year_id_from_show_path(path)
     database.Show.create(
         id=path.id,
         source_path=path.path,
-        year_id=years.get_year_id_from_show_path(path),
+        year=years.get_year_from_year_id(year_id),
+        year_id=year_id,
         title=data.title,
         season_sort=data.season_sort,
         date_start=data.date_start,

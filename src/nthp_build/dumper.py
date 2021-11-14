@@ -9,7 +9,17 @@ from typing import List
 
 import pydantic
 
-from nthp_build import database, people, roles, schema, search, shows, spec, years
+from nthp_build import (
+    database,
+    people,
+    playwrights,
+    roles,
+    schema,
+    search,
+    shows,
+    spec,
+    years,
+)
 from nthp_build.config import settings
 
 log = logging.getLogger(__name__)
@@ -156,6 +166,14 @@ def dump_people_if_cast():
     write_file(path, collection)
 
 
+def dump_playwrights():
+    path = make_out_path(Path("playwrights"), "index")
+    collection = schema.PlaywrightCollection(
+        playwrights.get_playwright_list(playwrights.get_playwright_shows())
+    )
+    write_file(path, collection)
+
+
 def dump_search_documents():
     path = make_out_path(Path("search"), "documents")
     collection = schema.SearchDocumentCollection(search.get_search_documents())
@@ -210,6 +228,9 @@ def dump_all():
 
     with dump_action("Dumping people if cast"):
         dump_people_if_cast()
+
+    with dump_action("Dumping playwrights"):
+        dump_playwrights()
 
     with dump_action("Dumping search documents"):
         dump_search_documents()

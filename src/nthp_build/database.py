@@ -33,6 +33,7 @@ class PersonRole(NthpDbModel):
 class Show(NthpDbModel):
     id = peewee.CharField(primary_key=True)
     source_path = peewee.CharField()
+    year = peewee.IntegerField()
     year_id = peewee.CharField(index=True)
     title = peewee.CharField()
     season_sort = peewee.IntegerField(null=True, index=True)

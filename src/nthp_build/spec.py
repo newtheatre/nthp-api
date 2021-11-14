@@ -12,6 +12,7 @@ JSON_SCHEMA = pydantic.schema.schema(
         schema.PersonCommitteeRoleListCollection,
         schema.PersonDetail,
         schema.PersonShowRoleListCollection,
+        schema.PlaywrightCollection,
         schema.RoleCollection,
         schema.SearchDocumentCollection,
         schema.ShowDetail,
@@ -186,6 +187,12 @@ SPEC = {
             summary="Get people if cast in any show",
             description="People are not duplicated. ",
             model=schema.PersonShowRoleListCollection,
+        ),
+        "/playwrights/index.json": make_basic_get_operation(
+            operation_id="getPlaywrights",
+            tags=["playwrights"],
+            summary="Get list of playwrights and shows performed",
+            model=schema.PlaywrightCollection,
         ),
         "/search/documents.json": make_basic_get_operation(
             operation_id="getSearchDocuments",

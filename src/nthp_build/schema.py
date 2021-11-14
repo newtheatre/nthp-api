@@ -110,6 +110,25 @@ class ShowList(NthpSchema):
     primary_image: Optional[str]
 
 
+class PlaywrightShowListItem(NthpSchema):
+    id: str
+    title: str
+    date_start: Optional[datetime.date]
+    date_end: Optional[datetime.date]
+    primary_image: Optional[str]
+
+
+class PlaywrightListItem(NthpSchema):
+    id: str
+    name: str
+    person_id: Optional[str]
+    shows: List[PlaywrightShowListItem]
+
+
+class PlaywrightCollection(BaseCollectionModel[PlaywrightListItem]):
+    pass
+
+
 class YearList(NthpSchema):
     title: str
     decade: int
