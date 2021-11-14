@@ -101,7 +101,7 @@ class ShowDetail(NthpSchema):
 class ShowList(NthpSchema):
     id: str
     title: str
-    playwright: Optional[str]
+    playwright: Optional[PlaywrightShow]
     adaptor: Optional[str]
     devised: Union[str, bool]
     season: Optional[str]

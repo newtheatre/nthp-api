@@ -106,7 +106,7 @@ def get_show_list_item(show_inst: database.Show) -> schema.ShowList:
     return schema.ShowList(
         id=show_inst.id,
         title=show_inst.title,
-        playwright=source_data.playwright,
+        playwright=get_show_playwright(source_data),
         adaptor=source_data.adaptor,
         devised=source_data.devised,
         season=source_data.season,
