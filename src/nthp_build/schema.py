@@ -47,6 +47,8 @@ class PlaywrightShow(NthpSchema):
     id: Optional[str]
     name: Optional[str]
     descriptor: Optional[str]
+    person_id: Optional[str]
+    student_written: bool
 
 
 class ShowRole(NthpSchema):
@@ -72,7 +74,6 @@ class ShowDetail(NthpSchema):
     adaptor: Optional[str]
     translator: Optional[str]
     # canonical: List[ShowCanonical] = []
-    student_written: bool
     company: Optional[str]
     # company_sort: Optional[str]
     period: Optional[str]

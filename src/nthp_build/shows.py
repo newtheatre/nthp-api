@@ -23,18 +23,21 @@ def get_show_playwright(show: models.Show) -> Optional[schema.PlaywrightShow]:
                 type=schema.PlaywrightType.DEVISED,
                 name=None,
                 descriptor="Devised",
+                student_written=show.student_written,
             )
         if isinstance(show.devised, str):
             return schema.PlaywrightShow(
                 type=schema.PlaywrightType.DEVISED,
                 name=None,
                 descriptor=f"Devised by {show.devised}",
+                student_written=show.student_written,
             )
     if show.improvised is True:
         return schema.PlaywrightShow(
             type=schema.PlaywrightType.IMPROVISED,
             name=None,
             descriptor="Improvised",
+            student_written=show.student_written,
         )
     if show.playwright is not None:
         if show.playwright.lower() == schema.PlaywrightType.VARIOUS.value:
@@ -42,12 +45,14 @@ def get_show_playwright(show: models.Show) -> Optional[schema.PlaywrightShow]:
                 type=schema.PlaywrightType.VARIOUS,
                 name=None,
                 descriptor="Various Writers",
+                student_written=show.student_written,
             )
         elif show.playwright.lower() == schema.PlaywrightType.UNKNOWN.value:
             return schema.PlaywrightShow(
                 type=schema.PlaywrightType.UNKNOWN,
                 name=None,
                 descriptor="Unknown",
+                student_written=show.student_written,
             )
         else:
             return schema.PlaywrightShow(
@@ -55,6 +60,10 @@ def get_show_playwright(show: models.Show) -> Optional[schema.PlaywrightShow]:
                 id=playwrights.get_playwright_id(show.playwright),
                 name=show.playwright,
                 descriptor=f"by {show.playwright}",
+                person_id=people.get_person_id(show.playwright)
+                if show.student_written
+                else None,
+                student_written=show.student_written,
             )
     return None
 

@@ -13,32 +13,74 @@ from nthp_build import models, schema, shows
                 type=schema.PlaywrightType.PLAYWRIGHT,
                 name="William Shakespeare",
                 descriptor="by William Shakespeare",
+                student_written=False,
+                person_id=None,
+            ),
+        ),
+        (
+            dict(
+                playwright="Fred Bloggs",
+                devised=False,
+                improvised=False,
+                student_written=True,
+            ),
+            schema.PlaywrightShow(
+                id="fred_bloggs",
+                type=schema.PlaywrightType.PLAYWRIGHT,
+                name="Fred Bloggs",
+                descriptor="by Fred Bloggs",
+                student_written=True,
+                person_id="fred_bloggs",
             ),
         ),
         (
             dict(playwright="unknown", devised=False, improvised=False),
-            schema.Playwright(type=schema.PlaywrightType.UNKNOWN, descriptor="Unknown"),
+            schema.PlaywrightShow(
+                type=schema.PlaywrightType.UNKNOWN,
+                descriptor="Unknown",
+                student_written=False,
+            ),
         ),
         (
             dict(playwright="Various", devised=False, improvised=False),
-            schema.Playwright(
-                type=schema.PlaywrightType.VARIOUS, descriptor="Various Writers"
+            schema.PlaywrightShow(
+                type=schema.PlaywrightType.VARIOUS,
+                descriptor="Various Writers",
+                student_written=False,
             ),
         ),
         (
             dict(playwright=None, devised=True, improvised=False),
-            schema.Playwright(type=schema.PlaywrightType.DEVISED, descriptor="Devised"),
+            schema.PlaywrightShow(
+                type=schema.PlaywrightType.DEVISED,
+                descriptor="Devised",
+                student_written=False,
+            ),
         ),
         (
-            dict(playwright=None, devised="Cast", improvised=False),
-            schema.Playwright(
-                type=schema.PlaywrightType.DEVISED, descriptor="Devised by Cast"
+            dict(playwright=None, devised="Someone", improvised=False),
+            schema.PlaywrightShow(
+                type=schema.PlaywrightType.DEVISED,
+                descriptor="Devised by Someone",
+                student_written=False,
+            ),
+        ),
+        (
+            dict(
+                playwright=None, devised="Cast", improvised=False, student_written=True
+            ),
+            schema.PlaywrightShow(
+                type=schema.PlaywrightType.DEVISED,
+                descriptor="Devised by Cast",
+                student_written=True,
             ),
         ),
         (
             dict(playwright=None, devised=False, improvised=True),
-            schema.Playwright(
-                type=schema.PlaywrightType.IMPROVISED, descriptor="Improvised"
+            schema.PlaywrightShow(
+                type=schema.PlaywrightType.IMPROVISED,
+                descriptor="Improvised",
+                student_written=False,
             ),
         ),
         (
