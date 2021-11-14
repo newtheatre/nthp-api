@@ -34,6 +34,21 @@ class PersonList(NthpSchema):
     has_bio: bool
 
 
+class PlaywrightType(Enum):
+    PLAYWRIGHT = "playwright"
+    VARIOUS = "various"
+    UNKNOWN = "unknown"
+    DEVISED = "devised"
+    IMPROVISED = "improvised"
+
+
+class PlaywrightShow(NthpSchema):
+    type: PlaywrightType
+    id: Optional[str]
+    name: Optional[str]
+    descriptor: Optional[str]
+
+
 class ShowRole(NthpSchema):
     role: Optional[str]
     person: Optional[PersonList]
@@ -53,9 +68,7 @@ class Asset(NthpSchema):
 class ShowDetail(NthpSchema):
     id: str
     title: str
-    playwright: Optional[str]
-    devised: Union[str, bool]
-    improvised: bool
+    playwright: Optional[PlaywrightShow]
     adaptor: Optional[str]
     translator: Optional[str]
     # canonical: List[ShowCanonical] = []
@@ -189,7 +202,7 @@ class SearchDocument(NthpSchema):
     type: SearchDocumentType
     title: str
     id: str
-    playwright: Optional[str]
+    playwright: Optional[PlaywrightShow]
     company: Optional[str]
     people: Optional[List[str]]
     plaintext: Optional[str]

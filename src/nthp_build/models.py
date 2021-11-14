@@ -100,7 +100,18 @@ class Show(NthpModel):
     id: str
     title: str
     playwright: Optional[str]
+
     devised: Union[str, bool] = False
+
+    @validator("devised")
+    def handle_devised_strings(cls, value: Union[str, bool]) -> Union[str, bool]:
+        if isinstance(value, str):
+            if value.lower() == "true":
+                return True
+            elif value.lower() == "false":
+                return False
+        return value
+
     improvised: bool = False
     adaptor: Optional[str]
     translator: Optional[str]

@@ -1,5 +1,5 @@
 import json
-from typing import List
+from typing import List, Optional
 
 import peewee
 
@@ -14,6 +14,53 @@ def get_show_query() -> peewee.Query:
         database.Show.season_sort,
         database.Show.date_start,
     )
+
+
+def get_playwright_id(name: str) -> str:
+    return slugify(name, separator="_")
+
+
+def get_show_playwright(show: models.Show) -> Optional[schema.Playwright]:
+    if show.devised:
+        if show.devised is True:
+            return schema.PlaywrightShow(
+                type=schema.PlaywrightType.DEVISED,
+                name=None,
+                descriptor="Devised",
+            )
+        if isinstance(show.devised, str):
+            return schema.PlaywrightShow(
+                type=schema.PlaywrightType.DEVISED,
+                name=None,
+                descriptor=f"Devised by {show.devised}",
+            )
+    if show.improvised is True:
+        return schema.PlaywrightShow(
+            type=schema.PlaywrightType.IMPROVISED,
+            name=None,
+            descriptor="Improvised",
+        )
+    if show.playwright is not None:
+        if show.playwright.lower() == schema.PlaywrightType.VARIOUS.value:
+            return schema.PlaywrightShow(
+                type=schema.PlaywrightType.VARIOUS,
+                name=None,
+                descriptor="Various Writers",
+            )
+        elif show.playwright.lower() == schema.PlaywrightType.UNKNOWN.value:
+            return schema.PlaywrightShow(
+                type=schema.PlaywrightType.UNKNOWN,
+                name=None,
+                descriptor="Unknown",
+            )
+        else:
+            return schema.PlaywrightShow(
+                type=schema.PlaywrightType.PLAYWRIGHT,
+                id=get_playwright_id(show.playwright),
+                name=show.playwright,
+                descriptor=f"by {show.playwright}",
+            )
+    return None
 
 
 def get_show_roles(person_refs: List[models.PersonRef]) -> List[schema.ShowRole]:
@@ -69,9 +116,7 @@ def get_show_detail(show_inst: database.Show) -> schema.ShowDetail:
     return schema.ShowDetail(
         id=show_inst.id,
         title=show_inst.title,
-        playwright=source_data.playwright,
-        devised=source_data.devised,
-        improvised=source_data.improvised,
+        playwright=get_show_playwright(source_data),
         adaptor=source_data.adaptor,
         translator=source_data.translator,
         student_written=source_data.student_written,
