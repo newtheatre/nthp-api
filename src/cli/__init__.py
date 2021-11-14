@@ -1,8 +1,8 @@
 import click
 
-from nthp_build import logging
+from nthp_build import logs
 
-logging.init()
+logs.init()
 
 
 @click.group()

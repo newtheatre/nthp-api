@@ -1,5 +1,5 @@
-from nthp_build import database, loader, logging
+from nthp_build import database, loader, logs
 
-logging.init()
+logs.init()
 database.init_db(create=True)
 loader.run_loaders()

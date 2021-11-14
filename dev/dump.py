@@ -1,6 +1,6 @@
-from nthp_build import database, dumper, logging
+from nthp_build import database, dumper, logs
 
-logging.init()
+logs.init()
 database.init_db()
 dumper.delete_output_dir()
 dumper.dump_all()
