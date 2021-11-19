@@ -1,6 +1,4 @@
-from typing import Any, List, NamedTuple
-
-from nthp_build import schema
+from typing import Any, NamedTuple
 
 
 class DumperSharedState(NamedTuple):

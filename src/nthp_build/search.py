@@ -1,5 +1,3 @@
-from typing import List
-
 from nthp_build import schema
 from nthp_build.state import DumperSharedState
 
