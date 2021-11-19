@@ -1,15 +1,16 @@
 from typing import List
 
 from nthp_build import schema
+from nthp_build.state import DumperSharedState
 
-_search_documents: List[schema.SearchDocument] = []
 
-
-def add_document(type: schema.SearchDocumentType, title: str, id: str, **kwargs):
-    _search_documents.append(
+def add_document(
+    state: DumperSharedState,
+    type: schema.SearchDocumentType,
+    title: str,
+    id: str,
+    **kwargs
+):
+    state.search_documents.append(
         schema.SearchDocument(type=type, title=title, id=id, **kwargs)
     )
-
-
-def get_search_documents() -> List[schema.SearchDocument]:
-    return _search_documents

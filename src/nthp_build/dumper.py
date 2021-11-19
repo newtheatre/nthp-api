@@ -1,16 +1,19 @@
 import contextlib
 import datetime
+import functools
 import json
 import logging
 import shutil
 import time
+from multiprocessing import Manager
 from pathlib import Path
-from typing import List
+from typing import Callable, List, NamedTuple
 
 import pydantic
 
 from nthp_build import (
     database,
+    parallel,
     people,
     playwrights,
     roles,
@@ -21,6 +24,7 @@ from nthp_build import (
     years,
 )
 from nthp_build.config import settings
+from nthp_build.state import DumperSharedState, make_dumper_state
 
 log = logging.getLogger(__name__)
 OUTPUT_DIR = Path("dist")
@@ -42,10 +46,15 @@ def write_file(path: Path, obj: pydantic.BaseModel) -> None:
         f.write(obj.json(by_alias=True))
 
 
-def dump_show(inst: database.Show) -> schema.ShowDetail:
+def dump_specs(**kwargs):
+    spec.write_spec(OUTPUT_DIR / "openapi.json")
+
+
+def dump_show(inst: database.Show, state: DumperSharedState) -> schema.ShowDetail:
     path = make_out_path(Path("shows"), inst.id)
     show = shows.get_show_detail(inst)
     search.add_document(
+        state=state,
         type=schema.SearchDocumentType.SHOW,
         title=show.title,
         id=inst.id,
@@ -58,7 +67,12 @@ def dump_show(inst: database.Show) -> schema.ShowDetail:
     return show
 
 
-def dump_year(year: int) -> schema.YearDetail:
+def dump_shows(state: DumperSharedState):
+    for show_inst in database.Show.select():
+        dump_show(show_inst, state)
+
+
+def dump_year(year: int, state: DumperSharedState) -> schema.YearDetail:
     year_id = years.get_year_id(year)
     path = make_out_path(Path("years"), year_id)
     year_shows = shows.get_show_query().where(database.Show.year_id == year_id)
@@ -80,6 +94,7 @@ def dump_year(year: int) -> schema.YearDetail:
         ],
     )
     search.add_document(
+        state=state,
         type=schema.SearchDocumentType.YEAR,
         title=year_detail.title,
         id=year_id,
@@ -96,7 +111,17 @@ def dump_year_index(year_details: List[schema.YearDetail]):
     write_file(path, year_collection)
 
 
-def dump_real_person(inst: database.Person) -> schema.PersonDetail:
+def dump_years(state: DumperSharedState):
+    years_detail = [
+        dump_year(year, state) for year in range(settings.year_start, settings.year_end)
+    ]
+
+    dump_year_index(years_detail)
+
+
+def dump_real_person(
+    inst: database.Person, state: DumperSharedState
+) -> schema.PersonDetail:
     path = make_out_path(Path("people"), inst.id)
     person_detail = schema.PersonDetail(
         **{
@@ -107,6 +132,7 @@ def dump_real_person(inst: database.Person) -> schema.PersonDetail:
         }
     )
     search.add_document(
+        state=state,
         type=schema.SearchDocumentType.PERSON,
         title=person_detail.title,
         id=inst.id,
@@ -115,7 +141,12 @@ def dump_real_person(inst: database.Person) -> schema.PersonDetail:
     return person_detail
 
 
-def dump_virtual_person(ref) -> schema.PersonDetail:
+def dump_real_people(state: DumperSharedState):
+    for person_inst in people.get_real_people():
+        dump_real_person(person_inst, state)
+
+
+def dump_virtual_person(ref, state: DumperSharedState) -> schema.PersonDetail:
     path = make_out_path(Path("people"), ref.person_id)
     person_detail = schema.PersonDetail(
         id=ref.person_id,
@@ -124,12 +155,22 @@ def dump_virtual_person(ref) -> schema.PersonDetail:
         committee_roles=people.get_person_committee_roles(ref.person_id),
     )
     search.add_document(
+        state=state,
         type=schema.SearchDocumentType.PERSON,
         title=person_detail.title,
         id=ref.person_id,
     )
     write_file(path, person_detail)
     return person_detail
+
+
+def dump_virtual_people(state: DumperSharedState):
+    real_people_ids = list(
+        map(lambda x: x.id, database.Person.select(database.Person.id))
+    )
+    virtual_people_query = people.get_people_from_roles(real_people_ids)
+    for ref in virtual_people_query:
+        dump_virtual_person(ref, state)
 
 
 def dump_people_by_committee_role(role_name: str):
@@ -166,7 +207,14 @@ def dump_people_if_cast():
     write_file(path, collection)
 
 
-def dump_playwrights():
+def dump_roles(state: DumperSharedState):
+    [dump_people_by_committee_role(role) for role in roles.COMMITTEE_ROLES]
+    dump_crew_roles()
+    [dump_people_by_crew_role(role) for role in roles.CREW_ROLES]
+    dump_people_if_cast()
+
+
+def dump_playwrights(state: DumperSharedState):
     path = make_out_path(Path("playwrights"), "index")
     collection = schema.PlaywrightCollection(
         playwrights.get_playwright_list(playwrights.get_playwright_shows())
@@ -174,7 +222,7 @@ def dump_playwrights():
     write_file(path, collection)
 
 
-def dump_plays():
+def dump_plays(state: DumperSharedState):
     path = make_out_path(Path("plays"), "index")
     collection = schema.PlayCollection(
         playwrights.get_play_list(playwrights.get_play_shows())
@@ -182,76 +230,68 @@ def dump_plays():
     write_file(path, collection)
 
 
-def dump_search_documents():
+def dump_site_stats(state: DumperSharedState) -> None:
+    path = make_out_path(Path(""), "index")
+    write_file(
+        path,
+        schema.SiteStats(
+            build_time=datetime.datetime.now(),
+            branch=settings.branch,
+            show_count=database.Show.select().count(),
+            person_count=people.get_people_from_roles().count(),
+        ),
+    )
+
+
+def dump_search_documents(state: DumperSharedState):
     path = make_out_path(Path("search"), "documents")
-    collection = schema.SearchDocumentCollection(search.get_search_documents())
+    collection = schema.SearchDocumentCollection([x for x in state.search_documents])
     write_file(path, collection)
 
 
-def dump_site_stats(site_stats: schema.SiteStats) -> None:
-    path = make_out_path(Path(""), "index")
-    write_file(path, site_stats)
+class Dumper(NamedTuple):
+    name: str
+    dumper: Callable
 
 
-@contextlib.contextmanager
-def dump_action(title: str):
-    log.info(title)
+DUMPERS: List[Dumper] = [
+    Dumper("spec", dump_specs),
+    Dumper("shows", dump_shows),
+    Dumper("years", dump_years),
+    Dumper("real people", dump_real_people),
+    Dumper("virtual people", dump_virtual_people),
+    Dumper("roles", dump_roles),
+    Dumper("playwrights", dump_playwrights),
+    Dumper("plays", dump_plays),
+    Dumper("site stats", dump_site_stats),
+]
+
+POST_DUMPERS: List[Dumper] = [
+    Dumper("search documents", dump_search_documents),
+]
+
+
+def run_dumper(dumper: Dumper, state: DumperSharedState):
+    log.info(f"Dump {dumper.name}")
     tick = time.perf_counter()
-    yield
+    dumper.dumper(state=state)
     tock = time.perf_counter()
-    log.debug(f"Took {tock - tick:.4f} seconds")
+    log.debug(f"{dumper.name} took {tock - tick:.4f} seconds")
 
 
 def dump_all():
-    with dump_action("Writing OpenAPI spec"):
-        spec.write_spec(OUTPUT_DIR / "openapi.json")
+    with Manager() as manager:
+        state = make_dumper_state(manager)
+        tasks = [functools.partial(run_dumper, dumper, state) for dumper in DUMPERS]
+        parallel.run_cpu_tasks_in_parallel(tasks)
+        [run_dumper(dumper, state) for dumper in POST_DUMPERS]
 
-    with dump_action("Dumping shows"):
-        shows = [dump_show(show_inst) for show_inst in database.Show.select()]
-
-    with dump_action("Dumping years"):
-        years_detail = [
-            dump_year(year) for year in range(settings.year_start, settings.year_end)
-        ]
-
-    with dump_action("Dumping year index"):
-        dump_year_index(years_detail)
-
-    with dump_action("Dumping people with records"):
-        real_people = [
-            dump_real_person(person_inst) for person_inst in people.get_real_people()
-        ]
-
-    with dump_action("Dumping people without records"):
-        real_people_ids = list(map(lambda x: x.id, real_people))
-        virtual_people_query = people.get_people_from_roles(real_people_ids)
-        virtual_people = [dump_virtual_person(ref) for ref in virtual_people_query]
-
-    with dump_action("Dumping people by committee role"):
-        [dump_people_by_committee_role(role) for role in roles.COMMITTEE_ROLES]
-
-    with dump_action("Dumping people by crew role"):
-        dump_crew_roles()
-        [dump_people_by_crew_role(role) for role in roles.CREW_ROLES]
-
-    with dump_action("Dumping people if cast"):
-        dump_people_if_cast()
-
-    with dump_action("Dumping playwrights"):
-        dump_playwrights()
-
-    with dump_action("Dumping plays"):
-        dump_plays()
-
-    with dump_action("Dumping search documents"):
-        dump_search_documents()
-
-    with dump_action("Dumping site stats"):
-        dump_site_stats(
-            schema.SiteStats(
-                build_time=datetime.datetime.now(),
-                branch=settings.branch,
-                show_count=len(shows),
-                person_count=len(real_people) + len(virtual_people),
-            )
-        )
+    # with dump_action("Dumping site stats"):
+    #     dump_site_stats(
+    #         schema.SiteStats(
+    #
+    #
+    #
+    #
+    #         )
+    #     )
