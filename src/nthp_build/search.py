@@ -1,5 +1,5 @@
 from nthp_build import schema
-from nthp_build.state import DumperSharedState
+from nthp_build.parallel import DumperSharedState
 
 
 def add_document(

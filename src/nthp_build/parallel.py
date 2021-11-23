@@ -1,6 +1,8 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from multiprocessing import Process
+from multiprocessing.managers import SyncManager
+from typing import Any, NamedTuple
 
 log = logging.getLogger(__name__)
 
@@ -26,3 +28,11 @@ def run_io_tasks_in_parallel(tasks):
         running_tasks = [executor.submit(task) for task in tasks]
         for running_task in running_tasks:
             running_task.result()
+
+
+class DumperSharedState(NamedTuple):
+    search_documents: Any
+
+
+def make_dumper_state(manager: SyncManager) -> DumperSharedState:
+    return DumperSharedState(search_documents=manager.list())

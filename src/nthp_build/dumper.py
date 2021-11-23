@@ -6,7 +6,7 @@ import shutil
 import time
 from multiprocessing import Manager
 from pathlib import Path
-from typing import Callable, List, NamedTuple
+from typing import Callable, List, NamedTuple, Protocol
 
 import pydantic
 
@@ -23,7 +23,7 @@ from nthp_build import (
     years,
 )
 from nthp_build.config import settings
-from nthp_build.state import DumperSharedState, make_dumper_state
+from nthp_build.parallel import DumperSharedState, make_dumper_state
 
 log = logging.getLogger(__name__)
 OUTPUT_DIR = Path("dist")
@@ -45,7 +45,7 @@ def write_file(path: Path, obj: pydantic.BaseModel) -> None:
         f.write(obj.json(by_alias=True))
 
 
-def dump_specs(**kwargs):
+def dump_specs(state: DumperSharedState):
     spec.write_spec(OUTPUT_DIR / "openapi.json")
 
 
@@ -248,9 +248,14 @@ def dump_search_documents(state: DumperSharedState):
     write_file(path, collection)
 
 
+class DumperFunc(Protocol):
+    def __call__(self, state: DumperSharedState) -> None:
+        pass
+
+
 class Dumper(NamedTuple):
     name: str
-    dumper: Callable
+    dumper: DumperFunc
 
 
 DUMPERS: List[Dumper] = [
@@ -284,13 +289,3 @@ def dump_all():
         tasks = [functools.partial(run_dumper, dumper, state) for dumper in DUMPERS]
         parallel.run_cpu_tasks_in_parallel(tasks)
         [run_dumper(dumper, state) for dumper in POST_DUMPERS]
-
-    # with dump_action("Dumping site stats"):
-    #     dump_site_stats(
-    #         schema.SiteStats(
-    #
-    #
-    #
-    #
-    #         )
-    #     )
