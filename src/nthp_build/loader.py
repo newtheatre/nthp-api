@@ -1,4 +1,4 @@
-import contextlib
+import functools
 import logging
 import time
 from typing import Any, List, NamedTuple, Protocol, Type
@@ -7,7 +7,16 @@ import frontmatter
 import peewee
 from pydantic import ValidationError
 
-from nthp_build import assets, database, models, people, playwrights, shows, years
+from nthp_build import (
+    assets,
+    database,
+    models,
+    parallel,
+    people,
+    playwrights,
+    shows,
+    years,
+)
 from nthp_build.content import markdown_to_html, markdown_to_plaintext
 from nthp_build.documents import DocumentPath, find_documents, load_document
 
@@ -131,27 +140,23 @@ LOADERS: List[Loader] = [
 ]
 
 
-@contextlib.contextmanager
-def load_action(loader: Loader):
+def run_loader(loader: Loader):
     log.info(f"Running loader for {loader.schema_type.__name__}")
     tick = time.perf_counter()
-    yield
+    doc_paths = find_documents(loader.content_directory)
+    with database.db.atomic():
+        for doc_path in doc_paths:
+            document = load_document(doc_path.path)
+            try:
+                data = loader.schema_type(**{"id": doc_path.id, **document.metadata})
+            except ValidationError as e:
+                log.error(f"Failed validation: {doc_path.content_path} : {e}")
+                continue
+            loader.func(path=doc_path, document=document, data=data)
     tock = time.perf_counter()
     log.debug(f"Took {tock - tick:.4f} seconds")
 
 
 def run_loaders():
-    for loader in LOADERS:
-        with load_action(loader):
-            doc_paths = find_documents(loader.content_directory)
-            with database.db.atomic():
-                for doc_path in doc_paths:
-                    document = load_document(doc_path.path)
-                    try:
-                        data = loader.schema_type(
-                            **{"id": doc_path.id, **document.metadata}
-                        )
-                    except ValidationError as e:
-                        log.error(f"Failed validation: {doc_path.content_path} : {e}")
-                        continue
-                    loader.func(path=doc_path, document=document, data=data)
+    tasks = [functools.partial(run_loader, loader) for loader in LOADERS]
+    parallel.run_tasks_in_series(tasks)

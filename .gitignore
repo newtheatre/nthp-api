@@ -142,3 +142,4 @@ content/
 *.db
 bin/s3deploy
 openapi.json
+dist*/
