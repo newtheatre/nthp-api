@@ -289,3 +289,4 @@ def dump_all():
         tasks = [functools.partial(run_dumper, dumper, state) for dumper in DUMPERS]
         parallel.run_cpu_tasks_in_parallel(tasks)
         [run_dumper(dumper, state) for dumper in POST_DUMPERS]
+    log.info("Dump complete")
