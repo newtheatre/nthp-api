@@ -9,6 +9,7 @@ from nthp_build import schema
 
 JSON_SCHEMA = pydantic.schema.schema(
     (
+        schema.PersonCollaboratorCollection,
         schema.PersonCommitteeRoleListCollection,
         schema.PersonDetail,
         schema.PersonShowRoleListCollection,
@@ -157,6 +158,13 @@ SPEC = {
             tags=["people"],
             summary="Get person detail",
             model=schema.PersonDetail,  # type: ignore
+            key="id",
+        ),
+        "/collaborators/{id}.json": make_detail_get_operation(
+            operation_id="getPersonCollaborators",
+            tags=["people"],
+            summary="Get person collaborators",
+            model=schema.PersonCollaboratorCollection,
             key="id",
         ),
         "/roles/committee/{name}.json": make_detail_get_operation(
