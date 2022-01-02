@@ -290,10 +290,10 @@ POST_DUMPERS: List[Dumper] = [
 
 
 def run_dumper(dumper: Dumper, state: DumperSharedState):
-    log.info(f"Dump {dumper.name}")
     tick = time.perf_counter()
     dumper.dumper(state=state)
     tock = time.perf_counter()
+    log.info(f"Dumped {dumper.name}")
     log.debug(f"{dumper.name} took {tock - tick:.4f} seconds")
 
 
