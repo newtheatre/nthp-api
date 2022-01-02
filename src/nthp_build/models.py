@@ -7,7 +7,8 @@ from pydantic import BaseModel, root_validator, validator
 
 
 class NthpModel(BaseModel):
-    pass
+    class Config:
+        frozen = True
 
 
 class Link(NthpModel):
