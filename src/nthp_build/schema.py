@@ -2,7 +2,7 @@
 
 import datetime
 from enum import Enum
-from typing import List, Optional, Union
+from typing import FrozenSet, List, Optional, Union
 
 import humps
 from pydantic import BaseModel
@@ -14,6 +14,7 @@ from nthp_build import models
 class ResponseConfig:
     allow_population_by_field_name = True
     alias_generator = humps.camelize
+    frozen = True
 
 
 class NthpSchema(BaseModel):
@@ -220,6 +221,16 @@ class PersonDetail(models.Person):
     show_roles: List[PersonShowRoles]
     committee_roles: List[PersonCommitteeRole]
     content: Optional[str]
+
+
+class PersonCollaborator(NthpSchema):
+    person_id: str
+    person_name: str
+    target_ids: FrozenSet[str]
+
+
+class PersonCollaboratorCollection(BaseCollectionModel[PersonCollaborator]):
+    pass
 
 
 class SearchDocumentType(Enum):

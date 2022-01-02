@@ -167,9 +167,22 @@ def dump_virtual_people(state: DumperSharedState):
     real_people_ids = list(
         map(lambda x: x.id, database.Person.select(database.Person.id))
     )
-    virtual_people_query = people.get_people_from_roles(real_people_ids)
+    virtual_people_query = people.get_people_from_roles(excluded_ids=real_people_ids)
     for ref in virtual_people_query:
         dump_virtual_person(ref, state)
+
+
+def dump_collaborators_for_person(ref, state: DumperSharedState):
+    path = make_out_path(Path("collaborators"), ref.person_id)
+    collaborators = people.get_person_collaborators(ref.person_id)
+    collection = schema.PersonCollaboratorCollection(list(collaborators))
+    write_file(path, collection)
+
+
+def dump_collaborators(state: DumperSharedState):
+    people_query = people.get_people_from_roles()
+    for ref in people_query:
+        dump_collaborators_for_person(ref, state)
 
 
 def dump_people_by_committee_role(role_name: str):
@@ -264,6 +277,7 @@ DUMPERS: List[Dumper] = [
     Dumper("years", dump_years),
     Dumper("real people", dump_real_people),
     Dumper("virtual people", dump_virtual_people),
+    Dumper("collaborators", dump_collaborators),
     Dumper("roles", dump_roles),
     Dumper("playwrights", dump_playwrights),
     Dumper("plays", dump_plays),
@@ -276,10 +290,10 @@ POST_DUMPERS: List[Dumper] = [
 
 
 def run_dumper(dumper: Dumper, state: DumperSharedState):
-    log.info(f"Dump {dumper.name}")
     tick = time.perf_counter()
     dumper.dumper(state=state)
     tock = time.perf_counter()
+    log.info(f"Dumped {dumper.name}")
     log.debug(f"{dumper.name} took {tock - tick:.4f} seconds")
 
 

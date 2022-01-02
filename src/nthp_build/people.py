@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, FrozenSet, Iterable, List, Optional
 
 import peewee
 from slugify import slugify
@@ -13,8 +13,8 @@ def get_person_id(name: str) -> str:
 
 
 def save_person_roles(
-    target: str,
-    target_type: str,
+    target: str,  # TODO: should be target_id
+    target_type: str,  # TODO: why not PersonRoleType?
     person_list: List[nthp_build.models.PersonRef],
 ):
     rows = []
@@ -99,6 +99,44 @@ def get_person_committee_roles(person_id: str) -> List[schema.PersonCommitteeRol
         )
         for person_role in query
     ]
+
+
+def get_person_collaborators(person_id: str) -> FrozenSet[schema.PersonCollaborator]:
+    """
+    Get all collaborators for a person. A collaborator is a person who has worked on a
+    show or other object (such as committee) with the source person.
+    :param person_id: Which person to get collaborators for
+    :return: A set of collaborators
+    """
+    # Get a list of targets to look for collaborators
+    target_query = database.PersonRole.select(
+        database.PersonRole.target_id.distinct()
+    ).where(database.PersonRole.person_id == person_id)
+    targets = [target.target_id for target in target_query]
+    # Find all collaborators
+    collaborator_roles_query = database.PersonRole.select().where(
+        database.PersonRole.target_id.in_(targets),
+        database.PersonRole.person_id != person_id,
+        database.PersonRole.person_id.is_null(False),
+        database.PersonRole.is_person == True,
+    )
+    # Map collaborators against a list of targets
+    collaborator_map = defaultdict(set)
+    for collaborator_role in collaborator_roles_query:
+        collaborator_map[
+            (collaborator_role.person_id, collaborator_role.person_name)
+        ].add(collaborator_role.target_id)
+    # Return a set of collaborators
+    return frozenset(
+        {
+            schema.PersonCollaborator(
+                person_id=person_id,
+                person_name=person_name,
+                target_ids=frozenset(target_ids),
+            )
+            for (person_id, person_name), target_ids in collaborator_map.items()
+        }
+    )
 
 
 def get_people_from_roles(
