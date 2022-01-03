@@ -74,9 +74,9 @@ class Person(NthpDbModel):
 
 
 class HistoryRecord(NthpDbModel):
-    title = peewee.CharField()
     year = peewee.CharField()
     academic_year = peewee.CharField(null=True, index=True)
+    title = peewee.CharField()
     description = peewee.TextField()
 
 

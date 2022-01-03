@@ -257,6 +257,26 @@ class PersonCollaboratorCollection(BaseCollectionModel[PersonCollaborator]):
     pass
 
 
+class HistoryRecord(NthpSchema):
+    year: str = Field(
+        description="Short description of the year of the record, "
+        "e.g. '1940' / '1940s'",
+        example="1940s",
+    )
+    year_id: Optional[str] = Field(
+        description="Exact year ID of the record", example="40_41"
+    )
+    title: str = Field(description="Title of the record", example="Theatre built")
+    description: str = Field(
+        description="Description of the record, in HTML",
+        example="<p>Theatre built in 1940</p>",
+    )
+
+
+class HistoryRecordCollection(BaseCollectionModel[HistoryRecord]):
+    pass
+
+
 class SearchDocumentType(Enum):
     YEAR = "year"
     SHOW = "show"

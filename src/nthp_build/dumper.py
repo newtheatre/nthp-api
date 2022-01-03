@@ -12,6 +12,7 @@ import pydantic
 
 from nthp_build import (
     database,
+    history,
     models,
     parallel,
     people,
@@ -232,6 +233,12 @@ def dump_plays(state: DumperSharedState):
     write_file(path, collection)
 
 
+def dump_history_records(state: DumperSharedState):
+    path = make_out_path(Path("history"), "index")
+    collection = schema.HistoryRecordCollection(history.get_history_records())
+    write_file(path, collection)
+
+
 def dump_site_stats(state: DumperSharedState) -> None:
     path = make_out_path(Path(""), "index")
     write_file(
@@ -272,6 +279,7 @@ DUMPERS: List[Dumper] = [
     Dumper("roles", dump_roles),
     Dumper("playwrights", dump_playwrights),
     Dumper("plays", dump_plays),
+    Dumper("history records", dump_history_records),
     Dumper("site stats", dump_site_stats),
 ]
 
