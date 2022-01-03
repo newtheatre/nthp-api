@@ -9,7 +9,9 @@ This project generates a JSON API from the [history-project](https://github.com/
 
 - The API is currently hosted at <https://nthp-api.wjdp.uk/v1>.
 - The specification is available at <https://nthp-api.wjdp.uk/v1/master/openapi.json>.
-- To render the spec into human-readable docs use a tool such as ReDoc <https://redocly.github.io/redoc/?url=https://nthp-api.wjdp.uk/v1/master/openapi.json>.
+- To render the spec into human-readable docs use a tool such as:
+  - ReDoc <https://redocly.github.io/redoc/?url=https://nthp-api.wjdp.uk/v1/master/openapi.json>.
+  - Stoplight <https://elements-demo.stoplight.io/?spec=https://nthp-api.wjdp.uk/v1/master/openapi.json>
 
 ## Install
 
