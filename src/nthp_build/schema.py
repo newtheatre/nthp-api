@@ -8,7 +8,7 @@ import humps
 from pydantic import BaseModel
 from pydantic_collections import BaseCollectionModel
 
-from nthp_build import models
+from nthp_build import models, years
 
 
 class ResponseConfig:
@@ -220,12 +220,28 @@ class RoleCollection(BaseCollectionModel[Role]):
     pass
 
 
+class PersonGraduated(NthpSchema):
+    year_title: str
+    year_decade: int
+    year_id: str
+    estimated: bool
+
+    @classmethod
+    def from_year(cls, year: int, *, estimated: bool) -> "PersonGraduated":
+        return cls(
+            year_title=str(year),
+            year_decade=years.get_year_decade(year - 1),
+            year_id=years.get_year_id(year - 1),
+            estimated=estimated,
+        )
+
+
 class PersonDetail(NthpSchema):
     id: str
     title: str
     submitted: Optional[datetime.date]
     headshot: Optional[str]
-    # graduated
+    graduated: Optional[PersonGraduated]
     show_roles: List[PersonShowRoles]
     committee_roles: List[PersonCommitteeRole]
     content: Optional[str]

@@ -22,6 +22,7 @@ class PersonRoleType:
 class PersonRole(NthpDbModel):
     target_id = peewee.CharField(index=True)
     target_type = peewee.CharField(index=True)
+    target_year = peewee.IntegerField(index=True)
 
     person_id = peewee.CharField(index=True, null=True)
     person_name = peewee.CharField(null=True)

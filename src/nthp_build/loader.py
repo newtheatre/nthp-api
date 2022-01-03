@@ -46,11 +46,13 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
     people.save_person_roles(
         target=path.id,
         target_type=database.PersonRoleType.CAST,
+        target_year=years.get_year_from_year_id(year_id),
         person_list=data.cast,
     )
     people.save_person_roles(
         target=path.id,
         target_type=database.PersonRoleType.CREW,
+        target_year=years.get_year_from_year_id(year_id),
         person_list=data.crew,
     )
 
@@ -71,6 +73,7 @@ def load_committee(
     people.save_person_roles(
         target=path.id,
         target_type=database.PersonRoleType.COMMITTEE,
+        target_year=years.get_year_from_year_id(path.id),
         person_list=data.committee,
     )
 

@@ -1,3 +1,4 @@
+import datetime
 from collections import defaultdict
 from typing import Any, Dict, FrozenSet, Iterable, List, Optional
 
@@ -6,6 +7,7 @@ from slugify import slugify
 
 import nthp_build.models
 from nthp_build import database, models, schema, years
+from nthp_build.config import settings
 
 
 def get_person_id(name: str) -> str:
@@ -15,6 +17,7 @@ def get_person_id(name: str) -> str:
 def save_person_roles(
     target: str,  # TODO: should be target_id
     target_type: str,  # TODO: why not PersonRoleType?
+    target_year: int,
     person_list: List[nthp_build.models.PersonRef],
 ):
     rows = []
@@ -31,6 +34,7 @@ def save_person_roles(
             {
                 "target_id": target,
                 "target_type": target_type,
+                "target_year": target_year,
                 "person_id": person_role.person_id,
                 "person_name": person_role.person_name,
                 "role": person_role.role,
@@ -156,6 +160,37 @@ def get_people_from_roles(
     )
 
 
+def get_graduation(model: models.Person) -> Optional[schema.PersonGraduated]:
+    """
+    Either get a PersonGraduated from the provided year for the person, or make an
+    estimate based on their credits.
+    """
+    if model.graduated:
+        return schema.PersonGraduated.from_year(model.graduated, estimated=False)
+
+    years_active_query = database.PersonRole.select(
+        database.PersonRole.target_year.distinct()
+    ).where(database.PersonRole.person_id == model.id)
+    years_active = [year.target_year for year in years_active_query]
+    last_year_active = max(years_active) if years_active else None
+
+    if last_year_active:
+        how_many_years_ago_was_that = datetime.date.today().year - last_year_active
+        # Only use the estimate if a certain amount of time has passed.
+        if (
+            how_many_years_ago_was_that > settings.graduation_recency_limit
+            or how_many_years_ago_was_that == settings.graduation_recency_limit
+            and datetime.date.today().month >= settings.graduation_month
+        ):
+            return schema.PersonGraduated.from_year(
+                last_year_active + 1,  # Add one as active in 1999-00 is grad in 2000
+                estimated=True,
+            )
+
+    # Probably not graduated
+    return None
+
+
 def make_virtual_person_model(ref) -> models.Person:
     """Make a Person model not from a file but from cast/crew lists"""
     return models.Person(
@@ -174,6 +209,7 @@ def make_person_detail(
         title=model.title,
         submitted=model.submitted,
         headshot=model.headshot,
+        graduated=get_graduation(model),
         show_roles=get_person_show_roles(model.id),
         committee_roles=get_person_committee_roles(model.id),
         content=content,
