@@ -288,6 +288,7 @@ class SearchDocument(NthpSchema):
     type: SearchDocumentType
     title: str
     id: str
+    image_id: Optional[str]
     playwright: Optional[PlaywrightShow]
     company: Optional[str]
     people: Optional[List[str]]

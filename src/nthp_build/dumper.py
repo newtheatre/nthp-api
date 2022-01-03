@@ -59,6 +59,7 @@ def dump_show(inst: database.Show, state: DumperSharedState) -> schema.ShowDetai
         type=schema.SearchDocumentType.SHOW,
         title=show.title,
         id=inst.id,
+        image_id=inst.primary_image,
         playwright=show.playwright,
         company=show.company,
         people=shows.get_show_people_names(show),
@@ -131,6 +132,7 @@ def dump_real_person(
         type=schema.SearchDocumentType.PERSON,
         title=person_detail.title,
         id=inst.id,
+        image_id=inst.headshot,
     )
     write_file(path, person_detail)
     return person_detail
