@@ -202,21 +202,23 @@ SPEC = {
             description="People are not duplicated. ",
             model=schema.PersonShowRoleListCollection,
         ),
-        "/trivia/shows/{id}.json": make_basic_get_operation(
+        "/trivia/shows/{id}.json": make_detail_get_operation(
             operation_id="getShowTrivia",
             tags=["trivia"],
             summary="Get show trivia",
             description="A collection of trivia for a show. If response is 404 then "
             "the show doesn't have trivia yet.",
             model=schema.TargetedTriviaCollection,
+            key="id",
         ),
-        "/trivia/people/{id}.json": make_basic_get_operation(
+        "/trivia/people/{id}.json": make_detail_get_operation(
             operation_id="getPersonTrivia",
             tags=["trivia"],
             summary="Get person trivia",
             description="A collection of trivia for a person. If response is 404 then "
             "the person hasn't submitted any trivia yet.",
             model=schema.PersonTriviaCollection,
+            key="id",
         ),
         "/playwrights/index.json": make_basic_get_operation(
             operation_id="getPlaywrights",
