@@ -1,6 +1,13 @@
+import re
 from pathlib import Path
 
 from nthp_build.documents import DocumentPath
+
+YEAR_ID_PATTERN = re.compile(r"^\d{2}_\d{2}$")
+
+
+def check_year_id_is_valid(year_id: str) -> bool:
+    return YEAR_ID_PATTERN.match(year_id) is not None
 
 
 def get_year_id(year: int) -> str:
@@ -12,6 +19,7 @@ def get_year_id_from_show_path(path: DocumentPath) -> str:
 
 
 def get_year_from_year_id(year_id: str) -> int:
+    assert check_year_id_is_valid(year_id)
     first_str, second_str = year_id.split("_")
     first, second = int(first_str), int(second_str)
     assert first == second - 1 or (first == 99 and second == 0)

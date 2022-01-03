@@ -1,11 +1,14 @@
 import functools
 import logging
 import time
-from typing import Any, List, NamedTuple, Protocol, Type
+from pathlib import Path
+from typing import Any, List, NamedTuple, Protocol, Type, Union
 
 import frontmatter
 import peewee
+import yaml
 from pydantic import ValidationError
+from pydantic_collections import BaseCollectionModel
 
 from nthp_build import (
     assets,
@@ -18,7 +21,7 @@ from nthp_build import (
     years,
 )
 from nthp_build.content import markdown_to_html, markdown_to_plaintext
-from nthp_build.documents import DocumentPath, find_documents, load_document
+from nthp_build.documents import DocumentPath, find_documents, load_document, load_yaml
 
 log = logging.getLogger(__name__)
 
@@ -106,56 +109,118 @@ def load_person(path: DocumentPath, document: frontmatter.Post, data: models.Per
         )
 
 
-class LoaderFunc(Protocol):
+def load_history(path: DocumentPath, data: models.HistoryRecordCollection):
+    for record in data:
+        database.HistoryRecord.create(
+            year=record.year,
+            academic_year=record.academic_year,
+            title=record.title,
+            description=markdown_to_html(record.description),
+        )
+
+
+class DocumentLoaderFunc(Protocol):
     def __call__(
         self, path: DocumentPath, document: frontmatter.Post, data: Any
     ) -> None:
         pass
 
 
+class DataLoaderFunc(Protocol):
+    def __call__(self, path: DocumentPath, data: Any) -> None:
+        pass
+
+
 class Loader(NamedTuple):
-    content_directory: str
-    schema_type: Type[models.NthpModel]
-    func: LoaderFunc
+    type: Type[Union[DocumentLoaderFunc, DataLoaderFunc]]
+    path: Path
+    schema_type: Type[Union[models.NthpModel, BaseCollectionModel[models.NthpModel]]]
+    func: Union[DocumentLoaderFunc, DataLoaderFunc]
 
 
 LOADERS: List[Loader] = [
     Loader(
-        content_directory="_shows",
+        type=DocumentLoaderFunc,
+        path=Path("_shows"),
         schema_type=models.Show,
         func=load_show,
     ),
     Loader(
-        content_directory="_committees",
+        type=DocumentLoaderFunc,
+        path=Path("_committees"),
         schema_type=models.Committee,
         func=load_committee,
     ),
     Loader(
-        content_directory="_venues",
+        type=DocumentLoaderFunc,
+        path=Path("_venues"),
         schema_type=models.Venue,
         func=load_venue,
     ),
     Loader(
-        content_directory="_people",
+        type=DocumentLoaderFunc,
+        path=Path("_people"),
         schema_type=models.Person,
         func=load_person,
     ),
+    Loader(
+        type=DataLoaderFunc,
+        path=Path("_data/history.yaml"),
+        schema_type=models.HistoryRecordCollection,
+        func=load_history,
+    ),
 ]
+
+
+def run_document_loader(loader: Loader):
+    doc_paths = find_documents(loader.path)
+    with database.db.atomic():
+        for doc_path in doc_paths:
+            document = load_document(doc_path.path)
+            try:
+                data = loader.schema_type(**{"id": doc_path.id, **document.metadata})  # type: ignore[call-arg]
+            except ValidationError as e:
+                log.error(f"Failed validation: {doc_path.content_path} : {e}")
+                continue
+            loader.func(path=doc_path, document=document, data=data)  # type: ignore[call-arg]
+
+
+def run_data_loader(loader: Loader):
+    with database.db.atomic():
+        try:
+            document_data = load_yaml(loader.path)
+        except yaml.YAMLError:
+            log.error(f"Failed to parse YAML: {loader.path}")
+            return
+        try:
+            if isinstance(loader.schema_type, models.NthpModel):
+                data = loader.schema_type(**document_data)  # type: ignore[call-arg]
+            else:
+                data = loader.schema_type(document_data)  # type: ignore[call-arg]
+        except ValidationError as e:
+            log.error(f"Failed validation: {loader.path} : {e}")
+            return
+        loader.func(
+            path=DocumentPath(
+                path=loader.path,
+                id=loader.path.stem,
+                content_path=loader.path,
+                filename=loader.path.name,
+                basename=loader.path.stem,
+            ),
+            data=data,
+        )  # type: ignore[call-arg]
 
 
 def run_loader(loader: Loader):
     log.info(f"Running loader for {loader.schema_type.__name__}")
     tick = time.perf_counter()
-    doc_paths = find_documents(loader.content_directory)
-    with database.db.atomic():
-        for doc_path in doc_paths:
-            document = load_document(doc_path.path)
-            try:
-                data = loader.schema_type(**{"id": doc_path.id, **document.metadata})
-            except ValidationError as e:
-                log.error(f"Failed validation: {doc_path.content_path} : {e}")
-                continue
-            loader.func(path=doc_path, document=document, data=data)
+    if loader.type is DocumentLoaderFunc:
+        run_document_loader(loader)
+    elif loader.type is DataLoaderFunc:
+        run_data_loader(loader)
+    else:
+        raise TypeError(f"Unhandled loader type: {loader.func}")
     tock = time.perf_counter()
     log.debug(f"Took {tock - tick:.4f} seconds")
 

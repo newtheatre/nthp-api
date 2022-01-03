@@ -73,7 +73,14 @@ class Person(NthpDbModel):
     plaintext = peewee.TextField(null=True)
 
 
-MODELS = [Show, PlaywrightShow, Venue, PersonRole, Person]
+class HistoryRecord(NthpDbModel):
+    title = peewee.CharField()
+    year = peewee.CharField()
+    academic_year = peewee.CharField(null=True, index=True)
+    description = peewee.TextField()
+
+
+MODELS = [Show, PlaywrightShow, Venue, PersonRole, Person, HistoryRecord]
 
 
 def init_db(create: bool = False):

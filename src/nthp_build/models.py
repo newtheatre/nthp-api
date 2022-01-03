@@ -4,6 +4,9 @@ import datetime
 from typing import List, Optional, Union
 
 from pydantic import BaseModel, root_validator, validator
+from pydantic_collections import BaseCollectionModel
+
+from nthp_build import years
 
 
 class NthpModel(BaseModel):
@@ -167,3 +170,20 @@ class Person(NthpModel):
     links: List[Link] = []
     news: List[Link] = []
     comment: Optional[str]
+
+
+class HistoryRecord(NthpModel):
+    year: str
+    academic_year: Optional[str]
+    title: str
+    description: str
+
+    @validator("academic_year")
+    def require_valid_academic_year(cls, value: Optional[str]) -> Optional[str]:
+        if value is not None and not years.check_year_id_is_valid(value):
+            raise ValueError("Invalid academic year")
+        return value
+
+
+class HistoryRecordCollection(BaseCollectionModel[HistoryRecord]):
+    pass

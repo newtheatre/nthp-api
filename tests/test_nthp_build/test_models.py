@@ -37,3 +37,38 @@ class TestAsset:
         models.Asset(type="poster", image="abc", display_image=True)
         with pytest.raises(ValidationError):
             models.Asset(type="poster", filename="abc", display_image=True)
+
+
+class TestHistoryRecord:
+    def test_creation(self):
+        assert models.HistoryRecord(
+            year="2020",
+            academic_year="20_21",
+            title="hello",
+            description="world",
+        )
+
+    def test_no_academic_year(self):
+        assert models.HistoryRecord(
+            year="2020s",
+            title="hello",
+            description="world",
+        )
+
+    def test_blank_academic_year(self):
+        with pytest.raises(ValidationError):
+            models.HistoryRecord(
+                year="2020s",
+                academic_year="",
+                title="hello",
+                description="world",
+            )
+
+    def test_invalid_academic_year(self):
+        with pytest.raises(ValidationError):
+            models.HistoryRecord(
+                year="2020",
+                academic_year="2020_21",
+                title="hello",
+                description="world",
+            )

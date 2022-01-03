@@ -1,7 +1,8 @@
 from pathlib import Path
-from typing import Iterable, NamedTuple, Optional, Union
+from typing import Any, Iterable, NamedTuple, Optional, Union
 
 import frontmatter
+import yaml
 
 
 class DocumentPath(NamedTuple):
@@ -40,3 +41,11 @@ def find_documents(content_directory: Union[Path, str]) -> Iterable[DocumentPath
 
 def load_document(path: Path) -> frontmatter.Post:
     return frontmatter.load(path)
+
+
+def load_yaml(path: Union[Path, str]) -> Any:
+    with open(CONTENT_ROOT / Path(path), "r") as stream:
+        try:
+            return yaml.safe_load(stream)
+        except yaml.YAMLError as exc:
+            print(exc)
