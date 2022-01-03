@@ -29,3 +29,39 @@ def save_trivia(
             }
         )
     database.Trivia.insert_many(rows).execute()
+
+
+def make_targeted_trivia(
+    target_id: str, target_type: str
+) -> List[schema.TargetedTrivia]:
+    query = database.Trivia.select().where(
+        database.Trivia.target_id == target_id,
+        database.Trivia.target_type == target_type,
+    )
+    return [
+        schema.TargetedTrivia(
+            quote=row.quote,
+            submitted=row.submitted,
+            person_id=row.person_id,
+            person_name=row.person_name,
+        )
+        for row in query
+    ]
+
+
+def make_person_trivia(person_id: str) -> List[schema.PersonTrivia]:
+    query = database.Trivia.select().where(
+        database.Trivia.person_id == person_id,
+    )
+    return [
+        schema.PersonTrivia(
+            quote=row.quote,
+            submitted=row.submitted,
+            target_id=row.target_id,
+            target_type=row.target_type,
+            target_name=row.target_name,
+            target_image_id=row.target_image_id,
+            target_year=row.target_year,
+        )
+        for row in query
+    ]

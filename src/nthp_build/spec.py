@@ -14,12 +14,14 @@ JSON_SCHEMA = pydantic.schema.schema(
         schema.PersonCommitteeRoleListCollection,
         schema.PersonDetail,
         schema.PersonShowRoleListCollection,
+        schema.PersonTriviaCollection,
         schema.PlayCollection,
         schema.PlaywrightCollection,
         schema.RoleCollection,
         schema.SearchDocumentCollection,
         schema.ShowDetail,
         schema.SiteStats,
+        schema.TargetedTriviaCollection,
         schema.YearDetail,
         schema.YearList,
         schema.YearListCollection,
@@ -199,6 +201,22 @@ SPEC = {
             summary="Get people if cast in any show",
             description="People are not duplicated. ",
             model=schema.PersonShowRoleListCollection,
+        ),
+        "/trivia/shows/{id}.json": make_basic_get_operation(
+            operation_id="getShowTrivia",
+            tags=["trivia"],
+            summary="Get show trivia",
+            description="A collection of trivia for a show. If response is 404 then "
+            "the show doesn't have trivia yet.",
+            model=schema.TargetedTriviaCollection,
+        ),
+        "/trivia/people/{id}.json": make_basic_get_operation(
+            operation_id="getPersonTrivia",
+            tags=["trivia"],
+            summary="Get person trivia",
+            description="A collection of trivia for a person. If response is 404 then "
+            "the person hasn't submitted any trivia yet.",
+            model=schema.PersonTriviaCollection,
         ),
         "/playwrights/index.json": make_basic_get_operation(
             operation_id="getPlaywrights",

@@ -93,7 +93,6 @@ class ShowDetail(NthpSchema):
     date_start: Optional[datetime.date]
     date_end: Optional[datetime.date]
     # tour TODO
-    # trivia: List[Trivia] = []
     cast: List[ShowRole]
     crew: List[ShowRole]
     cast_incomplete: bool
@@ -254,6 +253,75 @@ class PersonCollaborator(NthpSchema):
 
 
 class PersonCollaboratorCollection(BaseCollectionModel[PersonCollaborator]):
+    pass
+
+
+class BaseTrivia(NthpSchema):
+    quote: str = Field(
+        title="Quote",
+        description="The quote",
+        example="Every character in this play was portrayed by a perfectly circular "
+        "Victoria Sponge",
+    )
+    submitted: Optional[datetime.date] = Field(
+        title="Submitted Date",
+        description="The date the quote was submitted, if null it's likely pulled from "
+        "the programme or other source.",
+        example="2022-01-01",
+    )
+
+
+class TargetedTrivia(BaseTrivia):
+    """Trivia that is targeted to a specific object (show)"""
+
+    person_id: Optional[str] = Field(
+        title="Person ID",
+        description="The person ID of the person who submitted the quote",
+        example="fred_bloggs",
+    )
+    person_name: Optional[str] = Field(
+        title="Person Name",
+        description="The name of the person who submitted the quote",
+        example="Fred Bloggs",
+    )
+
+
+class TargetedTriviaCollection(BaseCollectionModel[TargetedTrivia]):
+    pass
+
+
+class PersonTrivia(BaseTrivia):
+    """Trivia submitted by a single known person, targets want to be known"""
+
+    target_id: str = Field(
+        title="Target ID",
+        description="The ID of the target of the quote",
+        example="the_show",
+    )
+    target_type: str = Field(
+        title="Target Type",
+        description="The type of the target of the quote",
+        example="show",
+    )
+    target_name: str = Field(
+        title="Target Name",
+        description="The name of the target of the quote",
+        example="The Show",
+    )
+    target_image_id: Optional[str] = Field(
+        title="Target Image ID",
+        description="The image ID of the target of the quote",
+        example="qABC123",
+    )
+    # Uses YYYY, not YY_YY, 2000 means 2000-2001
+    target_year: Optional[str] = Field(
+        title="Target Year",
+        description="The year of the target of the quote",
+        example="2000",
+    )
+
+
+class PersonTriviaCollection(BaseCollectionModel[PersonTrivia]):
     pass
 
 

@@ -22,6 +22,7 @@ from nthp_build import (
     search,
     shows,
     spec,
+    trivia,
     years,
 )
 from nthp_build.config import settings
@@ -219,6 +220,36 @@ def dump_roles(state: DumperSharedState):
     dump_people_if_cast()
 
 
+def dump_show_trivia(show_id: str):
+    path = make_out_path(Path("trivia/shows"), show_id)
+    trivia_show = trivia.make_targeted_trivia(show_id, database.TargetType.SHOW)
+    write_file(path, schema.TargetedTriviaCollection(trivia_show))
+
+
+def dump_targeted_trivia(state: DumperSharedState):
+    show_trivia_query = (
+        database.Trivia.select(database.Trivia.target_id)
+        .where(database.Trivia.target_type == database.TargetType.SHOW)
+        .group_by(database.Trivia.target_id)
+    )
+    [dump_show_trivia(result.target_id) for result in show_trivia_query]
+
+
+def dump_person_trivia(person_id: str):
+    path = make_out_path(Path("trivia/people"), person_id)
+    trivia_show = trivia.make_person_trivia(person_id)
+    write_file(path, schema.PersonTriviaCollection(trivia_show))
+
+
+def dump_people_trivia(state: DumperSharedState):
+    people_trivia_query = (
+        database.Trivia.select(database.Trivia.person_id)
+        .where(database.Trivia.person_id.is_null(False))
+        .group_by(database.Trivia.person_id)
+    )
+    [dump_person_trivia(result.person_id) for result in people_trivia_query]
+
+
 def dump_playwrights(state: DumperSharedState):
     path = make_out_path(Path("playwrights"), "index")
     collection = schema.PlaywrightCollection(
@@ -281,6 +312,8 @@ DUMPERS: List[Dumper] = [
     Dumper("virtual people", dump_virtual_people),
     Dumper("collaborators", dump_collaborators),
     Dumper("roles", dump_roles),
+    Dumper("targeted trivia", dump_targeted_trivia),
+    Dumper("people trivia", dump_people_trivia),
     Dumper("playwrights", dump_playwrights),
     Dumper("plays", dump_plays),
     Dumper("history records", dump_history_records),
