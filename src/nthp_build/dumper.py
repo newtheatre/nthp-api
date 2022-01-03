@@ -250,7 +250,9 @@ def dump_site_stats(state: DumperSharedState) -> None:
             branch=settings.branch,
             show_count=database.Show.select().count(),
             person_count=people.get_people_from_roles().count(),
+            person_with_bio_count=database.Person.select().count(),
             credit_count=database.PersonRole.select().count(),
+            trivia_count=database.Trivia.select().count(),
         ),
     )
 

@@ -314,8 +314,18 @@ class SiteStats(NthpSchema):
         description="Number of people in the database.",
         example=1234,
     )
+    person_with_bio_count: int = Field(
+        title="Person with bio count",
+        description="Number of people with bio records.",
+        example=1234,
+    )
     credit_count: int = Field(
         title="Credit Count",
         description="Number of credits, inc. cast/crew/committee roles.",
+        example=1234,
+    )
+    trivia_count: int = Field(
+        title="Trivia Count",
+        description="Number of bits of trivia or stories.",
         example=1234,
     )
