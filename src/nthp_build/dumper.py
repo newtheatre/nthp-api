@@ -241,6 +241,7 @@ def dump_site_stats(state: DumperSharedState) -> None:
             branch=settings.branch,
             show_count=database.Show.select().count(),
             person_count=people.get_people_from_roles().count(),
+            credit_count=database.PersonRole.select().count(),
         ),
     )
 

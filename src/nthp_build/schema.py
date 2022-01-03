@@ -5,7 +5,7 @@ from enum import Enum
 from typing import FrozenSet, List, Optional, Union
 
 import humps
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pydantic_collections import BaseCollectionModel
 
 from nthp_build import models, years
@@ -279,7 +279,22 @@ class SearchDocumentCollection(BaseCollectionModel[SearchDocument]):
 
 
 class SiteStats(NthpSchema):
-    build_time: datetime.datetime
-    branch: str
-    show_count: int
-    person_count: int
+    build_time: datetime.datetime = Field(
+        title="Build Time",
+        description="When was the API built.",
+        example="2022-01-01T12:34:45.678901",
+    )
+    branch: str = Field(description="Branch API was built from.", example="master")
+    show_count: int = Field(
+        title="Show Count", description="Number of shows in the database.", example=1234
+    )
+    person_count: int = Field(
+        title="Person Count",
+        description="Number of people in the database.",
+        example=1234,
+    )
+    credit_count: int = Field(
+        title="Credit Count",
+        description="Number of credits, inc. cast/crew/committee roles.",
+        example=1234,
+    )

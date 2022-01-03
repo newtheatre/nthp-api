@@ -131,6 +131,8 @@ SPEC = {
             operation_id="getSiteStats",
             tags=["site"],
             summary="Get site stats",
+            description="Top level statistics for the site, includes counts of records "
+            "and build information.",
             model=schema.SiteStats,
         ),
         "/years/index.json": make_basic_get_operation(
