@@ -81,8 +81,10 @@ class Person(NthpDbModel):
 class Trivia(NthpDbModel):
     target_id = peewee.CharField(index=True)
     target_type = peewee.CharField(index=True)
+    target_name = peewee.CharField()
+    target_image_id = peewee.CharField(null=True)
     # Uses YYYY, not YY_YY, 2000 means 2000-2001
-    target_year = peewee.IntegerField(index=True)
+    target_year = peewee.IntegerField(index=True, null=True)
 
     person_id = peewee.CharField(index=True, null=True)
     person_name = peewee.CharField(null=True)

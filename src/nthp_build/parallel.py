@@ -13,7 +13,7 @@ def run_tasks_in_series(tasks):
         task()
 
 
-def run_cpu_tasks_in_parallel(tasks, state=None):
+def run_cpu_tasks_in_parallel(tasks):
     log.info("Running %d CPU tasks in parallel", len(tasks))
     running_tasks = [Process(target=task) for task in tasks]
     for running_task in running_tasks:

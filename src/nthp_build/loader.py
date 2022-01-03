@@ -29,6 +29,7 @@ log = logging.getLogger(__name__)
 
 def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show):
     year_id = years.get_year_id_from_show_path(path)
+    primary_image = assets.pick_show_primary_image(data.assets) if data.assets else None
     database.Show.create(
         id=path.id,
         source_path=path.path,
@@ -38,9 +39,7 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
         season_sort=data.season_sort,
         date_start=data.date_start,
         date_end=data.date_end,
-        primary_image=assets.pick_show_primary_image(data.assets)
-        if data.assets
-        else None,
+        primary_image=primary_image,
         data=data.json(),
         content=markdown_to_html(document.content),
         plaintext=markdown_to_plaintext(document.content),
@@ -74,6 +73,8 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
         trivia.save_trivia(
             target_id=path.id,
             target_type=database.TargetType.SHOW,
+            target_name=data.title,
+            target_image_id=primary_image,
             target_year=years.get_year_from_year_id(year_id),
             trivia_list=data.trivia,
         )
