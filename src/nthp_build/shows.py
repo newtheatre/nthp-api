@@ -16,6 +16,19 @@ def get_show_query() -> peewee.Query:
     )
 
 
+def get_show_play(show: models.Show) -> Optional[schema.PlayShow]:
+    """
+    Decide if a show is a play or not and return PlayShow if it is.
+    """
+    if get_show_playwright(show) is not None:
+        return schema.PlayShow(
+            id=playwrights.get_play_id(show.title),
+            title=show.title,
+        )
+    else:
+        return None
+
+
 def get_show_playwright(show: models.Show) -> Optional[schema.PlaywrightShow]:
     if show.devised:
         if show.devised is True:
@@ -121,10 +134,10 @@ def get_show_detail(show_inst: database.Show) -> schema.ShowDetail:
     return schema.ShowDetail(
         id=show_inst.id,
         title=show_inst.title,
+        play=get_show_play(source_data),
         playwright=get_show_playwright(source_data),
         adaptor=source_data.adaptor,
         translator=source_data.translator,
-        student_written=source_data.student_written,
         company=source_data.company,
         period=source_data.period,
         season=source_data.season,

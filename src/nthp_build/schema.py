@@ -35,6 +35,11 @@ class PersonList(NthpSchema):
     has_bio: bool
 
 
+class PlayShow(NthpSchema):
+    id: str
+    title: str
+
+
 class PlaywrightType(Enum):
     PLAYWRIGHT = "playwright"
     VARIOUS = "various"
@@ -74,6 +79,7 @@ class Asset(NthpSchema):
 class ShowDetail(NthpSchema):
     id: str
     title: str
+    play: Optional[PlayShow]
     playwright: Optional[PlaywrightShow]
     adaptor: Optional[str]
     translator: Optional[str]
