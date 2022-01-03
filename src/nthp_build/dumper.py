@@ -6,12 +6,13 @@ import shutil
 import time
 from multiprocessing import Manager
 from pathlib import Path
-from typing import Callable, List, NamedTuple, Protocol
+from typing import List, NamedTuple, Protocol
 
 import pydantic
 
 from nthp_build import (
     database,
+    models,
     parallel,
     people,
     playwrights,
@@ -122,14 +123,8 @@ def dump_real_person(
     inst: database.Person, state: DumperSharedState
 ) -> schema.PersonDetail:
     path = make_out_path(Path("people"), inst.id)
-    person_detail = schema.PersonDetail(
-        **{
-            "content": inst.content,
-            "show_roles": people.get_person_show_roles(inst.id),
-            "committee_roles": people.get_person_committee_roles(inst.id),
-            **json.loads(inst.data),
-        }
-    )
+    source_data = models.Person(**json.loads(inst.data))
+    person_detail = people.make_person_detail(source_data, inst.content)
     search.add_document(
         state=state,
         type=schema.SearchDocumentType.PERSON,
@@ -147,12 +142,7 @@ def dump_real_people(state: DumperSharedState):
 
 def dump_virtual_person(ref, state: DumperSharedState) -> schema.PersonDetail:
     path = make_out_path(Path("people"), ref.person_id)
-    person_detail = schema.PersonDetail(
-        id=ref.person_id,
-        title=ref.person_name,
-        show_roles=people.get_person_show_roles(ref.person_id),
-        committee_roles=people.get_person_committee_roles(ref.person_id),
-    )
+    person_detail = people.make_person_detail(people.make_virtual_person_model(ref))
     search.add_document(
         state=state,
         type=schema.SearchDocumentType.PERSON,

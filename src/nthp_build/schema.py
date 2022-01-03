@@ -220,10 +220,12 @@ class RoleCollection(BaseCollectionModel[Role]):
     pass
 
 
-class PersonDetail(models.Person):
-    class Config(ResponseConfig):
-        pass
-
+class PersonDetail(NthpSchema):
+    id: str
+    title: str
+    submitted: Optional[datetime.date]
+    headshot: Optional[str]
+    # graduated
     show_roles: List[PersonShowRoles]
     committee_roles: List[PersonCommitteeRole]
     content: Optional[str]

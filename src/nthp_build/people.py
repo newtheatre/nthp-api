@@ -5,7 +5,7 @@ import peewee
 from slugify import slugify
 
 import nthp_build.models
-from nthp_build import database, schema, years
+from nthp_build import database, models, schema, years
 
 
 def get_person_id(name: str) -> str:
@@ -153,4 +153,28 @@ def get_people_from_roles(
         .where(database.PersonRole.person_id.is_null(False))
         .where(database.PersonRole.is_person == True)
         .group_by(database.PersonRole.person_id)
+    )
+
+
+def make_virtual_person_model(ref) -> models.Person:
+    """Make a Person model not from a file but from cast/crew lists"""
+    return models.Person(
+        id=ref.person_id,
+        title=ref.person_name,
+    )
+
+
+def make_person_detail(
+    model: models.Person,
+    content: Optional[str] = None,
+) -> schema.PersonDetail:
+    assert model.id is not None, "Person model should have id by now"
+    return schema.PersonDetail(
+        id=model.id,
+        title=model.title,
+        submitted=model.submitted,
+        headshot=model.headshot,
+        show_roles=get_person_show_roles(model.id),
+        committee_roles=get_person_committee_roles(model.id),
+        content=content,
     )
