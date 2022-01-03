@@ -18,6 +18,7 @@ from nthp_build import (
     people,
     playwrights,
     shows,
+    trivia,
     years,
 )
 from nthp_build.content import markdown_to_html, markdown_to_plaintext
@@ -67,6 +68,14 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
             playwright_name=show_playwright.name,
             show_id=path.id,
             student_written=data.student_written,
+        )
+
+    if data.trivia:
+        trivia.save_trivia(
+            target_id=path.id,
+            target_type=database.TargetType.SHOW,
+            target_year=years.get_year_from_year_id(year_id),
+            trivia_list=data.trivia,
         )
 
 

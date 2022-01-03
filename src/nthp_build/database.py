@@ -13,6 +13,10 @@ class NthpDbModel(peewee.Model):
         database = db
 
 
+class TargetType:
+    SHOW = "show"
+
+
 class PersonRoleType:
     CAST = "CAST"
     CREW = "CREW"
@@ -22,6 +26,7 @@ class PersonRoleType:
 class PersonRole(NthpDbModel):
     target_id = peewee.CharField(index=True)
     target_type = peewee.CharField(index=True)
+    # Uses YYYY, not YY_YY, 2000 means 2000-2001
     target_year = peewee.IntegerField(index=True)
 
     person_id = peewee.CharField(index=True, null=True)
@@ -73,6 +78,21 @@ class Person(NthpDbModel):
     plaintext = peewee.TextField(null=True)
 
 
+class Trivia(NthpDbModel):
+    target_id = peewee.CharField(index=True)
+    target_type = peewee.CharField(index=True)
+    # Uses YYYY, not YY_YY, 2000 means 2000-2001
+    target_year = peewee.IntegerField(index=True)
+
+    person_id = peewee.CharField(index=True, null=True)
+    person_name = peewee.CharField(null=True)
+
+    quote = peewee.TextField()
+    submitted = peewee.DateField(null=True, index=True)
+
+    data = peewee.TextField()
+
+
 class HistoryRecord(NthpDbModel):
     year = peewee.CharField()
     academic_year = peewee.CharField(null=True, index=True)
@@ -80,7 +100,7 @@ class HistoryRecord(NthpDbModel):
     description = peewee.TextField()
 
 
-MODELS = [Show, PlaywrightShow, Venue, PersonRole, Person, HistoryRecord]
+MODELS = [Show, PlaywrightShow, Venue, PersonRole, Person, Trivia, HistoryRecord]
 
 
 def init_db(create: bool = False):
