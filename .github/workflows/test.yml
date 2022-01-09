@@ -29,7 +29,7 @@ jobs:
       - uses: actions/cache@v1
         with:
           path: ~/.cache/pypoetry
-          key: ${{ runner.os }}-poetry-2-${{ hashFiles('src/poetry.lock') }}
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
           restore-keys: |
             ${{ runner.os }}-poetry-2-
       - run: poetry install --no-root
@@ -52,7 +52,7 @@ jobs:
       - uses: actions/cache@v1
         with:
           path: ~/.cache/pypoetry
-          key: ${{ runner.os }}-poetry-2-${{ hashFiles('src/poetry.lock') }}
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
           restore-keys: |
             ${{ runner.os }}-poetry-2-
       - run: poetry install --no-root
