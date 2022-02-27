@@ -121,6 +121,8 @@ class Asset(NthpDbModel):
     asset_title = peewee.CharField(null=True)
     asset_page = peewee.IntegerField(null=True)
 
+    asset_smugmug_data = peewee.CharField(null=True)
+
 
 MODELS = [Show, PlaywrightShow, Venue, PersonRole, Person, Trivia, HistoryRecord, Asset]
 
@@ -131,7 +133,7 @@ def init_db(create: bool = False):
     db.connect()
     if create:
         db.drop_tables(MODELS)
-        db.create_tables(MODELS)
+    db.create_tables(MODELS)
 
 
 def show_stats():
