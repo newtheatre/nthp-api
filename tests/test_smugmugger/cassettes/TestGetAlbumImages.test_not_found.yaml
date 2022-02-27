@@ -1,24 +1,23 @@
 interactions:
   - request:
-      body: null
+      body: ""
       headers:
-        Accept:
+        accept:
           - application/json
-        Accept-Encoding:
+        accept-encoding:
           - gzip, deflate
-        Connection:
+        connection:
           - keep-alive
-        User-Agent:
-          - python-requests/2.26.0
+        host:
+          - api.smugmug.com
+        user-agent:
+          - python-httpx/0.22.0
       method: GET
       uri: https://api.smugmug.com/api/v2/album/abc123!images?count=100&start=1
     response:
-      body:
-        string: !!binary |
-          H4sIAAAAAAAAA0SO24rCMBCGX6XOhVeFtlZBCiKlKhSPu7iwXqZpKhGbCZlUFPHddyoLXg388x++
-          J3wrsmhIQfaEH6chg0hYHd1GkbhWXRuJSiajdKBbcVY0Jy+cnyVDiZ3hG8fD/FCu1WPWFL8YT6p7
-          3hR4SpNycvOyPbhpvjyl3dfRQQgblMKj44W8by77xo98fFhmgH11UdIT6wyzUCSdtl6j4dc7QEHj
-          sA3ebGxamtqiNv4//SkmeIVQYM3qOB6HsFVE/V4GO/TBivFreP0BAAD//wMAWWZt6v4AAAA=
+      content:
+        '{"Response":{"Uri":"/api/v2/album/abc123!images?start=1&count=100&APIKey=fCXo05bxAfCoY31I5vtcmPr8AEY3uQTr","Locator":"AlbumImage","LocatorType":"Objects","UriDescription":"Images
+        from album","EndpointType":"AlbumImages"},"Code":404,"Message":"Not Found"}'
       headers:
         Connection:
           - keep-alive
@@ -27,11 +26,11 @@ interactions:
         Content-Type:
           - application/json; charset=utf-8
         Via:
-          - 1.1 77aa8087323921dee0b130bc0589bda9.cloudfront.net (CloudFront)
+          - 1.1 0bf3f0b7038d55ea4f178432aa6ddc52.cloudfront.net (CloudFront)
         X-Amz-Cf-Id:
-          - zFnZYY2oOs2-9g9Gsmj1hch8RMmvGmyoz0u-2q3_T5120pcxRNMvIg==
+          - q9qgWf-6iNr5lk6Zmg9SFSiJ-54EECbYVZp09lyYl8NsiiElhJ3k0Q==
         X-Amz-Cf-Pop:
-          - MUC50-P1
+          - LHR62-C4
         X-Cache:
           - Error from cloudfront
         cache-control:
@@ -39,9 +38,9 @@ interactions:
         content-encoding:
           - gzip
         date:
-          - Sun, 07 Nov 2021 23:29:49 GMT
+          - Sun, 27 Feb 2022 23:07:08 GMT
         expires:
-          - Sun, 07 Nov 2021 23:29:49 GMT
+          - Sun, 27 Feb 2022 23:07:08 GMT
         p3p:
           - CP="This is not a P3P policy. SmugMug respects your privacy. Learn more at
             https://www.smugmug.com/about/privacy"
@@ -54,30 +53,29 @@ interactions:
         vary:
           - Accept-Encoding
         x-env:
-          - a=live, b=www, c=e8889be1, d=i-011b9b5e04e6bd307
+          - a=live, b=www, c=ec58e149, d=i-031b001f476a58fa4
         x-frame-options:
           - DENY
         x-powered-by:
           - SmugMug/1.0
         x-ratelimit-remaining:
-          - "99995"
+          - "99918"
         x-ratelimit-reset:
-          - "1636329340"
+          - "1646004932"
         x-request-id:
-          - dc986289
+          - 4c667bd2
         x-s:
-          - 100.13.46:21983
+          - 100.8.74:19007
         x-smugmug-hiring:
           - "How to love what you do: https://jobs.smugmug.com/"
         x-smugmug-values:
-          - 4/5 - Dare
+          - 5/5 - Empower Passion
         x-ttfb:
-          - "0.0331"
+          - "0.028"
         x-ttfb-l:
           - "254"
         x-ua-compatible:
           - IE=edge
-      status:
-        code: 404
-        message: Not Found
+      http_version: HTTP/1.1
+      status_code: 404
 version: 1

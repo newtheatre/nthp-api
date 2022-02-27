@@ -1,39 +1,39 @@
 interactions:
   - request:
-      body: null
+      body: ""
       headers:
-        Accept:
+        accept:
           - application/json
-        Accept-Encoding:
+        accept-encoding:
           - gzip, deflate
-        Connection:
+        connection:
           - keep-alive
-        User-Agent:
-          - python-requests/2.26.0
+        host:
+          - api.smugmug.com
+        user-agent:
+          - python-httpx/0.22.0
       method: GET
       uri: https://api.smugmug.com/api/v2/album/dvVPZh
     response:
-      body:
-        string: !!binary |
-          H4sIAAAAAAAAA6yXbXPiNhDHv4riV+2UACHNdco7DkiTaZJjLqHt9J2wF1tFtlxJhmNu+O63kiyD
-          Yx7bm0ky49U+/Hb1t6x8DT6DykWmIOh/DaaSBf2gQ3PWWfY6lM+KtBMt/5j8nQSt4EmEVAuJDgOz
-          sLW8rXOMDj7N/oFQo9ktY7oXFsILTc3imCp93eve3OL6VPI91jemubeR0rbj5k0DzsVqJFYZFzRS
-          QX9OuYJWMAIVSpZrJjIMQL/xX4/3QV/LAhfHXzTIjHL/fM84ZJh6G/4biFjSPFl7l99hvRLSFDDJ
-          JlQp8/jAMl1apNDYLURVilch9YhJNDqGgQohi1gWB27tGXQi0D2YCMWsD9ohLCTT63KCLyIDPz8E
-          QEs1/CHNPhbrqhg+3tOlwFiobE84pWkeUQsV4Ljurm9urrsf3m4+9O9+7t/2fup2+90uJntMaQzq
-          qP9dv7f1fxERPI7QSa5m4euzzzAUhRnH7S+/2j2dUJ0Y9WCm3vXNbWd3c5H3NaES/HgfqPJ76Gdb
-          9TGh4cLwVYajqvwTZm490TpX/U4nT4QWqp3BSidAtYS2kHG7WOzlwtC6cuzsyWxNFjh/u66Mkq3Z
-          duAth6GulPErjF/jpdmmOPj2NJCmnx8V0QnVBGNJoWBecDIXkpg6Tl/jLMoFarPM9a7Uxu1gkzpD
-          a6fa0y2q9T4f0LiTFdMJUgKJ2RIywqJ2k8vmLWmGYgnSyugo11Vo/Gp0Luh8PFuJMBNlx0bxL49A
-          tojdtRZBW+5S7uHd4UTyqUKYBi/uiexsBVejtREXbDa6k49rgkfnwhxRTSibEFHubRNNGNfceyav
-          /hpbmeJ8ukE5OjMyDjEN1+QHVcx+xGiIhVybF8efBA3wstrGvOESMu2e97xMxzu4ym20Or8Tta+V
-          N5Sqgn8LyEIgYk5c1rI/1SJzKdIdPZd9a2FtUgjdbLDeFvb5wOKE468+oPPErx98Ey/VelXxP+n9
-          He+m/BSdaqN2+FU9sTq6P5a+S0fl/WPfsXegB/fJO8HOnNNFzHvF5ao5DR2DLak85ETkBafyGSJG
-          T6DmzjW1rv8fuKzsZnwGeI3U4+Ml6hz0GMT3wsaKmsYxRGeDV4weeijS1B4nx6FD77YLXcZeQuzL
-          EZEd5aywKm1IvEyfosydU42RaspF/LoobIaLRFHIMKGKzjgQjFeHtOCK1kA5U3r8JeSFwlRnUZsI
-          2EY0tLEv7fmnSBVNWIYnSEqN3Z0lGRkcE/qeshts1f/X9ARL4HZWM85Ce0U4caXcVwXNIxHW77E4
-          qbZKixh/2qg+P7lIhB0Jc5Dmw+Xm2E50yk3pob3l9brdVvAMStnDOvi0CDbfAAAA//8DAG5jPJDm
-          DQAA
+      content:
+        '{"Response":{"Uri":"/api/v2/album/dvVPZh","Locator":"Album","LocatorType":"Object","Album":{"NiceName":"East-2013","UrlName":"East-2013","Title":"East
+        2013","Name":"East 2013","AllowDownloads":false,"Description":"","EXIF":true,"External":true,"Filenames":false,"Geography":true,"Keywords":"","PasswordHint":"","Protected":false,"SortDirection":"Ascending","SortMethod":"Position","SecurityType":"None","AlbumKey":"dvVPZh","CanBuy":false,"CanFavorite":false,"LastUpdated":"2015-11-06T16:54:32+00:00","ImagesLastUpdated":"2015-11-06T16:55:22+00:00","NodeID":"rwbcSM","ImageCount":379,"UrlPath":"/2012-13/East-2013","CanShare":true,"HasDownloadPassword":false,"Packages":false,"Uri":"/api/v2/album/dvVPZh","WebUri":"https://photos.newtheatre.org.uk/2012-13/East-2013","UriDescription":"Album
+        by key","Uris":{"AlbumShareUris":{"Uri":"/api/v2/album/dvVPZh!shareuris","Locator":"AlbumShareUris","LocatorType":"Object","UriDescription":"URIs
+        that are useful for sharing","EndpointType":"AlbumShareUris"},"Node":{"Uri":"/api/v2/node/rwbcSM","Locator":"Node","LocatorType":"Object","UriDescription":"Node
+        with the given id.","EndpointType":"Node"},"NodeCoverImage":{"Uri":"/api/v2/node/rwbcSM!cover","Locator":"Image","LocatorType":"Object","UriDescription":"Cover
+        image for a folder, album, or page","EndpointType":"NodeCoverImage"},"User":{"Uri":"/api/v2/user/newtheatre","Locator":"User","LocatorType":"Object","UriDescription":"User
+        By Nickname","EndpointType":"User"},"Folder":{"Uri":"/api/v2/folder/user/newtheatre/2012-13","Locator":"Folder","LocatorType":"Object","UriDescription":"A
+        folder or legacy (sub)category by UrlPath","EndpointType":"Folder"},"ParentFolders":{"Uri":"/api/v2/folder/user/newtheatre/2012-13!parents","Locator":"Folder","LocatorType":"Objects","UriDescription":"The
+        sequence of parent folders, from the given folder to the root","EndpointType":"ParentFolders"},"HighlightImage":{"Uri":"/api/v2/highlight/node/rwbcSM","Locator":"Image","LocatorType":"Object","UriDescription":"Highlight
+        image for a folder, album, or page","EndpointType":"HighlightImage"},"AlbumHighlightImage":{"Uri":"/api/v2/album/dvVPZh!highlightimage","Locator":"AlbumImage","LocatorType":"Object","UriDescription":"Highlight
+        image for album","EndpointType":"AlbumHighlightImage"},"AlbumImages":{"Uri":"/api/v2/album/dvVPZh!images","Locator":"AlbumImage","LocatorType":"Objects","UriDescription":"Images
+        from album","EndpointType":"AlbumImages"},"AlbumPopularMedia":{"Uri":"/api/v2/album/dvVPZh!popularmedia","Locator":"AlbumImage","LocatorType":"Objects","UriDescription":"Popular
+        images from album","EndpointType":"AlbumPopularMedia"},"AlbumGeoMedia":{"Uri":"/api/v2/album/dvVPZh!geomedia","Locator":"AlbumImage","LocatorType":"Objects","UriDescription":"Geotagged
+        images from album","EndpointType":"AlbumGeoMedia"},"AlbumComments":{"Uri":"/api/v2/album/dvVPZh!comments","Locator":"Comment","LocatorType":"Objects","UriDescription":"Comments
+        on album","EndpointType":"AlbumComments"},"AlbumPrices":{"Uri":"/api/v2/album/dvVPZh!prices","Locator":"CatalogSkuPrice","LocatorType":"Objects","UriDescription":"Purchasable
+        Skus","EndpointType":"AlbumPrices"},"AlbumPricelistExclusions":{"Uri":"/api/v2/album/dvVPZh!pricelistexclusions","Locator":"AlbumPricelistExclusions","LocatorType":"Object","UriDescription":"Pricelist
+        information for an Album","EndpointType":"AlbumPricelistExclusions"}},"ResponseLevel":"Public"},"UriDescription":"Album
+        by key","EndpointType":"Album","DocUri":"https://api.smugmug.com/api/v2/doc/reference/album.html"},"Code":200,"Message":"Ok"}'
       headers:
         Connection:
           - keep-alive
@@ -42,11 +42,11 @@ interactions:
         Content-Type:
           - application/json; charset=utf-8
         Via:
-          - 1.1 355f72364b4c8f8829ae95f886a03f57.cloudfront.net (CloudFront)
+          - 1.1 8cedfb7a16a346fb0119eb355ecdaf4c.cloudfront.net (CloudFront)
         X-Amz-Cf-Id:
-          - z3butzF-mY6Oj_ybx5maltV6wb9tFsejHZ-OqLn5fdFZkt8ZfjzM4w==
+          - RAGDHQj9_LJydUod9GAd10uFqDvTvHhoJrX09xX1JgzFVrRVeeHtDQ==
         X-Amz-Cf-Pop:
-          - MUC50-P1
+          - LHR62-C4
         X-Cache:
           - Miss from cloudfront
         cache-control:
@@ -54,9 +54,9 @@ interactions:
         content-encoding:
           - gzip
         date:
-          - Sun, 07 Nov 2021 23:36:45 GMT
+          - Sun, 27 Feb 2022 23:04:44 GMT
         expires:
-          - Sun, 07 Nov 2021 23:36:45 GMT
+          - Sun, 27 Feb 2022 23:04:43 GMT
         p3p:
           - CP="This is not a P3P policy. SmugMug respects your privacy. Learn more at
             https://www.smugmug.com/about/privacy"
@@ -69,30 +69,29 @@ interactions:
         vary:
           - Accept-Encoding
         x-env:
-          - a=live, b=www, c=e8889be1, d=i-0c9bf1bd99de10454
+          - a=live, b=www, c=e8889be1, d=i-0086d3f5be57307f7
         x-frame-options:
           - DENY
         x-powered-by:
           - SmugMug/1.0
         x-ratelimit-remaining:
-          - "99994"
+          - "99833"
         x-ratelimit-reset:
-          - "1636329152"
+          - "1646004497"
         x-request-id:
-          - 5e6f9472
+          - d3bb2c01
         x-s:
-          - 100.14.143:6124
+          - 100.15.136:9565
         x-smugmug-hiring:
           - "How to love what you do: https://jobs.smugmug.com/"
         x-smugmug-values:
-          - 2/5 - Thrill Our Customers
+          - 3/5 - Deliver Awesome
         x-ttfb:
-          - "0.0481"
+          - "0.0473"
         x-ttfb-l:
           - "3558"
         x-ua-compatible:
           - IE=edge
-      status:
-        code: 200
-        message: OK
+      http_version: HTTP/1.1
+      status_code: 200
 version: 1

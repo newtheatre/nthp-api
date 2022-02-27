@@ -2,13 +2,16 @@ import datetime
 
 import pytest
 
-from smugmugger import album, client
+from smugmugger import album, client, make_client
+from smugmugger.client import SmugMugNotFound
 
 
 class TestGetAlbum:
+    @pytest.mark.asyncio
     @pytest.mark.vcr
-    def test_east(self):
-        east = album.get_album("dvVPZh")
+    async def test_east(self):
+        async with make_client() as client:
+            east = await album.get_album(client, "dvVPZh")
         assert east.Name == "East 2013"
         assert east.ImagesLastUpdated == datetime.datetime(
             2015, 11, 6, 16, 55, 22, tzinfo=datetime.timezone.utc
@@ -16,9 +19,11 @@ class TestGetAlbum:
 
 
 class TestGetAlbumImages:
+    @pytest.mark.asyncio
     @pytest.mark.vcr
-    def test_east(self):
-        images = album.get_album_images("dvVPZh")
+    async def test_east(self):
+        async with make_client() as client:
+            images = await album.get_album_images(client, "dvVPZh")
         assert len(images) == 379
         first_image = images[0]
         assert first_image.ImageKey == "gKfJkMG"
@@ -33,14 +38,18 @@ class TestGetAlbumImages:
             == "https://photos.newtheatre.org.uk/2012-13/East-2013/i-gKfJkMG"
         )
 
+    @pytest.mark.asyncio
     @pytest.mark.vcr
-    def test_single_image_album(self):
-        images = album.get_album_images("W38sb3")
+    async def test_single_image_album(self):
+        async with make_client() as client:
+            images = await album.get_album_images(client, "W38sb3")
         assert len(images) == 1
         image = images[0]
         assert image.ImageKey == "Dg7GGwL"
 
+    @pytest.mark.asyncio
     @pytest.mark.vcr
-    def test_not_found(self):
-        with pytest.raises(client.SmugMugNotFound):
-            album.get_album_images("abc123")
+    async def test_not_found(self):
+        with pytest.raises(SmugMugNotFound):
+            async with make_client() as client:
+                await album.get_album_images(client, "abc123")

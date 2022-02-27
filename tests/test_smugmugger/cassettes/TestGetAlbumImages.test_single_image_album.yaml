@@ -1,59 +1,56 @@
 interactions:
   - request:
-      body: null
+      body: ""
       headers:
-        Accept:
+        accept:
           - application/json
-        Accept-Encoding:
+        accept-encoding:
           - gzip, deflate
-        Connection:
+        connection:
           - keep-alive
-        User-Agent:
-          - python-requests/2.26.0
+        host:
+          - api.smugmug.com
+        user-agent:
+          - python-httpx/0.22.0
       method: GET
       uri: https://api.smugmug.com/api/v2/album/W38sb3!images?count=100&start=1
     response:
-      body:
-        string: !!binary |
-          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
-          fb+DGC7gol2Yubrz5v8BAAD//wMALaf1Qe8SAAA=
+      content:
+        '{"Options":{"Methods":["GET"],"ParameterDescription":{"Varchar":"Variable
+        length text from MIN_CHARS to MAX_CHARS (MAX_CHARS = INFINITY meaning arbitrary
+        length)"},"Parameters":{"GET":[{"Name":"FileNames","Required":false,"ReadOnly":false,"Default":"","Description":"A
+        list of filenames (percent-encoded and comma-separated); if used, an image will
+        only be included in the result set if its file name is in the list","Type":"Varchar","MIN_CHARS":0,"MAX_CHARS":"INFINITY"}]}},"Response":{"Uri":"/api/v2/album/W38sb3!images?start=1&count=100","Locator":"AlbumImage","LocatorType":"Objects","AlbumImage":[{"Title":"","Caption":"","Keywords":"","KeywordArray":[],"Watermark":"No","Latitude":"0","Longitude":"0","Altitude":0,"Hidden":false,"ThumbnailUrl":"https://photos.smugmug.com/photos/i-Dg7GGwL/0/Th/i-Dg7GGwL-Th.jpg","FileName":"photo_show_unknown.jpg","Processing":false,"UploadKey":"4408235952","Date":"2015-10-05T17:44:53+00:00","DateTimeUploaded":"2015-10-05T17:44:53+00:00","Format":"JPG","OriginalHeight":453,"OriginalWidth":604,"OriginalSize":64294,"LastUpdated":"2015-10-05T17:44:54+00:00","Collectable":true,"IsArchive":false,"IsVideo":false,"ComponentFileTypes":[],"CanEdit":false,"CanBuy":false,"Protected":false,"Watermarked":false,"ImageKey":"Dg7GGwL","Serial":0,"CanShare":true,"Comments":true,"ShowKeywords":true,"FormattedValues":{"Caption":{"html":"","text":""},"FileName":{"html":"photo_show_unknown.jpg","text":"photo_show_unknown.jpg"}},"PreferredDisplayFileExtension":"JPG","Uri":"/api/v2/album/W38sb3/image/Dg7GGwL-0","UriDescription":"Image
+        from album","Uris":{"LargestImage":{"Uri":"/api/v2/image/Dg7GGwL-0!largestimage","Locator":"LargestImage","LocatorType":"Object","UriDescription":"Largest
+        size available for image","EndpointType":"LargestImage"},"ImageSizes":{"Uri":"/api/v2/image/Dg7GGwL-0!sizes","Locator":"ImageSizes","LocatorType":"Object","UriDescription":"Sizes
+        available for image","EndpointType":"ImageSizes"},"ImageSizeDetails":{"Uri":"/api/v2/image/Dg7GGwL-0!sizedetails","Locator":"ImageSizeDetails","LocatorType":"Object","UriDescription":"Detailed
+        size information for image","EndpointType":"ImageSizeDetails"},"PointOfInterest":{"Uri":"/api/v2/image/Dg7GGwL-0!pointofinterest","Locator":"PointOfInterest","LocatorType":"Object","UriDescription":"Point
+        of interest for image","EndpointType":"PointOfInterest"},"PointOfInterestCrops":{"Uri":"/api/v2/image/Dg7GGwL-0!poicrops","Locator":"PointOfInterestCrops","LocatorType":"List","UriDescription":"PointOfInterest
+        Crops for image","EndpointType":"PointOfInterestCrops"},"Regions":{"Uri":"/api/v2/image/Dg7GGwL-0!regions","Locator":"Region","LocatorType":"Objects","UriDescription":"Regions
+        for image","EndpointType":"Regions"},"ImageComments":{"Uri":"/api/v2/image/Dg7GGwL-0!comments","Locator":"Comment","LocatorType":"Objects","UriDescription":"Comments
+        on image","EndpointType":"ImageComments"},"ImageMetadata":{"Uri":"/api/v2/image/Dg7GGwL-0!metadata","Locator":"ImageMetadata","LocatorType":"Object","UriDescription":"Metadata
+        for image","EndpointType":"ImageMetadata"},"ImagePrices":{"Uri":"/api/v2/image/Dg7GGwL-0!prices","Locator":"CatalogSkuPrice","LocatorType":"Objects","UriDescription":"Purchasable
+        Skus","EndpointType":"ImagePrices"},"ImagePricelistExclusions":{"Uri":"/api/v2/image/Dg7GGwL-0!pricelistexclusions","Locator":"ImagePricelistExclusions","LocatorType":"Object","UriDescription":"Pricelist
+        information for an image","EndpointType":"ImagePricelistExclusions"},"Album":{"Uri":"/api/v2/album/W38sb3","Locator":"Album","LocatorType":"Object","UriDescription":"Album
+        by key","EndpointType":"Album"},"Image":{"Uri":"/api/v2/image/Dg7GGwL-0","Locator":"Image","LocatorType":"Object","UriDescription":"Image
+        by key","EndpointType":"Image"},"AlbumImagePricelistExclusions":{"Uri":"/api/v2/album/W38sb3/image/Dg7GGwL-0!pricelistexclusions","Locator":"AlbumImagePricelistExclusions","LocatorType":"Object","UriDescription":"Pricelist
+        information for an album image","EndpointType":"AlbumImagePricelistExclusions"},"AlbumImageMetadata":{"Uri":"/api/v2/album/W38sb3/image/Dg7GGwL-0!metadata","Locator":"AlbumImageMetadata","LocatorType":"Object","UriDescription":"Metadata
+        for AlbumImage","EndpointType":"AlbumImageMetadata"},"AlbumImageShareUris":{"Uri":"/api/v2/album/W38sb3/image/Dg7GGwL-0!shareuris","Locator":"AlbumImageShareUris","LocatorType":"Object","UriDescription":"URIs
+        that are useful for sharing","EndpointType":"AlbumImageShareUris"}},"Movable":true,"Origin":"Album","WebUri":"https://photos.newtheatre.org.uk/2009-10/Ghetto/i-Dg7GGwL"}],"UriDescription":"Images
+        from album","EndpointType":"AlbumImages","Pages":{"Total":1,"Start":1,"Count":1,"RequestedCount":100,"FirstPage":"/api/v2/album/W38sb3!images?start=1&count=100","LastPage":"/api/v2/album/W38sb3!images?start=1&count=100"}},"Code":200,"Message":"Ok"}'
       headers:
         Connection:
           - keep-alive
         Content-Length:
-          - "1454"
+          - "1446"
         Content-Type:
           - application/json; charset=utf-8
         Via:
-          - 1.1 325491a666fd60e1d15254e969c68c85.cloudfront.net (CloudFront)
+          - 1.1 71ac5938fae2311667bfbb1e1df1d672.cloudfront.net (CloudFront)
         X-Amz-Cf-Id:
-          - bPh_ipPOYFGySS6wOC4hgEtdPjr2QKorokwmYRLojuYmd-WUc2HA7w==
+          - pJWPOvgoOlhAefli1YX9zMlG3ja8e4DnIH42UJzzDqTSb3dcIuT8YA==
         X-Amz-Cf-Pop:
-          - DUB2-C1
+          - LHR62-C4
         X-Cache:
           - Miss from cloudfront
         cache-control:
@@ -61,9 +58,9 @@ interactions:
         content-encoding:
           - gzip
         date:
-          - Sun, 07 Nov 2021 23:43:57 GMT
+          - Sun, 27 Feb 2022 23:06:59 GMT
         expires:
-          - Sun, 07 Nov 2021 23:43:57 GMT
+          - Sun, 27 Feb 2022 23:06:58 GMT
         p3p:
           - CP="This is not a P3P policy. SmugMug respects your privacy. Learn more at
             https://www.smugmug.com/about/privacy"
@@ -76,30 +73,29 @@ interactions:
         vary:
           - Accept-Encoding
         x-env:
-          - a=live, b=www, c=ec58e149, d=i-0fbbb372dec276f29
+          - a=live, b=www, c=4cf206a9, d=i-09570768f92ee8ae9
         x-frame-options:
           - DENY
         x-powered-by:
           - SmugMug/1.0
         x-ratelimit-remaining:
-          - "99992"
+          - "99803"
         x-ratelimit-reset:
-          - "1636329115"
+          - "1646004497"
         x-request-id:
-          - 19b70c8a
+          - a329cd21
         x-s:
-          - 100.10.205:5121
+          - 100.0.131:18039
         x-smugmug-hiring:
           - "How to love what you do: https://jobs.smugmug.com/"
         x-smugmug-values:
-          - 4/5 - Dare
+          - 5/5 - Empower Passion
         x-ttfb:
-          - "0.0537"
+          - "0.0582"
         x-ttfb-l:
-          - "4847"
+          - "4831"
         x-ua-compatible:
           - IE=edge
-      status:
-        code: 200
-        message: OK
+      http_version: HTTP/1.1
+      status_code: 200
 version: 1
