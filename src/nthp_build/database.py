@@ -13,6 +13,11 @@ class NthpDbModel(peewee.Model):
         database = db
 
 
+class DbCompatEnumMixin:
+    def __str__(self):
+        return self.value
+
+
 class TargetType:
     SHOW = "show"
 
@@ -46,6 +51,7 @@ class Show(NthpDbModel):
     date_start = peewee.DateField(null=True, index=True)
     date_end = peewee.DateField(null=True)
     primary_image = peewee.CharField(null=True)
+    assets = peewee.TextField()
     data = peewee.TextField()
     content = peewee.TextField(null=True)
     plaintext = peewee.TextField(null=True)
@@ -102,7 +108,21 @@ class HistoryRecord(NthpDbModel):
     description = peewee.TextField()
 
 
-MODELS = [Show, PlaywrightShow, Venue, PersonRole, Person, Trivia, HistoryRecord]
+class Asset(NthpDbModel):
+    target_id = peewee.CharField(index=True)
+    target_type = peewee.CharField(index=True)
+
+    asset_source = peewee.CharField(index=True)
+    asset_type = peewee.CharField(index=True)
+    asset_mime_type = peewee.CharField(null=True)
+    asset_id = peewee.CharField(index=True)
+
+    asset_category = peewee.CharField(null=True)
+    asset_title = peewee.CharField(null=True)
+    asset_page = peewee.IntegerField(null=True)
+
+
+MODELS = [Show, PlaywrightShow, Venue, PersonRole, Person, Trivia, HistoryRecord, Asset]
 
 
 def init_db(create: bool = False):

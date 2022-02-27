@@ -17,6 +17,7 @@ from nthp_build import (
     parallel,
     people,
     playwrights,
+    schema,
     shows,
     trivia,
     years,
@@ -30,6 +31,7 @@ log = logging.getLogger(__name__)
 def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show):
     year_id = years.get_year_id_from_show_path(path)
     primary_image = assets.pick_show_primary_image(data.assets) if data.assets else None
+    show_assets = list(assets.assets_from_show_model(data))
     database.Show.create(
         id=path.id,
         source_path=path.path,
@@ -40,10 +42,12 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
         date_start=data.date_start,
         date_end=data.date_end,
         primary_image=primary_image,
+        assets=schema.AssetCollection(show_assets).json(),
         data=data.json(),
         content=markdown_to_html(document.content),
         plaintext=markdown_to_plaintext(document.content),
     )
+    assets.save_show_assets(path, show_assets)
 
     # Record person roles
     people.save_person_roles(
@@ -117,6 +121,7 @@ def load_person(path: DocumentPath, document: frontmatter.Post, data: models.Per
             f"Person ID {data.id} is already in use, please explicitly set `id` on "
             f"these people to disambiguate them."
         )
+    assets.save_person_assets(path, data)
 
 
 def load_history(path: DocumentPath, data: models.HistoryRecordCollection):

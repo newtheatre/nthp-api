@@ -68,12 +68,16 @@ class ShowRole(NthpSchema):
 
 class Asset(NthpSchema):
     type: str
-    image: Optional[str]
-    video: Optional[str]
-    filename: Optional[str]
+    source: str
+    id: str
+    mime_type: Optional[str]
+    category: Optional[str]
     title: Optional[str]
     page: Optional[int]
-    display_image: bool
+
+
+class AssetCollection(BaseCollectionModel[Asset]):
+    pass
 
 
 class ShowDetail(NthpSchema):

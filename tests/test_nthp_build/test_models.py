@@ -10,6 +10,11 @@ class TestAsset:
         assert models.Asset(type="poster", video="abc123")
         assert models.Asset(type="poster", filename="abc123", title="hello")
 
+    def test_slugify_type(self):
+        assert models.Asset(type="poster", image="abc123").type == "poster"
+        assert models.Asset(type="Poster", video="abc123").type == "poster"
+        assert models.Asset(type="Set Design", video="abc123").type == "set-design"
+
     def test_require_image_xor_video_xor_filename(self):
         models.Asset(type="poster", image="abc123")
         models.Asset(type="poster", video="abc123")

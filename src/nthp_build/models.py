@@ -5,6 +5,7 @@ from typing import List, Optional, Union
 
 from pydantic import BaseModel, root_validator, validator
 from pydantic_collections import BaseCollectionModel
+from slugify import slugify
 
 from nthp_build import years
 
@@ -78,6 +79,10 @@ class Asset(NthpModel):
         ):
             raise ValueError("Must have exactly one of image, video, or filename")
         return values
+
+    @validator("type")
+    def slugify_type(cls, value: str) -> str:
+        return slugify(value)
 
     @validator("title", always=True)
     def require_title_with_filename(

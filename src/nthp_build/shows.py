@@ -150,7 +150,9 @@ def get_show_detail(show_inst: database.Show) -> schema.ShowDetail:
         crew_incomplete=source_data.crew_incomplete,
         crew_note=source_data.crew_note,
         prod_shots=source_data.prod_shots,
-        assets=assets.get_show_assets(source_data),
+        # Even though we do have show assets in the db, fetching them for dumping per
+        # show would be slow, so instead we use the saved result from when we loaded.
+        assets=[schema.Asset(**asset) for asset in json.loads(show_inst.assets)],
         primary_image=show_inst.primary_image,
         content=show_inst.content,
     )
