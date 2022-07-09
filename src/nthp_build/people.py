@@ -105,7 +105,7 @@ def get_person_committee_roles(person_id: str) -> List[schema.PersonCommitteeRol
     ]
 
 
-def get_person_collaborators(person_id: str) -> FrozenSet[schema.PersonCollaborator]:
+def get_person_collaborators(person_id: str) -> List[schema.PersonCollaborator]:
     """
     Get all collaborators for a person. A collaborator is a person who has worked on a
     show or other object (such as committee) with the source person.
@@ -118,11 +118,15 @@ def get_person_collaborators(person_id: str) -> FrozenSet[schema.PersonCollabora
     ).where(database.PersonRole.person_id == person_id)
     targets = [target.target_id for target in target_query]
     # Find all collaborators
-    collaborator_roles_query = database.PersonRole.select().where(
-        database.PersonRole.target_id.in_(targets),
-        database.PersonRole.person_id != person_id,
-        database.PersonRole.person_id.is_null(False),
-        database.PersonRole.is_person == True,
+    collaborator_roles_query = (
+        database.PersonRole.select()
+        .where(
+            database.PersonRole.target_id.in_(targets),
+            database.PersonRole.person_id != person_id,
+            database.PersonRole.person_id.is_null(False),
+            database.PersonRole.is_person == True,
+        )
+        .order_by(database.PersonRole.person_id)
     )
     # Map collaborators against a list of targets
     collaborator_map = defaultdict(set)
@@ -131,15 +135,13 @@ def get_person_collaborators(person_id: str) -> FrozenSet[schema.PersonCollabora
             (collaborator_role.person_id, collaborator_role.person_name)
         ].add(collaborator_role.target_id)
     # Return a set of collaborators
-    return frozenset(
-        {
-            schema.PersonCollaborator(
-                person_id=person_id,
-                person_name=person_name,
-                target_ids=frozenset(target_ids),
-            )
-            for (person_id, person_name), target_ids in collaborator_map.items()
-        }
+    return list(
+        schema.PersonCollaborator(
+            person_id=person_id,
+            person_name=person_name,
+            target_ids=sorted(target_ids),
+        )
+        for (person_id, person_name), target_ids in collaborator_map.items()
     )
 
 
@@ -157,6 +159,7 @@ def get_people_from_roles(
         .where(database.PersonRole.person_id.is_null(False))
         .where(database.PersonRole.is_person == True)
         .group_by(database.PersonRole.person_id)
+        .order_by(database.PersonRole.person_id)
     )
 
 

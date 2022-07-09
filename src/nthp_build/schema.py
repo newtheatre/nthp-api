@@ -253,7 +253,10 @@ class PersonDetail(NthpSchema):
 class PersonCollaborator(NthpSchema):
     person_id: str
     person_name: str
-    target_ids: FrozenSet[str]
+    target_ids: List[str]
+
+    class Config(ResponseConfig):
+        frozen = False  # Cannot be frozen as we need an ordered list
 
 
 class PersonCollaboratorCollection(BaseCollectionModel[PersonCollaborator]):

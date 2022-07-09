@@ -38,7 +38,7 @@ ALICE_SECOND_ROLE_PERSON_REF = models.PersonRef(
 class TestGetPersonCollaborators:
     def test_no_person(self, test_db):
         person_id = people.get_person_id("Fred Bloggs")
-        assert people.get_person_collaborators(person_id) == set()
+        assert people.get_person_collaborators(person_id) == []
 
     def test_no_collaborators(self, test_db):
         person_id = people.get_person_id("Fred Bloggs")
@@ -64,7 +64,7 @@ class TestGetPersonCollaborators:
                 )
             ],
         )
-        assert people.get_person_collaborators(person_id) == set()
+        assert people.get_person_collaborators(person_id) == []
 
     def test_one_collaborator(self, test_db):
         person_id = people.get_person_id("Fred Bloggs")
@@ -80,13 +80,13 @@ class TestGetPersonCollaborators:
             target_year=1999,
             person_list=[FRED_PERSON_REF, JOHN_PERSON_REF],
         )
-        assert people.get_person_collaborators(person_id) == {
+        assert people.get_person_collaborators(person_id) == [
             PersonCollaborator(
                 person_id="john_smith",
                 person_name="John Smith",
-                target_ids={"titus_andronicus"},
+                target_ids=["titus_andronicus"],
             )
-        }
+        ]
 
     def test_multiple_collaborators(self, test_db):
         person_id = people.get_person_id("Fred Bloggs")
@@ -116,18 +116,18 @@ class TestGetPersonCollaborators:
                 ALICE_PERSON_REF,
             ],
         )
-        assert people.get_person_collaborators(person_id) == {
-            PersonCollaborator(
-                person_id="john_smith",
-                person_name="John Smith",
-                target_ids={"julius_caesar", "titus_andronicus"},
-            ),
+        assert people.get_person_collaborators(person_id) == [
             PersonCollaborator(
                 person_id="alice_froggs",
                 person_name="Alice Froggs",
-                target_ids={"julius_caesar", "the_tempest", "titus_andronicus"},
+                target_ids=["julius_caesar", "the_tempest", "titus_andronicus"],
             ),
-        }
+            PersonCollaborator(
+                person_id="john_smith",
+                person_name="John Smith",
+                target_ids=["julius_caesar", "titus_andronicus"],
+            ),
+        ]
 
     def test_multiple_roles_for_same_person(self, test_db):
         person_id = people.get_person_id("Fred Bloggs")
@@ -149,18 +149,18 @@ class TestGetPersonCollaborators:
             ],
         )
 
-        assert people.get_person_collaborators(person_id) == {
-            PersonCollaborator(
-                person_id="john_smith",
-                person_name="John Smith",
-                target_ids={"titus_andronicus"},
-            ),
+        assert people.get_person_collaborators(person_id) == [
             PersonCollaborator(
                 person_id="alice_froggs",
                 person_name="Alice Froggs",
-                target_ids={"the_tempest", "titus_andronicus"},
+                target_ids=["the_tempest", "titus_andronicus"],
             ),
-        }
+            PersonCollaborator(
+                person_id="john_smith",
+                person_name="John Smith",
+                target_ids=["titus_andronicus"],
+            ),
+        ]
 
 
 class TestGetGraduation:
