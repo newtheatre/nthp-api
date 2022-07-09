@@ -38,10 +38,19 @@ jobs:
         with:
           repository: newtheatre/history-project
           path: content
+      - name: Download SmugMug cache
+        uses: actions/cache@v1
+        with:
+          path: nthp.smug.db
+          key: smugmug-1
+      - name: Fetch SmugMug data if not cached
+        run: wget -nc https://nthp-seed.s3.eu-west-2.amazonaws.com/nthp.smug.db
       - name: Build content database
         run: poetry run python nthp load
       - name: Report database stats
         run: poetry run python nthp stats
+      - name: Enrich content database with SmugMug data
+        run: poetry run python nthp smug
       - name: Build API
         run: poetry run python nthp dump
       - name: Deploy to S3
