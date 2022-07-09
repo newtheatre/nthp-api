@@ -9,6 +9,7 @@ from nthp_build import schema
 
 JSON_SCHEMA = pydantic.schema.schema(
     (
+        schema.AssetCollection,
         schema.HistoryRecordCollection,
         schema.PersonCollaboratorCollection,
         schema.PersonCommitteeRoleListCollection,
@@ -218,6 +219,15 @@ SPEC = {
             description="A collection of trivia for a person. If response is 404 then "
             "the person hasn't submitted any trivia yet.",
             model=schema.PersonTriviaCollection,
+            key="id",
+        ),
+        "/assets/album/{id}.json": make_detail_get_operation(
+            operation_id="getAlbumAssets",
+            tags=["assets"],
+            summary="Get album assets",
+            description="A collection of assets for an album. If response is 404 then "
+            "the album either doesn't exist or has no assets.",
+            model=schema.AssetCollection,
             key="id",
         ),
         "/playwrights/index.json": make_basic_get_operation(
