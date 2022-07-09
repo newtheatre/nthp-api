@@ -1,6 +1,6 @@
 import datetime
 from collections import defaultdict
-from typing import Any, Dict, FrozenSet, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 import peewee
 from slugify import slugify

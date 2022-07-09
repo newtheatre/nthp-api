@@ -2,7 +2,7 @@ import datetime
 
 import pytest
 
-from smugmugger import album, client, make_client
+from smugmugger import album, make_client
 from smugmugger.client import SmugMugNotFound
 
 

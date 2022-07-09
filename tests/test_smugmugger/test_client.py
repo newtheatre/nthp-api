@@ -1,8 +1,6 @@
-from unittest import mock
-
 import pytest
 
-from smugmugger import client, make_client
+from smugmugger import make_client
 from smugmugger.client import get_pages
 
 

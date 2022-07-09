@@ -2,7 +2,7 @@
 
 import datetime
 from enum import Enum
-from typing import FrozenSet, List, Optional, Union
+from typing import List, Optional, Union
 
 import humps
 from pydantic import BaseModel, Field
