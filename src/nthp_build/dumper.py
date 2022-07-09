@@ -11,6 +11,7 @@ from typing import List, NamedTuple, Protocol
 import pydantic
 
 from nthp_build import (
+    assets,
     database,
     history,
     models,
@@ -25,6 +26,7 @@ from nthp_build import (
     trivia,
     years,
 )
+from nthp_build.assets import AssetType
 from nthp_build.config import settings
 from nthp_build.parallel import DumperSharedState, make_dumper_state
 
@@ -272,6 +274,20 @@ def dump_history_records(state: DumperSharedState):
     write_file(path, collection)
 
 
+def dump_album(album: database.Asset):
+    path = make_out_path(Path("assets/album"), album.asset_id)
+    album = assets.get_asset_collection_from_album(album)
+    if album:
+        write_file(path, album)
+
+
+def dump_albums(state: DumperSharedState):
+    albums_query = database.Asset.select().where(
+        database.Asset.asset_type == AssetType.ALBUM
+    )
+    [dump_album(album) for album in albums_query]
+
+
 def dump_site_stats(state: DumperSharedState) -> None:
     path = make_out_path(Path(""), "index")
     write_file(
@@ -317,6 +333,7 @@ DUMPERS: List[Dumper] = [
     Dumper("playwrights", dump_playwrights),
     Dumper("plays", dump_plays),
     Dumper("history records", dump_history_records),
+    Dumper("albums", dump_albums),
     Dumper("site stats", dump_site_stats),
 ]
 

@@ -1,9 +1,14 @@
+import json
+import logging
 import mimetypes
 from enum import Enum
 from typing import Generator, Iterable, List, Optional, Union
 
 from nthp_build import database, models, schema
 from nthp_build.documents import DocumentPath
+from smugmugger import SmugMugImage
+
+log = logging.getLogger(__name__)
 
 
 class AssetTarget(database.DbCompatEnumMixin, Enum):
@@ -109,7 +114,8 @@ def assets_from_show_model(
             source=str(source),
             mime_type=get_mime_type(source, type, asset_id),
             id=asset_id,
-            category=asset.type,  # we use type for image/video/other, source uses it for category
+            category=asset.type,
+            # we use type for image/video/other, source uses it for category
             title=asset.title,
             page=asset.page,
         )
@@ -184,3 +190,41 @@ def pick_show_primary_image(assets: List[models.Asset]) -> Optional[str]:
         return programmes[0].image
     # No suitable image found, oh well we tried
     return None
+
+
+def smugmug_asset_to_asset(smugmug_asset: SmugMugImage) -> models.Asset:
+    """Convert a SmugMug asset to a schema asset"""
+    asset_type = AssetType.VIDEO if smugmug_asset.IsVideo else AssetType.IMAGE
+    return schema.Asset(
+        id=smugmug_asset.ImageKey,
+        source=AssetSource.SMUGMUG.value,
+        title=smugmug_asset.Title or None,
+        type=asset_type.value,
+        mime_type=get_mime_type(
+            AssetSource.SMUGMUG, asset_type, smugmug_asset.ImageKey
+        ),
+    )
+
+
+def get_asset_collection_from_album(
+    album: database.Asset,
+) -> Optional[schema.AssetCollection]:
+    """
+    Get AssetCollection from an asset album.
+    Currently, we only support SmugMug albums.
+    If the SmugMug data isn't present or fails to parse, we return None.
+    """
+    if album.asset_source != AssetSource.SMUGMUG.value:
+        raise ValueError(f"Album source '{album.asset_source}' unsupported")
+    if not album.asset_smugmug_data:
+        log.warning(f"No smugmug data for album {album.asset_id}")
+        return None
+    try:
+        smugmug_album_images = json.loads(album.asset_smugmug_data)
+        smugmug_assets = [SmugMugImage(**asset) for asset in smugmug_album_images]
+    except json.JSONDecodeError:
+        log.warning(f"Could not decode smugmug data for album {album.asset_id}")
+        return None
+    return schema.AssetCollection(
+        [smugmug_asset_to_asset(asset) for asset in smugmug_assets]
+    )
