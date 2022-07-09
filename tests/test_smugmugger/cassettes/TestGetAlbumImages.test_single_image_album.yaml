@@ -1,0 +1,101 @@
+interactions:
+  - request:
+      body: ""
+      headers:
+        accept:
+          - application/json
+        accept-encoding:
+          - gzip, deflate
+        connection:
+          - keep-alive
+        host:
+          - api.smugmug.com
+        user-agent:
+          - python-httpx/0.22.0
+      method: GET
+      uri: https://api.smugmug.com/api/v2/album/W38sb3!images?count=100&start=1
+    response:
+      content:
+        '{"Options":{"Methods":["GET"],"ParameterDescription":{"Varchar":"Variable
+        length text from MIN_CHARS to MAX_CHARS (MAX_CHARS = INFINITY meaning arbitrary
+        length)"},"Parameters":{"GET":[{"Name":"FileNames","Required":false,"ReadOnly":false,"Default":"","Description":"A
+        list of filenames (percent-encoded and comma-separated); if used, an image will
+        only be included in the result set if its file name is in the list","Type":"Varchar","MIN_CHARS":0,"MAX_CHARS":"INFINITY"}]}},"Response":{"Uri":"/api/v2/album/W38sb3!images?start=1&count=100","Locator":"AlbumImage","LocatorType":"Objects","AlbumImage":[{"Title":"","Caption":"","Keywords":"","KeywordArray":[],"Watermark":"No","Latitude":"0","Longitude":"0","Altitude":0,"Hidden":false,"ThumbnailUrl":"https://photos.smugmug.com/photos/i-Dg7GGwL/0/Th/i-Dg7GGwL-Th.jpg","FileName":"photo_show_unknown.jpg","Processing":false,"UploadKey":"4408235952","Date":"2015-10-05T17:44:53+00:00","DateTimeUploaded":"2015-10-05T17:44:53+00:00","Format":"JPG","OriginalHeight":453,"OriginalWidth":604,"OriginalSize":64294,"LastUpdated":"2015-10-05T17:44:54+00:00","Collectable":true,"IsArchive":false,"IsVideo":false,"ComponentFileTypes":[],"CanEdit":false,"CanBuy":false,"Protected":false,"Watermarked":false,"ImageKey":"Dg7GGwL","Serial":0,"CanShare":true,"Comments":true,"ShowKeywords":true,"FormattedValues":{"Caption":{"html":"","text":""},"FileName":{"html":"photo_show_unknown.jpg","text":"photo_show_unknown.jpg"}},"PreferredDisplayFileExtension":"JPG","Uri":"/api/v2/album/W38sb3/image/Dg7GGwL-0","UriDescription":"Image
+        from album","Uris":{"LargestImage":{"Uri":"/api/v2/image/Dg7GGwL-0!largestimage","Locator":"LargestImage","LocatorType":"Object","UriDescription":"Largest
+        size available for image","EndpointType":"LargestImage"},"ImageSizes":{"Uri":"/api/v2/image/Dg7GGwL-0!sizes","Locator":"ImageSizes","LocatorType":"Object","UriDescription":"Sizes
+        available for image","EndpointType":"ImageSizes"},"ImageSizeDetails":{"Uri":"/api/v2/image/Dg7GGwL-0!sizedetails","Locator":"ImageSizeDetails","LocatorType":"Object","UriDescription":"Detailed
+        size information for image","EndpointType":"ImageSizeDetails"},"PointOfInterest":{"Uri":"/api/v2/image/Dg7GGwL-0!pointofinterest","Locator":"PointOfInterest","LocatorType":"Object","UriDescription":"Point
+        of interest for image","EndpointType":"PointOfInterest"},"PointOfInterestCrops":{"Uri":"/api/v2/image/Dg7GGwL-0!poicrops","Locator":"PointOfInterestCrops","LocatorType":"List","UriDescription":"PointOfInterest
+        Crops for image","EndpointType":"PointOfInterestCrops"},"Regions":{"Uri":"/api/v2/image/Dg7GGwL-0!regions","Locator":"Region","LocatorType":"Objects","UriDescription":"Regions
+        for image","EndpointType":"Regions"},"ImageComments":{"Uri":"/api/v2/image/Dg7GGwL-0!comments","Locator":"Comment","LocatorType":"Objects","UriDescription":"Comments
+        on image","EndpointType":"ImageComments"},"ImageMetadata":{"Uri":"/api/v2/image/Dg7GGwL-0!metadata","Locator":"ImageMetadata","LocatorType":"Object","UriDescription":"Metadata
+        for image","EndpointType":"ImageMetadata"},"ImagePrices":{"Uri":"/api/v2/image/Dg7GGwL-0!prices","Locator":"CatalogSkuPrice","LocatorType":"Objects","UriDescription":"Purchasable
+        Skus","EndpointType":"ImagePrices"},"ImagePricelistExclusions":{"Uri":"/api/v2/image/Dg7GGwL-0!pricelistexclusions","Locator":"ImagePricelistExclusions","LocatorType":"Object","UriDescription":"Pricelist
+        information for an image","EndpointType":"ImagePricelistExclusions"},"Album":{"Uri":"/api/v2/album/W38sb3","Locator":"Album","LocatorType":"Object","UriDescription":"Album
+        by key","EndpointType":"Album"},"Image":{"Uri":"/api/v2/image/Dg7GGwL-0","Locator":"Image","LocatorType":"Object","UriDescription":"Image
+        by key","EndpointType":"Image"},"AlbumImagePricelistExclusions":{"Uri":"/api/v2/album/W38sb3/image/Dg7GGwL-0!pricelistexclusions","Locator":"AlbumImagePricelistExclusions","LocatorType":"Object","UriDescription":"Pricelist
+        information for an album image","EndpointType":"AlbumImagePricelistExclusions"},"AlbumImageMetadata":{"Uri":"/api/v2/album/W38sb3/image/Dg7GGwL-0!metadata","Locator":"AlbumImageMetadata","LocatorType":"Object","UriDescription":"Metadata
+        for AlbumImage","EndpointType":"AlbumImageMetadata"},"AlbumImageShareUris":{"Uri":"/api/v2/album/W38sb3/image/Dg7GGwL-0!shareuris","Locator":"AlbumImageShareUris","LocatorType":"Object","UriDescription":"URIs
+        that are useful for sharing","EndpointType":"AlbumImageShareUris"}},"Movable":true,"Origin":"Album","WebUri":"https://photos.newtheatre.org.uk/2009-10/Ghetto/i-Dg7GGwL"}],"UriDescription":"Images
+        from album","EndpointType":"AlbumImages","Pages":{"Total":1,"Start":1,"Count":1,"RequestedCount":100,"FirstPage":"/api/v2/album/W38sb3!images?start=1&count=100","LastPage":"/api/v2/album/W38sb3!images?start=1&count=100"}},"Code":200,"Message":"Ok"}'
+      headers:
+        Connection:
+          - keep-alive
+        Content-Length:
+          - "1446"
+        Content-Type:
+          - application/json; charset=utf-8
+        Via:
+          - 1.1 71ac5938fae2311667bfbb1e1df1d672.cloudfront.net (CloudFront)
+        X-Amz-Cf-Id:
+          - pJWPOvgoOlhAefli1YX9zMlG3ja8e4DnIH42UJzzDqTSb3dcIuT8YA==
+        X-Amz-Cf-Pop:
+          - LHR62-C4
+        X-Cache:
+          - Miss from cloudfront
+        cache-control:
+          - private, no-store, no-cache, max-age=0
+        content-encoding:
+          - gzip
+        date:
+          - Sun, 27 Feb 2022 23:06:59 GMT
+        expires:
+          - Sun, 27 Feb 2022 23:06:58 GMT
+        p3p:
+          - CP="This is not a P3P policy. SmugMug respects your privacy. Learn more at
+            https://www.smugmug.com/about/privacy"
+        server:
+          - nginx
+        smug-cdn:
+          - cloudfront (via api.smugmug.com)
+        strict-transport-security:
+          - max-age=31536000
+        vary:
+          - Accept-Encoding
+        x-env:
+          - a=live, b=www, c=4cf206a9, d=i-09570768f92ee8ae9
+        x-frame-options:
+          - DENY
+        x-powered-by:
+          - SmugMug/1.0
+        x-ratelimit-remaining:
+          - "99803"
+        x-ratelimit-reset:
+          - "1646004497"
+        x-request-id:
+          - a329cd21
+        x-s:
+          - 100.0.131:18039
+        x-smugmug-hiring:
+          - "How to love what you do: https://jobs.smugmug.com/"
+        x-smugmug-values:
+          - 5/5 - Empower Passion
+        x-ttfb:
+          - "0.0582"
+        x-ttfb-l:
+          - "4831"
+        x-ua-compatible:
+          - IE=edge
+      http_version: HTTP/1.1
+      status_code: 200
+version: 1

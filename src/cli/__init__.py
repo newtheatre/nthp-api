@@ -27,6 +27,16 @@ def stats():
 
 
 @cli.command()
+def smug():
+    import smugmugger.database
+    from nthp_build import database, smugmug
+
+    database.init_db()
+    smugmugger.database.init_db()
+    smugmug.run()
+
+
+@cli.command()
 def dump():
     from nthp_build import database, dumper
 
