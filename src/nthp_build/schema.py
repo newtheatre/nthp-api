@@ -103,7 +103,6 @@ class ShowDetail(NthpSchema):
     cast_note: Optional[str]
     crew_incomplete: bool
     crew_note: Optional[str]
-    prod_shots: Optional[str]
     assets: List[Asset]
     primary_image: Optional[str]
     # links: List[Link] = []
