@@ -9,7 +9,7 @@ import smugmugger.album
 from smugmugger import database
 from smugmugger.client import SmugMugClient, make_client
 from smugmugger.config import settings
-from smugmugger.schema import SmugMugImage, SmugMugImageCollection
+from smugmugger.schema import SmugMugAlbum, SmugMugImage, SmugMugImageCollection
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +26,18 @@ def get_cached_album_images(album_id: str) -> Optional[SmugMugImageCollection]:
         return None
 
 
+def upsert_cached_album_images(
+    album_id: str, album: SmugMugAlbum, album_images: SmugMugImageCollection
+):
+    """Either create or update cache for an album's images."""
+    database.SmugMugResponse.replace(
+        id=album_id,
+        last_updated=album.ImagesLastUpdated,
+        last_fetched=datetime.datetime.now(),
+        data=album_images.json(),
+    ).execute()
+
+
 async def get_album_images(
     client: SmugMugClient, album_id: str
 ) -> SmugMugImageCollection:
@@ -36,12 +48,8 @@ async def get_album_images(
     log.info("Fetching album images for %s", album_id)
     album = await smugmugger.album.get_album(client, album_id)
     album_images = await smugmugger.album.get_album_images(client, album_id)
-    database.SmugMugResponse.create(
-        id=album_id,
-        last_updated=album.ImagesLastUpdated,
-        last_fetched=datetime.datetime.now(),
-        data=album_images.json(),
-    )
+    upsert_cached_album_images(album_id, album, album_images)
+    log.info("Fetched album images for %s", album_id)
     return album_images
 
 
