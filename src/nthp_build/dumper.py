@@ -329,8 +329,7 @@ def run_dumper(dumper: Dumper, state: DumperSharedState):
     tick = time.perf_counter()
     dumper.dumper(state=state)
     tock = time.perf_counter()
-    log.info(f"Dumped {dumper.name}")
-    log.debug(f"{dumper.name} took {tock - tick:.4f} seconds")
+    log.info(f"Dumped {dumper.name} in {tock - tick:.4f} seconds")
 
 
 def dump_all():
