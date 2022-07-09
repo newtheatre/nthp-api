@@ -192,7 +192,7 @@ def pick_show_primary_image(assets: List[models.Asset]) -> Optional[str]:
     return None
 
 
-def smugmug_asset_to_asset(smugmug_asset: SmugMugImage) -> models.Asset:
+def smugmug_asset_to_asset(smugmug_asset: SmugMugImage) -> schema.Asset:
     """Convert a SmugMug asset to a schema asset"""
     asset_type = AssetType.VIDEO if smugmug_asset.IsVideo else AssetType.IMAGE
     return schema.Asset(

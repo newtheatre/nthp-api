@@ -276,9 +276,9 @@ def dump_history_records(state: DumperSharedState):
 
 def dump_album(album: database.Asset):
     path = make_out_path(Path("assets/album"), album.asset_id)
-    album = assets.get_asset_collection_from_album(album)
-    if album:
-        write_file(path, album)
+    asset_collection = assets.get_asset_collection_from_album(album)
+    if asset_collection:
+        write_file(path, asset_collection)
 
 
 def dump_albums(state: DumperSharedState):
