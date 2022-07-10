@@ -22,6 +22,11 @@ class NthpSchema(BaseModel):
         pass
 
 
+class Location(NthpSchema):
+    lat: float
+    lon: float
+
+
 class PersonRoleList(models.PersonRole):
     class Config(ResponseConfig):
         pass
@@ -128,6 +133,26 @@ class PlaywrightShowListItem(NthpSchema):
     date_start: Optional[datetime.date]
     date_end: Optional[datetime.date]
     primary_image: Optional[str]
+
+
+class VenueList(NthpSchema):
+    id: str
+    name: str
+    show_count: int
+    built: Optional[int]
+    location: Optional[Location]
+    city: Optional[str]
+
+
+class VenueDetail(VenueList):
+    assets: List[Asset] = []
+    # links: List[Link] = []
+    shows: List[ShowList] = []
+    content: Optional[str]
+
+
+class VenueCollection(BaseCollectionModel[VenueList]):
+    pass
 
 
 class PlaywrightListItem(Playwright):

@@ -69,7 +69,7 @@ class PlaywrightShow(NthpDbModel):
 
 class Venue(NthpDbModel):
     id = peewee.CharField(primary_key=True)
-    title = peewee.CharField()
+    name = peewee.CharField()
     data = peewee.TextField()
     content = peewee.TextField(null=True)
     plaintext = peewee.TextField(null=True)

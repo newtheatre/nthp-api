@@ -24,6 +24,7 @@ from nthp_build import (
     shows,
     spec,
     trivia,
+    venues,
     years,
 )
 from nthp_build.assets import AssetType
@@ -122,6 +123,33 @@ def dump_years(state: DumperSharedState):
     ]
 
     dump_year_index(years_detail)
+
+
+def dump_venue(
+    inst: database.Venue, shows: List[database.Show], state: DumperSharedState
+) -> schema.VenueDetail:
+    path = make_out_path(Path("venues"), inst.id)
+    venue_detail = venues.get_venue_detail(inst, shows)
+    search.add_document(
+        state=state,
+        type=schema.SearchDocumentType.VENUE,
+        title=venue_detail.name,
+        id=inst.id,
+    )
+    write_file(path, venue_detail)
+    return venue_detail
+
+
+def dump_venue_index(query, show_venue_map: venues.ShowVenueMap):
+    path = make_out_path(Path("venues"), "index")
+    write_file(path, venues.get_venue_collection(query, show_venue_map))
+
+
+def dump_venues(state: DumperSharedState):
+    venue_query = database.Venue.select()
+    show_venue_map = venues.get_show_venue_map(venue_query)
+    [dump_venue(venue, show_venue_map[venue.id], state) for venue in venue_query]
+    dump_venue_index(venue_query, show_venue_map)
 
 
 def dump_real_person(
@@ -324,6 +352,7 @@ DUMPERS: List[Dumper] = [
     Dumper("spec", dump_specs),
     Dumper("shows", dump_shows),
     Dumper("years", dump_years),
+    Dumper("venues", dump_venues),
     Dumper("real people", dump_real_people),
     Dumper("virtual people", dump_virtual_people),
     Dumper("collaborators", dump_collaborators),

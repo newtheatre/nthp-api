@@ -100,7 +100,7 @@ def load_committee(
 def load_venue(path: DocumentPath, document: frontmatter.Post, data: models.Venue):
     database.Venue.create(
         id=path.id,
-        title=data.title,
+        name=data.title,
         data=data.json(),
         content=markdown_to_html(document.content),
         plaintext=markdown_to_plaintext(document.content),
