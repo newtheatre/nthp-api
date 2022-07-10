@@ -85,6 +85,11 @@ class AssetCollection(BaseCollectionModel[Asset]):
     pass
 
 
+class VenueShow(NthpSchema):
+    id: str
+    name: str
+
+
 class ShowDetail(NthpSchema):
     id: str
     title: str
@@ -98,7 +103,7 @@ class ShowDetail(NthpSchema):
     period: Optional[str]
     season: str
     # season_sort: Optional[int]
-    venue_id: Optional[str]
+    venue: Optional[VenueShow]
     date_start: Optional[datetime.date]
     date_end: Optional[datetime.date]
     # tour TODO

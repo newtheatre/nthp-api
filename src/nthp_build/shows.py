@@ -141,7 +141,12 @@ def get_show_detail(show_inst: database.Show) -> schema.ShowDetail:
         company=source_data.company,
         period=source_data.period,
         season=source_data.season,
-        venue_id=show_inst.venue_id,
+        venue=schema.VenueShow(
+            id=show_inst.venue_id,
+            name=source_data.venue,
+        )
+        if show_inst.venue_id
+        else None,
         date_start=show_inst.date_start,
         date_end=show_inst.date_end,
         cast=get_show_roles(source_data.cast),
