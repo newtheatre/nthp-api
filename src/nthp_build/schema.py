@@ -93,7 +93,7 @@ class ShowDetail(NthpSchema):
     period: Optional[str]
     season: str
     # season_sort: Optional[int]
-    # venue: Optional[str]
+    venue_id: Optional[str]
     date_start: Optional[datetime.date]
     date_end: Optional[datetime.date]
     # tour TODO

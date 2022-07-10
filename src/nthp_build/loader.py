@@ -20,6 +20,7 @@ from nthp_build import (
     schema,
     shows,
     trivia,
+    venues,
     years,
 )
 from nthp_build.content import markdown_to_html, markdown_to_plaintext
@@ -38,6 +39,7 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
         year=years.get_year_from_year_id(year_id),
         year_id=year_id,
         title=data.title,
+        venue_id=venues.get_venue_id(data.venue) if data.venue else None,
         season_sort=data.season_sort,
         date_start=data.date_start,
         date_end=data.date_end,

@@ -47,6 +47,7 @@ class Show(NthpDbModel):
     year = peewee.IntegerField()
     year_id = peewee.CharField(index=True)
     title = peewee.CharField()
+    venue_id = peewee.CharField(index=True, null=True)
     season_sort = peewee.IntegerField(null=True, index=True)
     date_start = peewee.DateField(null=True, index=True)
     date_end = peewee.DateField(null=True)
