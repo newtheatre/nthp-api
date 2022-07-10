@@ -51,10 +51,13 @@ def build():
 
     settings.db_uri = ":memory:"
 
-    from nthp_build import database, dumper, loader
+    import smugmugger.database
+    from nthp_build import database, dumper, loader, smugmug
 
     database.init_db(create=True)
     loader.run_loaders()
     database.show_stats()
+    smugmugger.database.init_db()
+    smugmug.run()
     dumper.delete_output_dir()
     dumper.dump_all()
