@@ -127,6 +127,7 @@ class ShowList(NthpSchema):
     adaptor: Optional[str]
     devised: Union[str, bool]
     season: Optional[str]
+    venue: Optional[VenueShow]
     date_start: Optional[datetime.date]
     date_end: Optional[datetime.date]
     primary_image: Optional[str]

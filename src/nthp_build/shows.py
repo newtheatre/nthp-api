@@ -114,6 +114,19 @@ def get_show_roles(person_refs: List[models.PersonRef]) -> List[schema.ShowRole]
     return show_roles
 
 
+def get_show_venue(
+    show_inst: database.Show, show_data: models.Show
+) -> Optional[schema.VenueShow]:
+    return (
+        schema.VenueShow(
+            id=show_inst.venue_id,
+            name=show_data.venue,
+        )
+        if show_data.venue
+        else None
+    )
+
+
 def get_show_list_item(show_inst: database.Show) -> schema.ShowList:
     source_data = models.Show(**json.loads(show_inst.data))
     return schema.ShowList(
@@ -123,6 +136,7 @@ def get_show_list_item(show_inst: database.Show) -> schema.ShowList:
         adaptor=source_data.adaptor,
         devised=source_data.devised,
         season=source_data.season,
+        venue=get_show_venue(show_inst, source_data),
         date_start=show_inst.date_start,
         date_end=show_inst.date_end,
         primary_image=show_inst.primary_image,
@@ -141,12 +155,7 @@ def get_show_detail(show_inst: database.Show) -> schema.ShowDetail:
         company=source_data.company,
         period=source_data.period,
         season=source_data.season,
-        venue=schema.VenueShow(
-            id=show_inst.venue_id,
-            name=source_data.venue,
-        )
-        if show_inst.venue_id
-        else None,
+        venue=get_show_venue(show_inst, source_data),
         date_start=show_inst.date_start,
         date_end=show_inst.date_end,
         cast=get_show_roles(source_data.cast),
