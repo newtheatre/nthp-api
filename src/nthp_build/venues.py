@@ -10,7 +10,7 @@ from nthp_build.shows import get_show_list_item
 
 
 def get_venue_id(name: str) -> str:
-    return slugify(name, separator="-")
+    return slugify(name.replace("'", ""), separator="-")
 
 
 ShowVenueMap = Dict[str, List[database.Show]]
