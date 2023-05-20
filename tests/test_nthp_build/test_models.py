@@ -1,7 +1,6 @@
 import pytest
-from pydantic import ValidationError
-
 from nthp_build import models
+from pydantic import ValidationError
 
 
 class TestAsset:

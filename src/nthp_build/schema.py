@@ -2,7 +2,6 @@
 
 import datetime
 from enum import Enum
-from typing import List, Optional, Union
 
 import humps
 from pydantic import BaseModel, Field
@@ -38,9 +37,9 @@ class PersonRoleList(models.PersonRole):
 
 class PersonList(NthpSchema):
     id: str
-    name: Optional[str]
+    name: str | None
     is_person: bool
-    headshot: Optional[str]
+    headshot: str | None
     has_bio: bool
 
 
@@ -58,31 +57,31 @@ class PlaywrightType(Enum):
 
 
 class Playwright(NthpSchema):
-    id: Optional[str] = None
-    name: Optional[str] = None
-    person_id: Optional[str] = None
+    id: str | None = None
+    name: str | None = None
+    person_id: str | None = None
 
 
 class PlaywrightShow(Playwright):
     type: PlaywrightType
-    descriptor: Optional[str] = None
+    descriptor: str | None = None
     student_written: bool
 
 
 class ShowRole(NthpSchema):
-    role: Optional[str] = None
-    person: Optional[PersonList]
-    note: Optional[str] = None
+    role: str | None = None
+    person: PersonList | None
+    note: str | None = None
 
 
 class Asset(NthpSchema):
     type: str
     source: str
     id: str
-    mime_type: Optional[str] = None
-    category: Optional[str] = None
-    title: Optional[str] = None
-    page: Optional[int] = None
+    mime_type: str | None = None
+    category: str | None = None
+    title: str | None = None
+    page: int | None = None
 
 
 class AssetCollection(BaseCollectionModel[Asset]):
@@ -97,68 +96,63 @@ class VenueShow(NthpSchema):
 class ShowDetail(NthpSchema):
     id: str
     title: str
-    play: Optional[PlayShow]
-    playwright: Optional[PlaywrightShow]
-    adaptor: Optional[str]
-    translator: Optional[str]
-    # canonical: List[ShowCanonical] = []
-    company: Optional[str]
-    # company_sort: Optional[str]
-    period: Optional[str]
+    play: PlayShow | None
+    playwright: PlaywrightShow | None
+    adaptor: str | None
+    translator: str | None
+    company: str | None
+    period: str | None
     season: str
-    # season_sort: Optional[int]
-    venue: Optional[VenueShow]
-    date_start: Optional[datetime.date]
-    date_end: Optional[datetime.date]
+    venue: VenueShow | None
+    date_start: datetime.date | None
+    date_end: datetime.date | None
     # tour TODO
-    cast: List[ShowRole]
-    crew: List[ShowRole]
+    cast: list[ShowRole]
+    crew: list[ShowRole]
     cast_incomplete: bool
-    cast_note: Optional[str]
+    cast_note: str | None
     crew_incomplete: bool
-    crew_note: Optional[str]
-    assets: List[Asset]
-    primary_image: Optional[str]
-    # links: List[Link] = []
+    crew_note: str | None
+    assets: list[Asset]
+    primary_image: str | None
 
-    content: Optional[str]
+    content: str | None
 
 
 class ShowList(NthpSchema):
     id: str
     title: str
-    playwright: Optional[PlaywrightShow]
-    adaptor: Optional[str]
-    devised: Union[str, bool]
-    season: Optional[str]
-    venue: Optional[VenueShow]
-    date_start: Optional[datetime.date]
-    date_end: Optional[datetime.date]
-    primary_image: Optional[str]
+    playwright: PlaywrightShow | None
+    adaptor: str | None
+    devised: str | bool
+    season: str | None
+    venue: VenueShow | None
+    date_start: datetime.date | None
+    date_end: datetime.date | None
+    primary_image: str | None
 
 
 class PlaywrightShowListItem(NthpSchema):
     id: str
     title: str
-    date_start: Optional[datetime.date]
-    date_end: Optional[datetime.date]
-    primary_image: Optional[str]
+    date_start: datetime.date | None
+    date_end: datetime.date | None
+    primary_image: str | None
 
 
 class VenueList(NthpSchema):
     id: str
     name: str
     show_count: int
-    built: Optional[int]
-    location: Optional[Location]
-    city: Optional[str]
+    built: int | None
+    location: Location | None
+    city: str | None
 
 
 class VenueDetail(VenueList):
-    assets: List[Asset] = []
-    # links: List[Link] = []
-    shows: List[ShowList] = []
-    content: Optional[str]
+    assets: list[Asset] = []
+    shows: list[ShowList] = []
+    content: str | None
 
 
 class VenueCollection(BaseCollectionModel[VenueList]):
@@ -166,7 +160,7 @@ class VenueCollection(BaseCollectionModel[VenueList]):
 
 
 class PlaywrightListItem(Playwright):
-    shows: List[PlaywrightShowListItem]
+    shows: list[PlaywrightShowListItem]
 
 
 class PlaywrightCollection(BaseCollectionModel[PlaywrightListItem]):
@@ -177,7 +171,7 @@ class PlayListItem(NthpSchema):
     id: str
     title: str
     playwright: Playwright
-    shows: List[PlaywrightShowListItem]
+    shows: list[PlaywrightShowListItem]
 
 
 class PlayCollection(BaseCollectionModel[PlayListItem]):
@@ -198,21 +192,19 @@ class YearListCollection(BaseCollectionModel[YearList]):
 
 
 class YearDetail(YearList):
-    shows: List[ShowList]
-    committee: List[PersonRoleList]
-    # fellows: List[PersonRoleList]
-    # commendations: List[PersonRoleList]
+    shows: list[ShowList]
+    committee: list[PersonRoleList]
 
 
 class PersonShowRoleItem(NthpSchema):
-    role: Optional[str]
+    role: str | None
     role_type: str
 
 
 class PersonShowRoles(NthpSchema):
     show_id: str
     show_title: str
-    roles: List[PersonShowRoleItem]
+    roles: list[PersonShowRoleItem]
 
 
 class PersonCommitteeRole(NthpSchema):
@@ -225,7 +217,7 @@ class PersonCommitteeRole(NthpSchema):
 class PersonCommitteeRoleList(NthpSchema):
     id: str
     title: str
-    headshot: Optional[str]
+    headshot: str | None
     year_title: str
     year_decade: int
     year_id: str
@@ -239,7 +231,7 @@ class PersonCommitteeRoleListCollection(BaseCollectionModel[PersonCommitteeRoleL
 class PersonShowRoleList(NthpSchema):
     id: str
     title: str
-    headshot: Optional[str]
+    headshot: str | None
     role: str
     show_count: int
 
@@ -250,7 +242,7 @@ class PersonShowRoleListCollection(BaseCollectionModel[PersonShowRoleList]):
 
 class Role(NthpSchema):
     role: str
-    aliases: List[str]
+    aliases: list[str]
 
 
 class RoleCollection(BaseCollectionModel[Role]):
@@ -276,18 +268,18 @@ class PersonGraduated(NthpSchema):
 class PersonDetail(NthpSchema):
     id: str
     title: str
-    submitted: Optional[datetime.date]
-    headshot: Optional[str]
-    graduated: Optional[PersonGraduated]
-    show_roles: List[PersonShowRoles]
-    committee_roles: List[PersonCommitteeRole]
-    content: Optional[str]
+    submitted: datetime.date | None
+    headshot: str | None
+    graduated: PersonGraduated | None
+    show_roles: list[PersonShowRoles]
+    committee_roles: list[PersonCommitteeRole]
+    content: str | None
 
 
 class PersonCollaborator(NthpSchema):
     person_id: str
     person_name: str
-    target_ids: List[str]
+    target_ids: list[str]
 
     class Config(ResponseConfig):
         frozen = False  # Cannot be frozen as we need an ordered list
@@ -304,7 +296,7 @@ class BaseTrivia(NthpSchema):
         example="Every character in this play was portrayed by a perfectly circular "
         "Victoria Sponge",
     )
-    submitted: Optional[datetime.date] = Field(
+    submitted: datetime.date | None = Field(
         title="Submitted Date",
         description="The date the quote was submitted, if null it's likely pulled from "
         "the programme or other source.",
@@ -315,12 +307,12 @@ class BaseTrivia(NthpSchema):
 class TargetedTrivia(BaseTrivia):
     """Trivia that is targeted to a specific object (show)"""
 
-    person_id: Optional[str] = Field(
+    person_id: str | None = Field(
         title="Person ID",
         description="The person ID of the person who submitted the quote",
         example="fred_bloggs",
     )
-    person_name: Optional[str] = Field(
+    person_name: str | None = Field(
         title="Person Name",
         description="The name of the person who submitted the quote",
         example="Fred Bloggs",
@@ -349,13 +341,13 @@ class PersonTrivia(BaseTrivia):
         description="The name of the target of the quote",
         example="The Show",
     )
-    target_image_id: Optional[str] = Field(
+    target_image_id: str | None = Field(
         title="Target Image ID",
         description="The image ID of the target of the quote",
         example="qABC123",
     )
     # Uses YYYY, not YY_YY, 2000 means 2000-2001
-    target_year: Optional[str] = Field(
+    target_year: str | None = Field(
         title="Target Year",
         description="The year of the target of the quote",
         example="2000",
@@ -372,7 +364,7 @@ class HistoryRecord(NthpSchema):
         "e.g. '1940' / '1940s'",
         example="1940s",
     )
-    year_id: Optional[str] = Field(
+    year_id: str | None = Field(
         description="Exact year ID of the record", example="40_41"
     )
     title: str = Field(description="Title of the record", example="Theatre built")
@@ -397,11 +389,11 @@ class SearchDocument(NthpSchema):
     type: SearchDocumentType
     title: str
     id: str
-    image_id: Optional[str]
-    playwright: Optional[PlaywrightShow]
-    company: Optional[str]
-    people: Optional[List[str]]
-    plaintext: Optional[str]
+    image_id: str | None
+    playwright: PlaywrightShow | None
+    company: str | None
+    people: list[str] | None
+    plaintext: str | None
 
 
 class SearchDocumentCollection(BaseCollectionModel[SearchDocument]):

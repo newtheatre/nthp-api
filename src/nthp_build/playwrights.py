@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, List, NamedTuple, Tuple
+from typing import NamedTuple
 
 from slugify import slugify
 
@@ -27,7 +27,7 @@ def save_playwright_show(
     )
 
 
-PlaywrightShowMapping = Dict[Tuple[str, str], List[database.Show]]
+PlaywrightShowMapping = dict[tuple[str, str], list[database.Show]]
 
 
 def get_playwright_shows() -> PlaywrightShowMapping:
@@ -54,7 +54,7 @@ def get_playwright_shows() -> PlaywrightShowMapping:
 
 def get_playwright_list(
     playwright_shows: PlaywrightShowMapping,
-) -> List[schema.PlaywrightListItem]:
+) -> list[schema.PlaywrightListItem]:
     return [
         schema.PlaywrightListItem(
             id=id,
@@ -81,7 +81,7 @@ class PlayRef(NamedTuple):
     playwright_name: str
 
 
-PlayShowMapping = Dict[PlayRef, List[database.Show]]
+PlayShowMapping = dict[PlayRef, list[database.Show]]
 
 
 def get_play_shows() -> PlayShowMapping:
@@ -113,7 +113,7 @@ def get_play_shows() -> PlayShowMapping:
 
 def get_play_list(
     play_shows: PlayShowMapping,
-) -> List[schema.PlayListItem]:
+) -> list[schema.PlayListItem]:
     return [
         schema.PlayListItem(
             id=play_ref.play_id,

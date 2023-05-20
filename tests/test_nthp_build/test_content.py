@@ -1,7 +1,4 @@
-from typing import Optional
-
 import pytest
-
 from nthp_build import content
 
 MARKDOWN_TEST_CASES = [
@@ -18,15 +15,15 @@ MARKDOWN_TEST_CASES = [
 
 @pytest.mark.parametrize(
     "input, expected",
-    map(lambda x: (x[0], x[1]), MARKDOWN_TEST_CASES),
+    ((x[0], x[1]) for x in MARKDOWN_TEST_CASES),
 )
-def test_markdown_to_html(input: Optional[str], expected: Optional[str]) -> None:
+def test_markdown_to_html(input: str | None, expected: str | None) -> None:
     assert content.markdown_to_html(input) == expected
 
 
 @pytest.mark.parametrize(
     "input, expected",
-    map(lambda x: (x[0], x[2]), MARKDOWN_TEST_CASES),
+    ((x[0], x[2]) for x in MARKDOWN_TEST_CASES),
 )
-def test_markdown_to_plaintext(input: Optional[str], expected: Optional[str]) -> None:
+def test_markdown_to_plaintext(input: str | None, expected: str | None) -> None:
     assert content.markdown_to_plaintext(input) == expected

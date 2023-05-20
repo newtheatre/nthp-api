@@ -1,7 +1,6 @@
 """The models for ingesting data"""
 
 import datetime
-from typing import List, Optional, Union
 
 from pydantic import BaseModel, root_validator, validator
 from pydantic_collections import BaseCollectionModel
@@ -17,16 +16,16 @@ class NthpModel(BaseModel):
 
 class Link(NthpModel):
     type: str
-    href: Optional[str]
-    snapshot: Optional[str]
-    username: Optional[str]
-    title: Optional[str]
-    date: Optional[datetime.date]
-    publisher: Optional[str]
-    rating: Optional[str]
-    quote: Optional[str]
-    note: Optional[str]
-    comment: Optional[str]
+    href: str | None
+    snapshot: str | None
+    username: str | None
+    title: str | None
+    date: datetime.date | None
+    publisher: str | None
+    rating: str | None
+    quote: str | None
+    note: str | None
+    comment: str | None
 
 
 class Location(NthpModel):
@@ -35,34 +34,34 @@ class Location(NthpModel):
 
 
 class PersonRef(NthpModel):
-    role: Optional[str]
-    name: Optional[str]
-    note: Optional[str]
+    role: str | None
+    name: str | None
+    note: str | None
     person: bool = True
-    comment: Optional[str]
+    comment: str | None
 
 
 class PersonRole(NthpModel):
-    person_id: Optional[str]
-    person_name: Optional[str]
-    role: Optional[str]
-    note: Optional[str]
+    person_id: str | None
+    person_name: str | None
+    role: str | None
+    note: str | None
     is_person: bool = True
-    comment: Optional[str]
+    comment: str | None
 
 
 class ShowCanonical(NthpModel):
-    title: Optional[str]
-    playwright: Optional[str]
+    title: str | None
+    playwright: str | None
 
 
 class Asset(NthpModel):
     type: str
-    image: Optional[str]
-    video: Optional[str]
-    filename: Optional[str]
-    title: Optional[str]
-    page: Optional[int]
+    image: str | None
+    video: str | None
+    filename: str | None
+    title: str | None
+    page: int | None
     display_image: bool = False
 
     @root_validator()
@@ -85,9 +84,7 @@ class Asset(NthpModel):
         return slugify(value)
 
     @validator("title", always=True)
-    def require_title_with_filename(
-        cls, value: Optional[str], values: dict
-    ) -> Optional[str]:
+    def require_title_with_filename(cls, value: str | None, values: dict) -> str | None:
         if values.get("filename") is not None and value is None:
             raise ValueError("title is required if filename is provided")
         return value
@@ -101,90 +98,90 @@ class Asset(NthpModel):
 
 class Trivia(NthpModel):
     quote: str
-    name: Optional[str]
-    submitted: Optional[datetime.date]
+    name: str | None
+    submitted: datetime.date | None
 
 
 class Show(NthpModel):
     id: str
     title: str
-    playwright: Optional[str]
+    playwright: str | None
 
-    devised: Union[str, bool] = False
+    devised: str | bool = False
 
     @validator("devised")
-    def handle_devised_strings(cls, value: Union[str, bool]) -> Union[str, bool]:
+    def handle_devised_strings(cls, value: str | bool) -> str | bool:
         if isinstance(value, str):
             if value.lower() == "true":
                 return True
-            elif value.lower() == "false":
+            if value.lower() == "false":
                 return False
         return value
 
     improvised: bool = False
-    adaptor: Optional[str]
-    translator: Optional[str]
-    canonical: List[ShowCanonical] = []
+    adaptor: str | None
+    translator: str | None
+    canonical: list[ShowCanonical] = []
     student_written: bool = False
-    company: Optional[str]
-    company_sort: Optional[str]
-    period: Optional[str]
+    company: str | None
+    company_sort: str | None
+    period: str | None
     season: str
-    season_sort: Optional[int]
-    venue: Optional[str]
-    date_start: Optional[datetime.date]
-    date_end: Optional[datetime.date]
+    season_sort: int | None
+    venue: str | None
+    date_start: datetime.date | None
+    date_end: datetime.date | None
     # tour TODO
-    trivia: List[Trivia] = []
-    cast: List[PersonRef] = []
-    crew: List[PersonRef] = []
+    trivia: list[Trivia] = []
+    cast: list[PersonRef] = []
+    crew: list[PersonRef] = []
     cast_incomplete: bool = False
-    cast_note: Optional[str]
+    cast_note: str | None
     crew_incomplete: bool = False
-    crew_note: Optional[str]
-    prod_shots: Optional[str]
-    assets: List[Asset] = []
-    links: List[Link] = []
-    comment: Optional[str]
+    crew_note: str | None
+    prod_shots: str | None
+    assets: list[Asset] = []
+    links: list[Link] = []
+    comment: str | None
 
 
 class Committee(NthpModel):
-    committee: List[PersonRef]
+    committee: list[PersonRef]
 
 
 class Venue(NthpModel):
     title: str
-    links: List[Link] = []
-    built: Optional[int]
-    images: List[str] = []
-    location: Optional[Location]
-    city: Optional[str] = None
-    sort: Optional[int] = None
-    comment: Optional[str] = None
+    links: list[Link] = []
+    built: int | None
+    images: list[str] = []
+    location: Location | None
+    city: str | None = None
+    sort: int | None = None
+    comment: str | None = None
 
 
 class Person(NthpModel):
-    id: Optional[str] = None
+    id: str | None = None
     title: str
-    submitted: Optional[datetime.date] = None
-    headshot: Optional[str] = None
+    submitted: datetime.date | None = None
+    headshot: str | None = None
     # course: List[str] = [] TODO: both lists and strings
-    graduated: Optional[int] = None
-    award: Optional[str] = None
+    graduated: int | None = None
+    award: str | None = None
     # career: Optional[str] TODO: both lists and strings
-    links: List[Link] = []
-    news: List[Link] = []
-    comment: Optional[str] = None
+    links: list[Link] = []
+    news: list[Link] = []
+    comment: str | None = None
 
 
 class HistoryRecord(NthpModel):
     year: str
-    academic_year: Optional[str] = None
+    academic_year: str | None = None
     title: str
     description: str
 
     @validator("academic_year")
-    def require_valid_academic_year(cls, value: Optional[str]) -> Optional[str]:
+    def require_valid_academic_year(cls, value: str | None) -> str | None:
         if value is not None and not years.check_year_id_is_valid(value):
             raise ValueError("Invalid academic year")
         return value

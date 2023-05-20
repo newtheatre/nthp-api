@@ -1,5 +1,4 @@
 import pytest
-
 from nthp_build import models, schema, shows
 
 
@@ -7,7 +6,11 @@ from nthp_build import models, schema, shows
     "input,expected",
     [
         (
-            dict(playwright="William Shakespeare", devised=False, improvised=False),
+            {
+                "playwright": "William Shakespeare",
+                "devised": False,
+                "improvised": False,
+            },
             schema.PlaywrightShow(
                 id="william_shakespeare",
                 type=schema.PlaywrightType.PLAYWRIGHT,
@@ -18,12 +21,12 @@ from nthp_build import models, schema, shows
             ),
         ),
         (
-            dict(
-                playwright="Fred Bloggs",
-                devised=False,
-                improvised=False,
-                student_written=True,
-            ),
+            {
+                "playwright": "Fred Bloggs",
+                "devised": False,
+                "improvised": False,
+                "student_written": True,
+            },
             schema.PlaywrightShow(
                 id="fred_bloggs",
                 type=schema.PlaywrightType.PLAYWRIGHT,
@@ -34,7 +37,7 @@ from nthp_build import models, schema, shows
             ),
         ),
         (
-            dict(playwright="unknown", devised=False, improvised=False),
+            {"playwright": "unknown", "devised": False, "improvised": False},
             schema.PlaywrightShow(
                 type=schema.PlaywrightType.UNKNOWN,
                 descriptor="Unknown",
@@ -42,7 +45,7 @@ from nthp_build import models, schema, shows
             ),
         ),
         (
-            dict(playwright="Various", devised=False, improvised=False),
+            {"playwright": "Various", "devised": False, "improvised": False},
             schema.PlaywrightShow(
                 type=schema.PlaywrightType.VARIOUS,
                 descriptor="Various Writers",
@@ -50,7 +53,7 @@ from nthp_build import models, schema, shows
             ),
         ),
         (
-            dict(playwright=None, devised=True, improvised=False),
+            {"playwright": None, "devised": True, "improvised": False},
             schema.PlaywrightShow(
                 type=schema.PlaywrightType.DEVISED,
                 descriptor="Devised",
@@ -58,7 +61,7 @@ from nthp_build import models, schema, shows
             ),
         ),
         (
-            dict(playwright=None, devised="Someone", improvised=False),
+            {"playwright": None, "devised": "Someone", "improvised": False},
             schema.PlaywrightShow(
                 type=schema.PlaywrightType.DEVISED,
                 descriptor="Devised by Someone",
@@ -66,9 +69,12 @@ from nthp_build import models, schema, shows
             ),
         ),
         (
-            dict(
-                playwright=None, devised="Cast", improvised=False, student_written=True
-            ),
+            {
+                "playwright": None,
+                "devised": "Cast",
+                "improvised": False,
+                "student_written": True,
+            },
             schema.PlaywrightShow(
                 type=schema.PlaywrightType.DEVISED,
                 descriptor="Devised by Cast",
@@ -76,7 +82,7 @@ from nthp_build import models, schema, shows
             ),
         ),
         (
-            dict(playwright=None, devised=False, improvised=True),
+            {"playwright": None, "devised": False, "improvised": True},
             schema.PlaywrightShow(
                 type=schema.PlaywrightType.IMPROVISED,
                 descriptor="Improvised",
@@ -84,7 +90,7 @@ from nthp_build import models, schema, shows
             ),
         ),
         (
-            dict(playwright=None, devised=False, improvised=False),
+            {"playwright": None, "devised": False, "improvised": False},
             None,
         ),
     ],

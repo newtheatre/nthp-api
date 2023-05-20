@@ -1,6 +1,5 @@
 import freezegun
 import pytest
-
 from nthp_build import database, models, people
 from nthp_build.schema import PersonCollaborator, PersonGraduated
 
@@ -35,6 +34,41 @@ ALICE_SECOND_ROLE_PERSON_REF = models.PersonRef(
 )
 
 
+class TestSavePersonRoles:
+    def test_save_single(self, test_db):
+        person_roles = people.save_person_roles(
+            target=THE_TEMPEST,
+            target_type=database.PersonRoleType.CAST,
+            target_year=1999,
+            person_list=[FRED_PERSON_REF],
+        )
+        assert len(person_roles) == 1
+        assert database.PersonRole.select().count() == 1
+        assert database.PersonRole.select().get().person_id == "fred_bloggs"
+
+    def test_save_multiple(self, test_db):
+        person_roles = people.save_person_roles(
+            target=THE_TEMPEST,
+            target_type=database.PersonRoleType.CAST,
+            target_year=1999,
+            person_list=[FRED_PERSON_REF, JOHN_PERSON_REF],
+        )
+        assert len(person_roles) == 2  # noqa: PLR2004
+        assert database.PersonRole.select().count() == 2  # noqa: PLR2004
+        assert (
+            database.PersonRole.select()
+            .where(database.PersonRole.person_id == "fred_bloggs")
+            .count()
+            == 1
+        )
+        assert (
+            database.PersonRole.select()
+            .where(database.PersonRole.person_id == "john_smith")
+            .count()
+            == 1
+        )
+
+
 class TestGetPersonCollaborators:
     def test_no_person(self, test_db):
         person_id = people.get_person_id("Fred Bloggs")
@@ -46,23 +80,13 @@ class TestGetPersonCollaborators:
             target=THE_TEMPEST,
             target_type=database.PersonRoleType.CAST,
             target_year=1999,
-            person_list=[
-                models.PersonRef(
-                    role="Prospero",
-                    name="Fred Bloggs",
-                )
-            ],
+            person_list=[FRED_PERSON_REF],
         )
         people.save_person_roles(
             target=TITUS_ANDRONICUS,
             target_type=database.PersonRoleType.CAST,
             target_year=1999,
-            person_list=[
-                models.PersonRef(
-                    role="Quintus",
-                    name="Fred Bloggs",
-                )
-            ],
+            person_list=[FRED_PERSON_REF],
         )
         assert people.get_person_collaborators(person_id) == []
 

@@ -1,8 +1,9 @@
 import asyncio
 import contextlib
 import logging
+from collections.abc import AsyncGenerator
 from http import HTTPStatus
-from typing import AsyncGenerator, NamedTuple, Optional
+from typing import NamedTuple
 
 import httpx
 
@@ -61,19 +62,18 @@ async def get(client: SmugMugClient, url, params=None):
     try:
         data = response.json()
     except ValueError as e:
-        log.error(response.text)
-        raise SmugMugInvalidResponse() from e
+        log.exception(response.text)
+        raise SmugMugInvalidResponse from e
     response_obj = schema.SmugMugResponse(**data)
     if not response.is_success:
         if response.status_code == HTTPStatus.NOT_FOUND:
             raise SmugMugNotFound(response_obj.Message)
-        else:
-            raise SmugMugApiError(response_obj.Message)
+        raise SmugMugApiError(response_obj.Message)
     return data
 
 
 async def get_pages(
-    client: SmugMugClient, url: str, response_key: str, params: Optional[dict] = None
+    client: SmugMugClient, url: str, response_key: str, params: dict | None = None
 ):
     """
     Fetch all items from a collection by iterating over pages.

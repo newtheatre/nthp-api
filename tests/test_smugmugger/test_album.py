@@ -1,7 +1,6 @@
 import datetime
 
 import pytest
-
 from smugmugger import album, make_client
 from smugmugger.client import SmugMugNotFound
 
@@ -24,7 +23,8 @@ class TestGetAlbumImages:
     async def test_east(self):
         async with make_client() as client:
             images = await album.get_album_images(client, "dvVPZh")
-        assert len(images) == 379
+        expected_number_of_images = 379
+        assert len(images) == expected_number_of_images
         first_image = images[0]
         assert first_image.ImageKey == "gKfJkMG"
         assert first_image.IsVideo is False

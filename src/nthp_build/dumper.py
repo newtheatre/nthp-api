@@ -6,7 +6,7 @@ import shutil
 import time
 from multiprocessing import Manager
 from pathlib import Path
-from typing import List, NamedTuple, Protocol
+from typing import NamedTuple, Protocol
 
 import pydantic
 
@@ -47,7 +47,7 @@ def make_out_path(directory: Path, file: str) -> Path:
 
 
 def write_file(path: Path, obj: pydantic.BaseModel) -> None:
-    with open(path, "w") as f:
+    with path.open("w") as f:
         f.write(obj.json(by_alias=True, exclude_none=True, exclude_unset=True))
 
 
@@ -109,7 +109,7 @@ def dump_year(year: int, state: DumperSharedState) -> schema.YearDetail:
     return year_detail
 
 
-def dump_year_index(year_details: List[schema.YearDetail]):
+def dump_year_index(year_details: list[schema.YearDetail]):
     path = make_out_path(Path("years"), "index")
     year_collection = schema.YearListCollection(
         [schema.YearList(**year_detail.dict()) for year_detail in year_details]
@@ -126,7 +126,7 @@ def dump_years(state: DumperSharedState):
 
 
 def dump_venue(
-    inst: database.Venue, shows: List[database.Show], state: DumperSharedState
+    inst: database.Venue, shows: list[database.Show], state: DumperSharedState
 ) -> schema.VenueDetail:
     path = make_out_path(Path("venues"), inst.id)
     venue_detail = venues.get_venue_detail(inst, shows)
@@ -188,9 +188,7 @@ def dump_virtual_person(ref, state: DumperSharedState) -> schema.PersonDetail:
 
 
 def dump_virtual_people(state: DumperSharedState):
-    real_people_ids = list(
-        map(lambda x: x.id, database.Person.select(database.Person.id))
-    )
+    real_people_ids = [x.id for x in database.Person.select(database.Person.id)]
     virtual_people_query = people.get_people_from_roles(excluded_ids=real_people_ids)
     for ref in virtual_people_query:
         dump_virtual_person(ref, state)
@@ -334,7 +332,7 @@ def dump_site_stats(state: DumperSharedState) -> None:
 
 def dump_search_documents(state: DumperSharedState):
     path = make_out_path(Path("search"), "documents")
-    collection = schema.SearchDocumentCollection([x for x in state.search_documents])
+    collection = schema.SearchDocumentCollection(list(state.search_documents))
     write_file(path, collection)
 
 
@@ -348,7 +346,7 @@ class Dumper(NamedTuple):
     dumper: DumperFunc
 
 
-DUMPERS: List[Dumper] = [
+DUMPERS: list[Dumper] = [
     Dumper("spec", dump_specs),
     Dumper("shows", dump_shows),
     Dumper("years", dump_years),
@@ -366,7 +364,7 @@ DUMPERS: List[Dumper] = [
     Dumper("site stats", dump_site_stats),
 ]
 
-POST_DUMPERS: List[Dumper] = [
+POST_DUMPERS: list[Dumper] = [
     Dumper("search documents", dump_search_documents),
 ]
 

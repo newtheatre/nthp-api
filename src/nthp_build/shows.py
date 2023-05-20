@@ -1,5 +1,4 @@
 import json
-from typing import List, Optional
 
 import peewee
 
@@ -16,7 +15,7 @@ def get_show_query() -> peewee.Query:
     )
 
 
-def get_show_play(show: models.Show) -> Optional[schema.PlayShow]:
+def get_show_play(show: models.Show) -> schema.PlayShow | None:
     """
     Decide if a show is a play or not and return PlayShow if it is.
     """
@@ -25,11 +24,12 @@ def get_show_play(show: models.Show) -> Optional[schema.PlayShow]:
             id=playwrights.get_play_id(show.title),
             title=show.title,
         )
-    else:
-        return None
+    return None
 
 
-def get_show_playwright(show: models.Show) -> Optional[schema.PlaywrightShow]:
+def get_show_playwright(  # noqa: PLR0911
+    show: models.Show,
+) -> schema.PlaywrightShow | None:
     if show.devised:
         if show.devised is True:
             return schema.PlaywrightShow(
@@ -60,28 +60,27 @@ def get_show_playwright(show: models.Show) -> Optional[schema.PlaywrightShow]:
                 descriptor="Various Writers",
                 student_written=show.student_written,
             )
-        elif show.playwright.lower() == schema.PlaywrightType.UNKNOWN.value:
+        if show.playwright.lower() == schema.PlaywrightType.UNKNOWN.value:
             return schema.PlaywrightShow(
                 type=schema.PlaywrightType.UNKNOWN,
                 name=None,
                 descriptor="Unknown",
                 student_written=show.student_written,
             )
-        else:
-            return schema.PlaywrightShow(
-                type=schema.PlaywrightType.PLAYWRIGHT,
-                id=playwrights.get_playwright_id(show.playwright),
-                name=show.playwright,
-                descriptor=f"by {show.playwright}",
-                person_id=people.get_person_id(show.playwright)
-                if show.student_written
-                else None,
-                student_written=show.student_written,
-            )
+        return schema.PlaywrightShow(
+            type=schema.PlaywrightType.PLAYWRIGHT,
+            id=playwrights.get_playwright_id(show.playwright),
+            name=show.playwright,
+            descriptor=f"by {show.playwright}",
+            person_id=people.get_person_id(show.playwright)
+            if show.student_written
+            else None,
+            student_written=show.student_written,
+        )
     return None
 
 
-def get_show_roles(person_refs: List[models.PersonRef]) -> List[schema.ShowRole]:
+def get_show_roles(person_refs: list[models.PersonRef]) -> list[schema.ShowRole]:
     query = database.Person.select(database.Person.id, database.Person.headshot).where(
         database.Person.id.in_(
             [
@@ -116,7 +115,7 @@ def get_show_roles(person_refs: List[models.PersonRef]) -> List[schema.ShowRole]
 
 def get_show_venue(
     show_inst: database.Show, show_data: models.Show
-) -> Optional[schema.VenueShow]:
+) -> schema.VenueShow | None:
     return (
         schema.VenueShow(
             id=show_inst.venue_id,

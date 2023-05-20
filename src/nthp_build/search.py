@@ -1,5 +1,3 @@
-from typing import Optional
-
 from nthp_build import schema
 from nthp_build.parallel import DumperSharedState
 
@@ -9,7 +7,7 @@ def add_document(
     type: schema.SearchDocumentType,
     title: str,
     id: str,
-    image_id: Optional[str] = None,
+    image_id: str | None = None,
     **kwargs
 ):
     state.search_documents.append(

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 A local server.
 Hosts a built API on localhost:8000 and sets up CORS.
@@ -7,6 +6,9 @@ Hosts a built API on localhost:8000 and sets up CORS.
 
 import sys
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+
+DEFAULT_HOST = "0.0.0.0"
+DEFAULT_PORT = 8000
 
 
 class RequestHandler(SimpleHTTPRequestHandler):
@@ -25,8 +27,8 @@ class RequestHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
 
-host = sys.argv[1] if len(sys.argv) > 2 else "0.0.0.0"
-port = int(sys.argv[len(sys.argv) - 1]) if len(sys.argv) > 1 else 8000
+host = sys.argv[1] if len(sys.argv) > 2 else DEFAULT_HOST  # noqa: PLR2004
+port = int(sys.argv[len(sys.argv) - 1]) if len(sys.argv) > 1 else DEFAULT_PORT
 
-print(f"Listening on {host}:{port}")
+print(f"Listening on {host}:{port}")  # noqa: T201
 HTTPServer((host, port), RequestHandler).serve_forever()

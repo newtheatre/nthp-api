@@ -1,5 +1,4 @@
 import pytest
-
 from nthp_build import venues
 
 

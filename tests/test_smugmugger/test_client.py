@@ -1,7 +1,5 @@
 import pytest
-
-from smugmugger import make_client
-from smugmugger.client import get_pages
+from smugmugger.client import get_pages, make_client
 
 
 class TestGetPages:
@@ -12,4 +10,5 @@ class TestGetPages:
             images = await get_pages(client, "album/dvVPZh!images", "AlbumImage")
         # Max page size is 100, this should have taken 4 requests,
         # this has been verified by VCR cassette
-        assert len(images) == 379
+        expected_number_of_images = 379
+        assert len(images) == expected_number_of_images

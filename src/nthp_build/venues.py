@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Iterable, List
+from collections.abc import Iterable
 
 from peewee import ModelSelect
 from slugify import slugify
@@ -13,7 +13,7 @@ def get_venue_id(name: str) -> str:
     return slugify(name.replace("'", ""), separator="-")
 
 
-ShowVenueMap = Dict[str, List[database.Show]]
+ShowVenueMap = dict[str, list[database.Show]]
 
 
 def get_show_venue_map(venue_query: ModelSelect) -> ShowVenueMap:
@@ -44,15 +44,15 @@ def get_venue_collection(
                 else None,
                 city=venue_model.city,
             )
-            for venue_inst, venue_model in map(
-                lambda v: (v, models.Venue(**json.loads(v.data))), venue_query
+            for venue_inst, venue_model in (
+                (v, models.Venue(**json.loads(v.data))) for v in venue_query
             )
         ]
     )
 
 
 def get_venue_detail(
-    venue_inst: database.Venue, shows: List[database.Show]
+    venue_inst: database.Venue, shows: list[database.Show]
 ) -> VenueDetail:
     venue_data = models.Venue(**json.loads(venue_inst.data))
     return VenueDetail(
@@ -64,7 +64,6 @@ def get_venue_detail(
         if venue_data.location
         else None,
         city=venue_data.city,
-        # assets=venue_data.assets,
         shows=[get_show_list_item(show) for show in shows],
         content=venue_inst.content,
     )

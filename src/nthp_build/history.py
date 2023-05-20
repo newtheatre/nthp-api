@@ -1,9 +1,7 @@
-from typing import List
-
 from nthp_build import database, schema
 
 
-def get_history_records() -> List[schema.HistoryRecord]:
+def get_history_records() -> list[schema.HistoryRecord]:
     """
     Return the history record collection.
     """

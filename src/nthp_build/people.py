@@ -1,6 +1,7 @@
 import datetime
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Optional
+from collections.abc import Iterable
+from typing import Any
 
 import peewee
 from slugify import slugify
@@ -18,9 +19,10 @@ def save_person_roles(
     target: str,  # TODO: should be target_id
     target_type: str,  # TODO: why not PersonRoleType?
     target_year: int,
-    person_list: List[nthp_build.models.PersonRef],
-):
+    person_list: list[nthp_build.models.PersonRef],
+) -> list[nthp_build.models.PersonRole]:
     rows = []
+    person_roles: list[nthp_build.models.PersonRole] = []
     for person_ref in person_list:
         person_role = nthp_build.models.PersonRole(
             person_id=get_person_id(person_ref.name) if person_ref.name else None,
@@ -30,6 +32,7 @@ def save_person_roles(
             is_person=person_ref.person,
             comment=person_ref.comment,
         )
+        person_roles.append(person_role)
         rows.append(
             {
                 "target_id": target,
@@ -43,13 +46,14 @@ def save_person_roles(
             }
         )
     database.PersonRole.insert_many(rows).execute()
+    return person_roles
 
 
 def get_real_people() -> peewee.ModelSelect:
     return database.Person.select()
 
 
-def get_person_show_roles(person_id: str) -> List[schema.PersonShowRoles]:
+def get_person_show_roles(person_id: str) -> list[schema.PersonShowRoles]:
     query = (
         database.PersonRole.select(database.PersonRole, database.Show)
         .where(
@@ -65,8 +69,8 @@ def get_person_show_roles(person_id: str) -> List[schema.PersonShowRoles]:
         )
     )
     # Collect all results by show_id
-    results_by_show_id: Dict[str, List] = defaultdict(list)
-    shows: Dict[str, Any] = defaultdict(list)
+    results_by_show_id: dict[str, list] = defaultdict(list)
+    shows: dict[str, Any] = defaultdict(list)
     for result in query:
         results_by_show_id[result.target_id].append(result)
         shows[result.target_id] = result.show
@@ -84,7 +88,7 @@ def get_person_show_roles(person_id: str) -> List[schema.PersonShowRoles]:
     ]
 
 
-def get_person_committee_roles(person_id: str) -> List[schema.PersonCommitteeRole]:
+def get_person_committee_roles(person_id: str) -> list[schema.PersonCommitteeRole]:
     query = database.PersonRole.select().where(
         database.PersonRole.person_id == person_id,
         database.PersonRole.target_type == database.PersonRoleType.COMMITTEE,
@@ -105,14 +109,14 @@ def get_person_committee_roles(person_id: str) -> List[schema.PersonCommitteeRol
     ]
 
 
-def get_person_collaborators(person_id: str) -> List[schema.PersonCollaborator]:
+def get_person_collaborators(person_id: str) -> list[schema.PersonCollaborator]:
     """
     Get all collaborators for a person. A collaborator is a person who has worked on a
     show or other object (such as committee) with the source person.
     :param person_id: Which person to get collaborators for
     :return: A set of collaborators
     """
-    # Get a list of targets to look for collaborators
+    # Get a list of targets to look for collaborators, shows where person_id is present
     target_query = database.PersonRole.select(
         database.PersonRole.target_id.distinct()
     ).where(database.PersonRole.person_id == person_id)
@@ -121,10 +125,12 @@ def get_person_collaborators(person_id: str) -> List[schema.PersonCollaborator]:
     collaborator_roles_query = (
         database.PersonRole.select()
         .where(
-            database.PersonRole.target_id.in_(targets),
-            database.PersonRole.person_id != person_id,
-            database.PersonRole.person_id.is_null(False),
-            database.PersonRole.is_person == True,
+            database.PersonRole.target_id.in_(
+                targets
+            ),  # show where person_id is present
+            database.PersonRole.person_id != person_id,  # exclude source person
+            database.PersonRole.person_id.is_null(False),  # exclude null person_id
+            database.PersonRole.is_person == True,  # noqa: E712, need to use ==
         )
         .order_by(database.PersonRole.person_id)
     )
@@ -135,18 +141,18 @@ def get_person_collaborators(person_id: str) -> List[schema.PersonCollaborator]:
             (collaborator_role.person_id, collaborator_role.person_name)
         ].add(collaborator_role.target_id)
     # Return a set of collaborators
-    return list(
+    return [
         schema.PersonCollaborator(
             person_id=person_id,
             person_name=person_name,
             target_ids=sorted(target_ids),
         )
         for (person_id, person_name), target_ids in collaborator_map.items()
-    )
+    ]
 
 
 def get_people_from_roles(
-    excluded_ids: Optional[Iterable[str]] = None,
+    excluded_ids: Iterable[str] | None = None,
 ) -> peewee.ModelSelect:
     """
     Get people from person roles, optionally excluding a list of person ids.
@@ -157,13 +163,13 @@ def get_people_from_roles(
         )
         .where(database.PersonRole.person_id.not_in(excluded_ids or []))
         .where(database.PersonRole.person_id.is_null(False))
-        .where(database.PersonRole.is_person == True)
+        .where(database.PersonRole.is_person == True)  # noqa: E712, need to use ==
         .group_by(database.PersonRole.person_id)
         .order_by(database.PersonRole.person_id)
     )
 
 
-def get_graduation(model: models.Person) -> Optional[schema.PersonGraduated]:
+def get_graduation(model: models.Person) -> schema.PersonGraduated | None:
     """
     Either get a PersonGraduated from the provided year for the person, or make an
     estimate based on their credits.
@@ -204,7 +210,7 @@ def make_virtual_person_model(ref) -> models.Person:
 
 def make_person_detail(
     model: models.Person,
-    content: Optional[str] = None,
+    content: str | None = None,
 ) -> schema.PersonDetail:
     assert model.id is not None, "Person model should have id by now"
     return schema.PersonDetail(
