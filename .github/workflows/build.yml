@@ -50,6 +50,8 @@ jobs:
       - name: Report database stats
         run: poetry run python nthp stats
       - name: Enrich content database with SmugMug data
+        env:
+          SMUGMUG_API_KEY: ${{ secrets.SMUGMUG_API_KEY }}
         run: poetry run python nthp smug
       - name: Build API
         run: poetry run python nthp dump
