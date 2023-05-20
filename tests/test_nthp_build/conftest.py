@@ -1,7 +1,6 @@
 import pytest
-from playhouse.sqlite_ext import SqliteExtDatabase
-
 from nthp_build.database import MODELS
+from playhouse.sqlite_ext import SqliteExtDatabase
 
 
 @pytest.fixture()

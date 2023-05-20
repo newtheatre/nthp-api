@@ -1,7 +1,5 @@
-from typing import List
 
 import pytest
-
 from nthp_build import assets, models
 
 
@@ -54,5 +52,5 @@ from nthp_build import assets, models
         ),
     ],
 )
-def test_pick_show_primary_image(input: List[models.Asset], expected: str):
+def test_pick_show_primary_image(input: list[models.Asset], expected: str):
     assert assets.pick_show_primary_image(input) == expected

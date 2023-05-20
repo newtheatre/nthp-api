@@ -1,7 +1,6 @@
 from pathlib import PosixPath
 
 import pytest
-
 from nthp_build import years
 from nthp_build.documents import DocumentPath
 
@@ -41,7 +40,7 @@ def test_get_year_from_year_id(input: str, expected: int):
 
 @pytest.mark.parametrize(
     "input,expected",
-    [(1940, "1940–41"), (1999, "1999–00"), (2000, "2000–01"), (2001, "2001–02")],
+    [(1940, "1940-41"), (1999, "1999-00"), (2000, "2000-01"), (2001, "2001-02")],
 )
 def test_get_year_title(input: int, expected: str):
     assert years.get_year_title(input) == expected

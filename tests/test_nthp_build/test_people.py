@@ -1,6 +1,5 @@
 import freezegun
 import pytest
-
 from nthp_build import database, models, people
 from nthp_build.schema import PersonCollaborator, PersonGraduated
 

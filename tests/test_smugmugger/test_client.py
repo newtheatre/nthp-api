@@ -1,5 +1,4 @@
 import pytest
-
 from smugmugger import make_client
 from smugmugger.client import get_pages
 
