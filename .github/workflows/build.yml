@@ -7,8 +7,8 @@ on:
 
 env:
   # Task vars
-  python-version: 3.9
-  poetry-version: 1.1.11
+  python-version: 3.11
+  poetry-version: 1.4.0
 
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: ${{ env.python-version }}
       - name: Install poetry
-        uses: abatilo/actions-poetry@v2.1.0
+        uses: abatilo/actions-poetry@v2.3.0
         with:
           poetry-version: ${{ env.poetry-version }}
       - name: Download poetry cache
