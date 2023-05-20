@@ -2,7 +2,7 @@ import functools
 import logging
 import time
 from pathlib import Path
-from typing import Any, NamedTuple, Protocol
+from typing import Any, NamedTuple, Protocol, Type  # noqa: UP035
 
 import frontmatter
 import peewee
@@ -151,7 +151,9 @@ class DataLoaderFunc(Protocol):
 class Loader(NamedTuple):
     type: type[DocumentLoaderFunc | DataLoaderFunc]
     path: Path
-    schema_type: type[models.NthpModel | BaseCollectionModel[models.NthpModel]]
+    schema_type: Type[  # noqa: UP006
+        models.NthpModel | BaseCollectionModel[models.NthpModel]
+    ]
     func: DocumentLoaderFunc | DataLoaderFunc
 
 

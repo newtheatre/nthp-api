@@ -276,6 +276,8 @@ SPEC = {
 
 
 def write_spec(path: str | Path):
+    if isinstance(path, str):
+        path = Path(path)
     with path.open("w") as f:
         json.dump(SPEC, f, indent=4)
 
