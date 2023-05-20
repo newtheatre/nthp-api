@@ -1,4 +1,3 @@
-
 import pytest
 from nthp_build import assets, models
 

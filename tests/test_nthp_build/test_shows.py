@@ -6,7 +6,11 @@ from nthp_build import models, schema, shows
     "input,expected",
     [
         (
-            {"playwright": "William Shakespeare", "devised": False, "improvised": False},
+            {
+                "playwright": "William Shakespeare",
+                "devised": False,
+                "improvised": False,
+            },
             schema.PlaywrightShow(
                 id="william_shakespeare",
                 type=schema.PlaywrightType.PLAYWRIGHT,
@@ -66,7 +70,10 @@ from nthp_build import models, schema, shows
         ),
         (
             {
-                "playwright": None, "devised": "Cast", "improvised": False, "student_written": True
+                "playwright": None,
+                "devised": "Cast",
+                "improvised": False,
+                "student_written": True,
             },
             schema.PlaywrightShow(
                 type=schema.PlaywrightType.DEVISED,
