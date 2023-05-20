@@ -79,3 +79,4 @@ line-length = 120
 
 [tool.ruff.per-file-ignores]
 "bin/*" = ["INP001"]
+"*/fixtures/*" = ["E501"]
