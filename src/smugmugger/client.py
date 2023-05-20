@@ -62,14 +62,13 @@ async def get(client: SmugMugClient, url, params=None):
     try:
         data = response.json()
     except ValueError as e:
-        log.error(response.text)
+        log.exception(response.text)
         raise SmugMugInvalidResponse from e
     response_obj = schema.SmugMugResponse(**data)
     if not response.is_success:
         if response.status_code == HTTPStatus.NOT_FOUND:
             raise SmugMugNotFound(response_obj.Message)
-        else:
-            raise SmugMugApiError(response_obj.Message)
+        raise SmugMugApiError(response_obj.Message)
     return data
 
 

@@ -26,7 +26,7 @@ _markdown_unmarker.stripTopLevelTags = False  # type: ignore
 def markdown_to_html(markdown_text: str | None) -> str | None:
     if not markdown_text:
         return None
-    if markdown_text.strip() == "":
+    if not markdown_text.strip():
         return None
     return markdown.markdown(markdown_text)
 
@@ -34,6 +34,6 @@ def markdown_to_html(markdown_text: str | None) -> str | None:
 def markdown_to_plaintext(markdown_text: str | None) -> str | None:
     if not markdown_text:
         return None
-    if markdown_text.strip() == "":
+    if not markdown_text.strip():
         return None
     return _markdown_unmarker.convert(markdown_text)

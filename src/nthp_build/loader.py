@@ -2,7 +2,7 @@ import functools
 import logging
 import time
 from pathlib import Path
-from typing import Any, NamedTuple, Protocol, Type
+from typing import Any, NamedTuple, Protocol
 
 import frontmatter
 import peewee
@@ -119,7 +119,7 @@ def load_person(path: DocumentPath, document: frontmatter.Post, data: models.Per
             plaintext=markdown_to_plaintext(document.content),
         )
     except peewee.IntegrityError:
-        log.error(
+        log.exception(
             f"Person ID {data.id} is already in use, please explicitly set `id` on "
             f"these people to disambiguate them."
         )
@@ -151,7 +151,7 @@ class DataLoaderFunc(Protocol):
 class Loader(NamedTuple):
     type: type[DocumentLoaderFunc | DataLoaderFunc]
     path: Path
-    schema_type: Type[models.NthpModel | BaseCollectionModel[models.NthpModel]]
+    schema_type: type[models.NthpModel | BaseCollectionModel[models.NthpModel]]
     func: DocumentLoaderFunc | DataLoaderFunc
 
 
@@ -196,8 +196,8 @@ def run_document_loader(loader: Loader):
             document = load_document(doc_path.path)
             try:
                 data = loader.schema_type(**{"id": doc_path.id, **document.metadata})  # type: ignore[call-arg]
-            except ValidationError as e:
-                log.error(f"Failed validation: {doc_path.content_path} : {e}")
+            except ValidationError:
+                log.exception(f"Failed validation: {doc_path.content_path}")
                 continue
             loader.func(path=doc_path, document=document, data=data)  # type: ignore[call-arg]
 
@@ -207,15 +207,15 @@ def run_data_loader(loader: Loader):
         try:
             document_data = load_yaml(loader.path)
         except yaml.YAMLError:
-            log.error(f"Failed to parse YAML: {loader.path}")
+            log.exception(f"Failed to parse YAML: {loader.path}")
             return
         try:
             if isinstance(loader.schema_type, models.NthpModel):
                 data = loader.schema_type(**document_data)  # type: ignore[call-arg]
             else:
                 data = loader.schema_type(document_data)  # type: ignore[call-arg]
-        except ValidationError as e:
-            log.error(f"Failed validation: {loader.path} : {e}")
+        except ValidationError:
+            log.exception(f"Failed validation: {loader.path}")
             return
         loader.func(
             path=DocumentPath(

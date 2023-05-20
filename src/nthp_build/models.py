@@ -84,9 +84,7 @@ class Asset(NthpModel):
         return slugify(value)
 
     @validator("title", always=True)
-    def require_title_with_filename(
-        cls, value: str | None, values: dict
-    ) -> str | None:
+    def require_title_with_filename(cls, value: str | None, values: dict) -> str | None:
         if values.get("filename") is not None and value is None:
             raise ValueError("title is required if filename is provided")
         return value
@@ -116,7 +114,7 @@ class Show(NthpModel):
         if isinstance(value, str):
             if value.lower() == "true":
                 return True
-            elif value.lower() == "false":
+            if value.lower() == "false":
                 return False
         return value
 

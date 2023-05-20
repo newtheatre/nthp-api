@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     async def manual_test():
         async with make_client() as client:
-            print(await get_album_images(client, "dvVPZh"))
+            print(await get_album_images(client, "dvVPZh"))  # noqa: T201
 
     database.init_db()
     asyncio.run(manual_test())

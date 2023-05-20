@@ -1,8 +1,7 @@
-
 from nthp_build import database, models, people, schema
 
 
-def save_trivia(
+def save_trivia(  # noqa: PLR0913
     *,
     target_id: str,
     target_type: str,

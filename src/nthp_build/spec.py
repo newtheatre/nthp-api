@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-from typing import Union
 
 import pydantic.schema
 from pydantic_collections import BaseCollectionModel
@@ -33,7 +32,7 @@ JSON_SCHEMA = pydantic.schema.schema(
     ref_prefix="#/components/schemas/",
 )
 
-Model = Union[type[schema.NthpSchema], type[BaseCollectionModel]]
+Model = type[schema.NthpSchema] | type[BaseCollectionModel]
 
 
 def check_model_present(model: Model):
@@ -69,7 +68,7 @@ def make_basic_get_operation(
     }
 
 
-def make_detail_get_operation(
+def make_detail_get_operation(  # noqa: PLR0913
     operation_id: str,
     tags: list[str],
     summary: str,
@@ -277,7 +276,7 @@ SPEC = {
 
 
 def write_spec(path: str | Path):
-    with open(path, "w") as f:
+    with path.open("w") as f:
         json.dump(SPEC, f, indent=4)
 
 

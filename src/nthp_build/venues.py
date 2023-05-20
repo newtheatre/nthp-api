@@ -44,7 +44,9 @@ def get_venue_collection(
                 else None,
                 city=venue_model.city,
             )
-            for venue_inst, venue_model in ((v, models.Venue(**json.loads(v.data))) for v in venue_query)
+            for venue_inst, venue_model in (
+                (v, models.Venue(**json.loads(v.data))) for v in venue_query
+            )
         ]
     )
 

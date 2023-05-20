@@ -24,11 +24,12 @@ def get_show_play(show: models.Show) -> schema.PlayShow | None:
             id=playwrights.get_play_id(show.title),
             title=show.title,
         )
-    else:
-        return None
+    return None
 
 
-def get_show_playwright(show: models.Show) -> schema.PlaywrightShow | None:
+def get_show_playwright(  # noqa: PLR0911
+    show: models.Show,
+) -> schema.PlaywrightShow | None:
     if show.devised:
         if show.devised is True:
             return schema.PlaywrightShow(
@@ -59,24 +60,23 @@ def get_show_playwright(show: models.Show) -> schema.PlaywrightShow | None:
                 descriptor="Various Writers",
                 student_written=show.student_written,
             )
-        elif show.playwright.lower() == schema.PlaywrightType.UNKNOWN.value:
+        if show.playwright.lower() == schema.PlaywrightType.UNKNOWN.value:
             return schema.PlaywrightShow(
                 type=schema.PlaywrightType.UNKNOWN,
                 name=None,
                 descriptor="Unknown",
                 student_written=show.student_written,
             )
-        else:
-            return schema.PlaywrightShow(
-                type=schema.PlaywrightType.PLAYWRIGHT,
-                id=playwrights.get_playwright_id(show.playwright),
-                name=show.playwright,
-                descriptor=f"by {show.playwright}",
-                person_id=people.get_person_id(show.playwright)
-                if show.student_written
-                else None,
-                student_written=show.student_written,
-            )
+        return schema.PlaywrightShow(
+            type=schema.PlaywrightType.PLAYWRIGHT,
+            id=playwrights.get_playwright_id(show.playwright),
+            name=show.playwright,
+            descriptor=f"by {show.playwright}",
+            person_id=people.get_person_id(show.playwright)
+            if show.student_written
+            else None,
+            student_written=show.student_written,
+        )
     return None
 
 

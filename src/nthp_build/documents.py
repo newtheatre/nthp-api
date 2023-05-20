@@ -1,9 +1,12 @@
+import logging
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, NamedTuple
 
 import frontmatter
 import yaml
+
+log = logging.getLogger(__name__)
 
 
 class DocumentPath(NamedTuple):
@@ -45,8 +48,8 @@ def load_document(path: Path) -> frontmatter.Post:
 
 
 def load_yaml(path: Path | str) -> Any:
-    with open(CONTENT_ROOT / Path(path)) as stream:
+    with (CONTENT_ROOT / Path(path)).open() as stream:
         try:
             return yaml.safe_load(stream)
-        except yaml.YAMLError as exc:
-            print(exc)
+        except yaml.YAMLError:
+            log.exception("Error loading YAML file %s", path)

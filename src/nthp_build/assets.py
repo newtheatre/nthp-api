@@ -49,22 +49,22 @@ def get_mime_type(source: AssetSource, type: AssetType, id: str) -> str | None:
     if source is AssetSource.SMUGMUG:
         if type is AssetType.ALBUM:
             return None
-        elif type is AssetType.IMAGE:
+        if type is AssetType.IMAGE:
             return "image/jpeg"
-        elif type is AssetType.VIDEO:
+        if type is AssetType.VIDEO:
             return "video/mp4"  # TODO: check if correct
-        else:
-            raise ValueError(f"Unhandled asset type {type}")
-    elif source is AssetSource.FILE:
+        raise ValueError(f"Unhandled asset type {type}")
+
+    if source is AssetSource.FILE:
         guess = mimetypes.guess_type(id)[0]
         if guess is None:
             raise ValueError(f"Could not guess mime type for {id}")
         return guess
-    else:
-        raise ValueError(f"Unhandled asset source {source}")
+
+    raise ValueError(f"Unhandled asset source {source}")
 
 
-def save_asset(
+def save_asset(  # noqa: PLR0913
     target_id: str,
     target_type: AssetTarget,
     source: AssetSource,

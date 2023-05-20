@@ -1,4 +1,3 @@
-
 from nthp_build import schema
 from nthp_build.parallel import DumperSharedState
 
