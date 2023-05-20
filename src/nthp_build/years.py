@@ -29,7 +29,7 @@ def get_year_from_year_id(year_id: str) -> int:
 
 
 def get_year_title(year: int) -> str:
-    return f"{year}–{str(year + 1)[-2:]}"
+    return f"{year}-{str(year + 1)[-2:]}"
 
 
 def get_year_decade(year: int) -> int:

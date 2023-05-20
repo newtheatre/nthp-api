@@ -1,7 +1,6 @@
 import datetime
 import json
 import logging
-from typing import Optional
 
 import peewee
 
@@ -14,7 +13,7 @@ from smugmugger.schema import SmugMugAlbum, SmugMugImage, SmugMugImageCollection
 log = logging.getLogger(__name__)
 
 
-def get_cached_album_images(album_id: str) -> Optional[SmugMugImageCollection]:
+def get_cached_album_images(album_id: str) -> SmugMugImageCollection | None:
     try:
         cached_result = database.SmugMugResponse.get(
             database.SmugMugResponse.id == album_id

@@ -1,5 +1,4 @@
 import json
-from typing import List, Optional
 
 import peewee
 
@@ -16,7 +15,7 @@ def get_show_query() -> peewee.Query:
     )
 
 
-def get_show_play(show: models.Show) -> Optional[schema.PlayShow]:
+def get_show_play(show: models.Show) -> schema.PlayShow | None:
     """
     Decide if a show is a play or not and return PlayShow if it is.
     """
@@ -29,7 +28,7 @@ def get_show_play(show: models.Show) -> Optional[schema.PlayShow]:
         return None
 
 
-def get_show_playwright(show: models.Show) -> Optional[schema.PlaywrightShow]:
+def get_show_playwright(show: models.Show) -> schema.PlaywrightShow | None:
     if show.devised:
         if show.devised is True:
             return schema.PlaywrightShow(
@@ -81,7 +80,7 @@ def get_show_playwright(show: models.Show) -> Optional[schema.PlaywrightShow]:
     return None
 
 
-def get_show_roles(person_refs: List[models.PersonRef]) -> List[schema.ShowRole]:
+def get_show_roles(person_refs: list[models.PersonRef]) -> list[schema.ShowRole]:
     query = database.Person.select(database.Person.id, database.Person.headshot).where(
         database.Person.id.in_(
             [
@@ -116,7 +115,7 @@ def get_show_roles(person_refs: List[models.PersonRef]) -> List[schema.ShowRole]
 
 def get_show_venue(
     show_inst: database.Show, show_data: models.Show
-) -> Optional[schema.VenueShow]:
+) -> schema.VenueShow | None:
     return (
         schema.VenueShow(
             id=show_inst.venue_id,

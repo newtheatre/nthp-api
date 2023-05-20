@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 import smugmugger
+
 from nthp_build import database
 from nthp_build.assets import AssetSource, AssetType
 
@@ -34,7 +35,6 @@ async def async_main():
         )
 
         log.info(f"Writing {len(assets_to_update)} assets (albums) to db")
-        # update_album_data(albums)
 
 
 def run():

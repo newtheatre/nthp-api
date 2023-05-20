@@ -1,5 +1,4 @@
 import click
-
 from nthp_build import logs
 
 logs.init()

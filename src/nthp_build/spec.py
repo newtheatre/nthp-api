@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import List, Optional, Type, Union
+from typing import Union
 
 import pydantic.schema
 from pydantic_collections import BaseCollectionModel
@@ -33,20 +33,20 @@ JSON_SCHEMA = pydantic.schema.schema(
     ref_prefix="#/components/schemas/",
 )
 
-Model = Union[Type[schema.NthpSchema], Type[BaseCollectionModel]]
+Model = Union[type[schema.NthpSchema], type[BaseCollectionModel]]
 
 
 def check_model_present(model: Model):
-    if not model.__name__ in JSON_SCHEMA["definitions"]:
+    if model.__name__ not in JSON_SCHEMA["definitions"]:
         raise ValueError(f"Model {model} not found in JSON_SCHEMA")
 
 
 def make_basic_get_operation(
     operation_id: str,
-    tags: List[str],
+    tags: list[str],
     summary: str,
     model: Model,
-    description: Optional[str] = None,
+    description: str | None = None,
 ):
     check_model_present(model)
     return {
@@ -71,11 +71,11 @@ def make_basic_get_operation(
 
 def make_detail_get_operation(
     operation_id: str,
-    tags: List[str],
+    tags: list[str],
     summary: str,
     model: Model,
     key: str,
-    description: Optional[str] = None,
+    description: str | None = None,
 ):
     check_model_present(model)
     return {
@@ -276,7 +276,7 @@ SPEC = {
 }
 
 
-def write_spec(path: Union[str, Path]):
+def write_spec(path: str | Path):
     with open(path, "w") as f:
         json.dump(SPEC, f, indent=4)
 

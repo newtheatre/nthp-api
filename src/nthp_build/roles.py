@@ -1,4 +1,4 @@
-from typing import List, NamedTuple, Set
+from typing import NamedTuple
 
 import peewee
 from slugify import slugify
@@ -8,14 +8,14 @@ from nthp_build import database, schema, years
 
 class RoleDefinition(NamedTuple):
     name: str
-    aliases: Set[str] = set()
+    aliases: set[str] = set()
 
 
-COMMITTEE_ROLE_DEFINITIONS: List[RoleDefinition] = [
+COMMITTEE_ROLE_DEFINITIONS: list[RoleDefinition] = [
     RoleDefinition(name="President"),
     RoleDefinition(name="Treasurer"),
 ]
-CREW_ROLE_DEFINITIONS: List[RoleDefinition] = [
+CREW_ROLE_DEFINITIONS: list[RoleDefinition] = [
     RoleDefinition(name="Director"),
     RoleDefinition(name="Producer"),
     RoleDefinition(name="Musical Director"),
@@ -76,18 +76,18 @@ def get_role_id(role_name: str) -> str:
 
 def _get_people_role_conditions(
     target_type: str,
-) -> List[peewee.Expression]:
+) -> list[peewee.Expression]:
     return [
         database.PersonRole.target_type == target_type,
         database.PersonRole.person_id.is_null(False),
         database.PersonRole.person_name.is_null(False),
-        database.PersonRole.is_person == True,
+        database.PersonRole.is_person is True,
     ]
 
 
 def get_people_committee_roles_by_role(
     role_name: str,
-) -> List[schema.PersonCommitteeRoleList]:
+) -> list[schema.PersonCommitteeRoleList]:
     """
     Get a list of PersonCommitteeRoleList for a single role, will match aliases.
     People will be duplicated if they have held the position more than once.
@@ -127,7 +127,7 @@ def get_people_committee_roles_by_role(
     )
 
 
-def get_people_crew_roles_by_role(role_name: str) -> List[schema.PersonShowRoleList]:
+def get_people_crew_roles_by_role(role_name: str) -> list[schema.PersonShowRoleList]:
     """
     Get a list of PersonShowRoleList for a single role, will match aliases.
     People will not duplicated.
@@ -171,7 +171,7 @@ def get_people_crew_roles_by_role(role_name: str) -> List[schema.PersonShowRoleL
     )
 
 
-def get_people_cast() -> List[schema.PersonShowRoleList]:
+def get_people_cast() -> list[schema.PersonShowRoleList]:
     """
     Get a list of PersonShowRoleList for acting.
     People will not duplicated.

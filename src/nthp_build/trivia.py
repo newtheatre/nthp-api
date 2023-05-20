@@ -1,4 +1,3 @@
-from typing import List, Optional
 
 from nthp_build import database, models, people, schema
 
@@ -8,9 +7,9 @@ def save_trivia(
     target_id: str,
     target_type: str,
     target_name: str,
-    target_image_id: Optional[str],
+    target_image_id: str | None,
     target_year: int,
-    trivia_list: List[models.Trivia],
+    trivia_list: list[models.Trivia],
 ) -> None:
     rows = []
     for trivia in trivia_list:
@@ -33,7 +32,7 @@ def save_trivia(
 
 def make_targeted_trivia(
     target_id: str, target_type: str
-) -> List[schema.TargetedTrivia]:
+) -> list[schema.TargetedTrivia]:
     query = database.Trivia.select().where(
         database.Trivia.target_id == target_id,
         database.Trivia.target_type == target_type,
@@ -49,7 +48,7 @@ def make_targeted_trivia(
     ]
 
 
-def make_person_trivia(person_id: str) -> List[schema.PersonTrivia]:
+def make_person_trivia(person_id: str) -> list[schema.PersonTrivia]:
     query = database.Trivia.select().where(
         database.Trivia.person_id == person_id,
     )

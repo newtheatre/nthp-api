@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from pydantic import BaseModel
 from pydantic_collections import BaseCollectionModel
@@ -12,12 +11,12 @@ class SmugMugPages(BaseModel):
     RequestedCount: int
     FirstPage: str
     LastPage: str
-    NextPage: Optional[str]
+    NextPage: str | None
 
 
 class SmugMugResponseInner(BaseModel):
     Uri: str
-    Pages: Optional[SmugMugPages]
+    Pages: SmugMugPages | None
 
 
 class SmugMugResponse(BaseModel):
@@ -48,7 +47,7 @@ class SmugMugImage(BaseModel):
     IsVideo: bool
     OriginalHeight: int
     OriginalWidth: int
-    OriginalSize: Optional[int]
+    OriginalSize: int | None
     Processing: bool
     ThumbnailUrl: str
     Title: str

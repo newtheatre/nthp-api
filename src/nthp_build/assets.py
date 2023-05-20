@@ -1,12 +1,13 @@
 import json
 import logging
 import mimetypes
+from collections.abc import Generator, Iterable
 from enum import Enum
-from typing import Generator, Iterable, List, Optional, Union
+
+from smugmugger import SmugMugImage
 
 from nthp_build import database, models, schema
 from nthp_build.documents import DocumentPath
-from smugmugger import SmugMugImage
 
 log = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ class AssetCategory(database.DbCompatEnumMixin, Enum):
     HEADSHOT = "headshot"
 
 
-def get_mime_type(source: AssetSource, type: AssetType, id: str) -> Optional[str]:
+def get_mime_type(source: AssetSource, type: AssetType, id: str) -> str | None:
     """
     Decide or determine the mime-type of an asset.
     :param source: Where does this asset come from?
@@ -69,9 +70,9 @@ def save_asset(
     source: AssetSource,
     type: AssetType,
     id: str,
-    category: Optional[Union[AssetCategory, str]] = None,
-    title: Optional[str] = None,
-    page: Optional[int] = None,
+    category: AssetCategory | str | None = None,
+    title: str | None = None,
+    page: int | None = None,
 ) -> database.Asset:
     return database.Asset.create(
         target_id=target_id,
@@ -133,7 +134,7 @@ def assets_from_show_model(
 
 def save_show_assets(
     path: DocumentPath, show_assets: Iterable[schema.Asset]
-) -> List[database.Asset]:
+) -> list[database.Asset]:
     """Write assets to the database"""
     return [
         save_asset(
@@ -152,7 +153,7 @@ def save_show_assets(
 
 def save_person_assets(
     path: DocumentPath, person: models.Person
-) -> List[database.Asset]:
+) -> list[database.Asset]:
     assets = []
     if person.headshot:
         assets.append(
@@ -169,12 +170,11 @@ def save_person_assets(
     return assets
 
 
-filter_assets_by_type = lambda assets, type: list(
-    filter(lambda asset: asset.type.lower() == type.value, assets)
-)
+def filter_assets_by_type(assets, type):
+    return list(filter(lambda asset: asset.type.lower() == type.value, assets))
 
 
-def pick_show_primary_image(assets: List[models.Asset]) -> Optional[str]:
+def pick_show_primary_image(assets: list[models.Asset]) -> str | None:
     """
     Pick an image to use as the primary, to be used in list views &c
     TODO: Currently we return a SmugMug ID rather than a full Asset object.
@@ -208,7 +208,7 @@ def smugmug_asset_to_asset(smugmug_asset: SmugMugImage) -> schema.Asset:
 
 def get_asset_collection_from_album(
     album: database.Asset,
-) -> Optional[schema.AssetCollection]:
+) -> schema.AssetCollection | None:
     """
     Get AssetCollection from an asset album.
     Currently, we only support SmugMug albums.
