@@ -26,6 +26,10 @@ class Location(NthpSchema):
     lat: float
     lon: float
 
+    @classmethod
+    def from_model(cls, model: models.Location):
+        return cls(lat=model.lat, lon=model.lon)
+
 
 class PersonRoleList(models.PersonRole):
     class Config(ResponseConfig):
@@ -34,7 +38,7 @@ class PersonRoleList(models.PersonRole):
 
 class PersonList(NthpSchema):
     id: str
-    name: str
+    name: Optional[str]
     is_person: bool
     headshot: Optional[str]
     has_bio: bool
@@ -54,31 +58,31 @@ class PlaywrightType(Enum):
 
 
 class Playwright(NthpSchema):
-    id: Optional[str]
-    name: Optional[str]
-    person_id: Optional[str]
+    id: Optional[str] = None
+    name: Optional[str] = None
+    person_id: Optional[str] = None
 
 
 class PlaywrightShow(Playwright):
     type: PlaywrightType
-    descriptor: Optional[str]
+    descriptor: Optional[str] = None
     student_written: bool
 
 
 class ShowRole(NthpSchema):
-    role: Optional[str]
+    role: Optional[str] = None
     person: Optional[PersonList]
-    note: Optional[str]
+    note: Optional[str] = None
 
 
 class Asset(NthpSchema):
     type: str
     source: str
     id: str
-    mime_type: Optional[str]
-    category: Optional[str]
-    title: Optional[str]
-    page: Optional[int]
+    mime_type: Optional[str] = None
+    category: Optional[str] = None
+    title: Optional[str] = None
+    page: Optional[int] = None
 
 
 class AssetCollection(BaseCollectionModel[Asset]):

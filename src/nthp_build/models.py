@@ -158,28 +158,28 @@ class Venue(NthpModel):
     built: Optional[int]
     images: List[str] = []
     location: Optional[Location]
-    city: Optional[str]
-    sort: Optional[int]
-    comment: Optional[str]
+    city: Optional[str] = None
+    sort: Optional[int] = None
+    comment: Optional[str] = None
 
 
 class Person(NthpModel):
-    id: Optional[str]
+    id: Optional[str] = None
     title: str
-    submitted: Optional[datetime.date]
-    headshot: Optional[str]
+    submitted: Optional[datetime.date] = None
+    headshot: Optional[str] = None
     # course: List[str] = [] TODO: both lists and strings
-    graduated: Optional[int]
-    award: Optional[str]
+    graduated: Optional[int] = None
+    award: Optional[str] = None
     # career: Optional[str] TODO: both lists and strings
     links: List[Link] = []
     news: List[Link] = []
-    comment: Optional[str]
+    comment: Optional[str] = None
 
 
 class HistoryRecord(NthpModel):
     year: str
-    academic_year: Optional[str]
+    academic_year: Optional[str] = None
     title: str
     description: str
 
