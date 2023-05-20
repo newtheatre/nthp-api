@@ -81,7 +81,7 @@ def _get_people_role_conditions(
         database.PersonRole.target_type == target_type,
         database.PersonRole.person_id.is_null(False),
         database.PersonRole.person_name.is_null(False),
-        database.PersonRole.is_person is True,
+        database.PersonRole.is_person == True,  # noqa: E712, need to use ==
     ]
 
 

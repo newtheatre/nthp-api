@@ -20,8 +20,9 @@ def save_person_roles(
     target_type: str,  # TODO: why not PersonRoleType?
     target_year: int,
     person_list: list[nthp_build.models.PersonRef],
-):
+) -> list[nthp_build.models.PersonRole]:
     rows = []
+    person_roles: list[nthp_build.models.PersonRole] = []
     for person_ref in person_list:
         person_role = nthp_build.models.PersonRole(
             person_id=get_person_id(person_ref.name) if person_ref.name else None,
@@ -31,6 +32,7 @@ def save_person_roles(
             is_person=person_ref.person,
             comment=person_ref.comment,
         )
+        person_roles.append(person_role)
         rows.append(
             {
                 "target_id": target,
@@ -44,6 +46,7 @@ def save_person_roles(
             }
         )
     database.PersonRole.insert_many(rows).execute()
+    return person_roles
 
 
 def get_real_people() -> peewee.ModelSelect:
@@ -113,7 +116,7 @@ def get_person_collaborators(person_id: str) -> list[schema.PersonCollaborator]:
     :param person_id: Which person to get collaborators for
     :return: A set of collaborators
     """
-    # Get a list of targets to look for collaborators
+    # Get a list of targets to look for collaborators, shows where person_id is present
     target_query = database.PersonRole.select(
         database.PersonRole.target_id.distinct()
     ).where(database.PersonRole.person_id == person_id)
@@ -122,10 +125,12 @@ def get_person_collaborators(person_id: str) -> list[schema.PersonCollaborator]:
     collaborator_roles_query = (
         database.PersonRole.select()
         .where(
-            database.PersonRole.target_id.in_(targets),
-            database.PersonRole.person_id != person_id,
-            database.PersonRole.person_id.is_null(False),
-            database.PersonRole.is_person is True,
+            database.PersonRole.target_id.in_(
+                targets
+            ),  # show where person_id is present
+            database.PersonRole.person_id != person_id,  # exclude source person
+            database.PersonRole.person_id.is_null(False),  # exclude null person_id
+            database.PersonRole.is_person == True,  # noqa: E712, need to use ==
         )
         .order_by(database.PersonRole.person_id)
     )
@@ -158,7 +163,7 @@ def get_people_from_roles(
         )
         .where(database.PersonRole.person_id.not_in(excluded_ids or []))
         .where(database.PersonRole.person_id.is_null(False))
-        .where(database.PersonRole.is_person is True)
+        .where(database.PersonRole.is_person == True)  # noqa: E712, need to use ==
         .group_by(database.PersonRole.person_id)
         .order_by(database.PersonRole.person_id)
     )
