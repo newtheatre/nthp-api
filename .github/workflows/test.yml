@@ -3,8 +3,8 @@ on: [push, pull_request]
 
 env:
   # Task vars
-  python-version: 3.9
-  poetry-version: 1.1.11
+  python-version: 3.11
+  poetry-version: 1.4.0
 
 jobs:
   pre-commit:
@@ -23,7 +23,7 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ env.python-version }}
-      - uses: abatilo/actions-poetry@v2.1.0
+      - uses: abatilo/actions-poetry@v2.3.0
         with:
           poetry-version: ${{ env.poetry-version }}
       - uses: actions/cache@v1

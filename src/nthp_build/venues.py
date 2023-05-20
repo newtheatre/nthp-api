@@ -5,7 +5,7 @@ from peewee import ModelSelect
 from slugify import slugify
 
 from nthp_build import database, models
-from nthp_build.schema import VenueCollection, VenueDetail, VenueList
+from nthp_build.schema import Location, VenueCollection, VenueDetail, VenueList
 from nthp_build.shows import get_show_list_item
 
 
@@ -39,7 +39,9 @@ def get_venue_collection(
                 name=venue_inst.name,
                 show_count=len(show_venue_map[venue_inst.id]),
                 built=venue_model.built,
-                location=venue_model.location,
+                location=Location.from_model(venue_model.location)
+                if venue_model.location
+                else None,
                 city=venue_model.city,
             )
             for venue_inst, venue_model in map(
@@ -58,7 +60,9 @@ def get_venue_detail(
         name=venue_inst.name,
         show_count=len(shows),
         built=venue_data.built,
-        location=venue_data.location,
+        location=Location.from_model(venue_data.location)
+        if venue_data.location
+        else None,
         city=venue_data.city,
         # assets=venue_data.assets,
         shows=[get_show_list_item(show) for show in shows],

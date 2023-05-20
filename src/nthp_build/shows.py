@@ -172,12 +172,12 @@ def get_show_detail(show_inst: database.Show) -> schema.ShowDetail:
     )
 
 
-def get_show_people_names(show: schema.ShowDetail) -> List[str]:
-    people_names = []
+def get_show_people_names(show: schema.ShowDetail) -> set[str]:
+    people_names = set()
     for credit in show.cast:
-        if credit.person:
-            people_names.append(credit.person.name)
+        if credit.person and credit.person.name is not None:
+            people_names.add(credit.person.name)
     for person in show.crew:
-        if person.person:
-            people_names.append(person.person.name)
+        if person.person and person.person.name is not None:
+            people_names.add(person.person.name)
     return people_names
