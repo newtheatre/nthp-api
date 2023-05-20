@@ -6,7 +6,7 @@ authors = ["Will Pimblett <will@wjdp.uk>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 pydantic = "^1.10.7"
 python-frontmatter = "^1.0.0"
 peewee = "^3.16.2"
@@ -35,7 +35,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
-python_version = "3.9" 
+python_version = "3.11"
 files = "src"
 pretty = true
 ignore_missing_imports = true
