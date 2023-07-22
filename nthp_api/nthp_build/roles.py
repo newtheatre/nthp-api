@@ -3,7 +3,7 @@ from typing import NamedTuple
 import peewee
 from slugify import slugify
 
-from nthp_build import database, schema, years
+from nthp_api.nthp_build import database, schema, years
 
 
 class RoleDefinition(NamedTuple):

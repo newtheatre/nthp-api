@@ -6,7 +6,7 @@ from pydantic import BaseModel, root_validator, validator
 from pydantic_collections import BaseCollectionModel
 from slugify import slugify
 
-from nthp_build import years
+from nthp_api.nthp_build import years
 
 
 class NthpModel(BaseModel):

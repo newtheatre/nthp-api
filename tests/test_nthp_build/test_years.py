@@ -1,8 +1,9 @@
 from pathlib import PosixPath
 
 import pytest
-from nthp_build import years
-from nthp_build.documents import DocumentPath
+
+from nthp_api.nthp_build import years
+from nthp_api.nthp_build.documents import DocumentPath
 
 
 @pytest.mark.parametrize(

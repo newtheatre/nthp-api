@@ -1,4 +1,4 @@
-from nthp_build import schema
+from nthp_api.nthp_build import schema
 
 
 class TestPersonGraduated:

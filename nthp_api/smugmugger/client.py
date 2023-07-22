@@ -7,8 +7,8 @@ from typing import NamedTuple
 
 import httpx
 
-from smugmugger import schema
-from smugmugger.config import settings
+from nthp_api.smugmugger import schema
+from nthp_api.smugmugger.config import settings
 
 log = logging.getLogger(__name__)
 PAGE_SIZE = 100

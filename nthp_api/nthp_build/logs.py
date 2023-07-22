@@ -2,7 +2,7 @@ import logging
 
 import coloredlogs
 
-from nthp_build.config import settings
+from nthp_api.nthp_build.config import settings
 
 
 def init():

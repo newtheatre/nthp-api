@@ -2,7 +2,7 @@ import logging
 
 import peewee
 
-from smugmugger.config import settings
+from nthp_api.smugmugger.config import settings
 
 log = logging.getLogger(__name__)
 

@@ -1,10 +1,9 @@
 import asyncio
 import logging
 
-import smugmugger
-
-from nthp_build import database
-from nthp_build.assets import AssetSource, AssetType
+from nthp_api import smugmugger
+from nthp_api.nthp_build import database
+from nthp_api.nthp_build.assets import AssetSource, AssetType
 
 log = logging.getLogger(__name__)
 

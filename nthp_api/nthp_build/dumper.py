@@ -10,7 +10,7 @@ from typing import NamedTuple, Protocol
 
 import pydantic
 
-from nthp_build import (
+from nthp_api.nthp_build import (
     assets,
     database,
     history,
@@ -27,9 +27,9 @@ from nthp_build import (
     venues,
     years,
 )
-from nthp_build.assets import AssetType
-from nthp_build.config import settings
-from nthp_build.parallel import DumperSharedState, make_dumper_state
+from nthp_api.nthp_build.assets import AssetType
+from nthp_api.nthp_build.config import settings
+from nthp_api.nthp_build.parallel import DumperSharedState, make_dumper_state
 
 log = logging.getLogger(__name__)
 OUTPUT_DIR = Path("dist")

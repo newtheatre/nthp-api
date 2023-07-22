@@ -1,9 +1,12 @@
 [tool.poetry]
-name = "nthp-api"
+name = "nthp_api"
 version = "0.1.0"
 description = ""
 authors = ["Will Pimblett <will@wjdp.uk>"]
 license = "MIT"
+
+[tool.poetry.scripts]
+nthp = "nthp_api.cli:cli"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -36,7 +39,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
 python_version = "3.11"
-files = "src"
+files = "nthp_api"
 pretty = true
 ignore_missing_imports = true
 

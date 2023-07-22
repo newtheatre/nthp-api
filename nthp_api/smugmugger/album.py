@@ -1,5 +1,9 @@
-from smugmugger.client import SmugMugClient, get, get_pages
-from smugmugger.schema import SmugMugAlbum, SmugMugImage, SmugMugImageCollection
+from nthp_api.smugmugger.client import SmugMugClient, get, get_pages
+from nthp_api.smugmugger.schema import (
+    SmugMugAlbum,
+    SmugMugImage,
+    SmugMugImageCollection,
+)
 
 
 async def get_album(client: SmugMugClient, album_id: str) -> SmugMugAlbum:

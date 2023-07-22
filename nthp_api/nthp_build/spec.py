@@ -4,7 +4,7 @@ from pathlib import Path
 import pydantic.schema
 from pydantic_collections import BaseCollectionModel
 
-from nthp_build import schema
+from nthp_api.nthp_build import schema
 
 JSON_SCHEMA = pydantic.schema.schema(
     (

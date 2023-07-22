@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from smugmugger import schema
+from nthp_api.smugmugger import schema
 
 from .fixtures import albumimages
 

@@ -1,4 +1,4 @@
-from nthp_build import database, dumper, logs
+from nthp_api.nthp_build import database, dumper, logs
 
 logs.init()
 database.init_db()

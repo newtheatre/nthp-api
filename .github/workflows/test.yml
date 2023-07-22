@@ -37,7 +37,7 @@ jobs:
         with:
           repository: newtheatre/history-project
           path: content
-      - run: PYTHONPATH=src poetry run pytest
+      - run: PYTHONPATH=nthp_api poetry run pytest
 
   mypy:
     runs-on: ubuntu-latest

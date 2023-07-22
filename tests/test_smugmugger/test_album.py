@@ -1,8 +1,9 @@
 import datetime
 
 import pytest
-from smugmugger import album, make_client
-from smugmugger.client import SmugMugNotFound
+
+from nthp_api.smugmugger import album, make_client
+from nthp_api.smugmugger.client import SmugMugNotFound
 
 
 class TestGetAlbum:

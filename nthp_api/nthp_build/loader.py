@@ -10,7 +10,7 @@ import yaml
 from pydantic import ValidationError
 from pydantic_collections import BaseCollectionModel
 
-from nthp_build import (
+from nthp_api.nthp_build import (
     assets,
     database,
     models,
@@ -23,8 +23,13 @@ from nthp_build import (
     venues,
     years,
 )
-from nthp_build.content import markdown_to_html, markdown_to_plaintext
-from nthp_build.documents import DocumentPath, find_documents, load_document, load_yaml
+from nthp_api.nthp_build.content import markdown_to_html, markdown_to_plaintext
+from nthp_api.nthp_build.documents import (
+    DocumentPath,
+    find_documents,
+    load_document,
+    load_yaml,
+)
 
 log = logging.getLogger(__name__)
 

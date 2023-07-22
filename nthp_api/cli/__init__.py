@@ -1,5 +1,6 @@
 import click
-from nthp_build import logs
+
+from nthp_api.nthp_build import logs
 
 logs.init()
 
@@ -11,7 +12,7 @@ def cli():
 
 @cli.command()
 def load():
-    from nthp_build import database, loader
+    from nthp_api.nthp_build import database, loader
 
     database.init_db(create=True)
     loader.run_loaders()
@@ -19,7 +20,7 @@ def load():
 
 @cli.command()
 def stats():
-    from nthp_build import database
+    from nthp_api.nthp_build import database
 
     database.init_db()
     database.show_stats()
@@ -27,17 +28,17 @@ def stats():
 
 @cli.command()
 def smug():
-    import smugmugger.database
-    from nthp_build import database, smugmug
+    import nthp_api.smugmugger.database
+    from nthp_api.nthp_build import database, smugmug
 
     database.init_db()
-    smugmugger.database.init_db()
+    nthp_api.smugmugger.database.init_db()
     smugmug.run()
 
 
 @cli.command()
 def dump():
-    from nthp_build import database, dumper
+    from nthp_api.nthp_build import database, dumper
 
     database.init_db()
     dumper.delete_output_dir()
@@ -46,17 +47,17 @@ def dump():
 
 @cli.command()
 def build():
-    from nthp_build.config import settings
+    from nthp_api.nthp_build.config import settings
 
     settings.db_uri = ":memory:"
 
-    import smugmugger.database
-    from nthp_build import database, dumper, loader, smugmug
+    import nthp_api.smugmugger.database
+    from nthp_api.nthp_build import database, dumper, loader, smugmug
 
     database.init_db(create=True)
     loader.run_loaders()
     database.show_stats()
-    smugmugger.database.init_db()
+    nthp_api.smugmugger.database.init_db()
     smugmug.run()
     dumper.delete_output_dir()
     dumper.dump_all()

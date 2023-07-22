@@ -1,5 +1,6 @@
 import pytest
-from nthp_build import models, schema, shows
+
+from nthp_api.nthp_build import models, schema, shows
 
 
 @pytest.mark.parametrize(

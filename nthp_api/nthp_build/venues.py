@@ -4,9 +4,9 @@ from collections.abc import Iterable
 from peewee import ModelSelect
 from slugify import slugify
 
-from nthp_build import database, models
-from nthp_build.schema import Location, VenueCollection, VenueDetail, VenueList
-from nthp_build.shows import get_show_list_item
+from nthp_api.nthp_build import database, models
+from nthp_api.nthp_build.schema import Location, VenueCollection, VenueDetail, VenueList
+from nthp_api.nthp_build.shows import get_show_list_item
 
 
 def get_venue_id(name: str) -> str:

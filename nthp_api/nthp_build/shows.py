@@ -2,7 +2,7 @@ import json
 
 import peewee
 
-from nthp_build import database, models, people, playwrights, schema
+from nthp_api.nthp_build import database, models, people, playwrights, schema
 
 
 def get_show_query() -> peewee.Query:

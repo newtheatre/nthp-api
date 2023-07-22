@@ -1,5 +1,6 @@
 import pytest
-from nthp_build import assets, models
+
+from nthp_api.nthp_build import assets, models
 
 
 @pytest.mark.parametrize(
