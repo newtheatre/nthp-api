@@ -6,6 +6,8 @@ from typing import Any, NamedTuple
 import frontmatter
 import yaml
 
+from nthp_api.nthp_build.config import settings
+
 log = logging.getLogger(__name__)
 
 
@@ -17,9 +19,6 @@ class DocumentPath(NamedTuple):
     basename: str
 
 
-CONTENT_ROOT = Path("content")
-
-
 def find_documents(content_directory: Path | str) -> Iterable[DocumentPath]:
     def map_path(path: Path) -> DocumentPath | None:
         if path.name.startswith("_"):
@@ -27,9 +26,10 @@ def find_documents(content_directory: Path | str) -> Iterable[DocumentPath]:
         return DocumentPath(
             path=path,
             id=str(
-                path.relative_to(CONTENT_ROOT / content_directory).parent / path.stem
+                path.relative_to(settings.content_root / content_directory).parent
+                / path.stem
             ).lstrip("_"),
-            content_path=path.relative_to(CONTENT_ROOT),
+            content_path=path.relative_to(settings.content_root),
             filename=path.name,
             basename=path.stem,
         )
@@ -37,7 +37,7 @@ def find_documents(content_directory: Path | str) -> Iterable[DocumentPath]:
     return [
         doc_path
         for doc_path in map(
-            map_path, (CONTENT_ROOT / Path(content_directory)).rglob("*.md")
+            map_path, (settings.content_root / Path(content_directory)).rglob("*.md")
         )
         if doc_path is not None
     ]
@@ -48,7 +48,7 @@ def load_document(path: Path) -> frontmatter.Post:
 
 
 def load_yaml(path: Path | str) -> Any:
-    with (CONTENT_ROOT / Path(path)).open() as stream:
+    with (settings.content_root / Path(path)).open() as stream:
         try:
             return yaml.safe_load(stream)
         except yaml.YAMLError:
