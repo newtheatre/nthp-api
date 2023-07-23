@@ -8,4 +8,4 @@ rm bin/s3deploy.tar.gz
 
 bin/s3deploy/s3deploy \
   -bucket $AWS_S3_BUCKET -key $AWS_ACCESS_KEY_ID -secret $AWS_SECRET_ACCESS_KEY \
-  -region eu-west-1 -config .s3deploy.yml -source dist -path v1/master
+  -region eu-west-1 -config .s3deploy.yml -source dist -path v1/nthp-api-master

@@ -46,7 +46,7 @@ jobs:
       - name: Fetch SmugMug data if not cached
         run: wget -nc https://nthp-seed.s3.eu-west-2.amazonaws.com/nthp.smug.db
       - name: Build content database
-        run: poetry run python nthp load
+        run: poetry run python nthp load content
       - name: Report database stats
         run: poetry run python nthp stats
       - name: Enrich content database with SmugMug data

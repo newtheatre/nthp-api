@@ -65,7 +65,7 @@ def get_person_show_roles(person_id: str) -> list[schema.PersonShowRoles]:
             on=(database.PersonRole.target_id == database.Show.id),
             attr="show",
         )
-        .order_by(database.Show.year_id.desc(), database.Show.season_sort.desc())
+        .order_by(database.Show.year_id, database.Show.season_sort)
     )
     # Collect all results by show_id
     results_by_show_id: dict[str, list] = defaultdict(list)
