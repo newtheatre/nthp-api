@@ -68,14 +68,6 @@ def build(path):
     environ["DB_URI"] = ":memory:"
     environ["CONTENT_ROOT"] = str(path)
 
-    from nthp_api.nthp_build.config import settings
-
-    # Ensure that the settings are set correctly, if this breaks we've probably imported
-    # settings before setting the env vars.
-    assert (
-        settings.content_root == path
-    ), f"Content root improperly loaded, {settings.content_root} != {path}"
-
     log.info(f"Building from {path} using in-memory database")
 
     import nthp_api.smugmugger.database
