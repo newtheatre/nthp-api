@@ -72,7 +72,9 @@ def build(path):
 
     # Ensure that the settings are set correctly, if this breaks we've probably imported
     # settings before setting the env vars.
-    assert settings.content_root == path, f"CONTENT_ROOT is {settings.content_root}"
+    assert (
+        settings.content_root == path
+    ), f"Content root improperly loaded, {settings.content_root} != {path}"
 
     log.info(f"Building from {path} using in-memory database")
 
