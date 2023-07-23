@@ -4,11 +4,15 @@ import logging
 
 import peewee
 
-import smugmugger.album
-from smugmugger import database
-from smugmugger.client import SmugMugClient, make_client
-from smugmugger.config import settings
-from smugmugger.schema import SmugMugAlbum, SmugMugImage, SmugMugImageCollection
+import nthp_api.smugmugger.album
+from nthp_api.smugmugger import database
+from nthp_api.smugmugger.client import SmugMugClient, make_client
+from nthp_api.smugmugger.config import settings
+from nthp_api.smugmugger.schema import (
+    SmugMugAlbum,
+    SmugMugImage,
+    SmugMugImageCollection,
+)
 
 log = logging.getLogger(__name__)
 
@@ -45,8 +49,8 @@ async def get_album_images(
     if not settings.smugmug_fetch:
         return SmugMugImageCollection()
     log.info("Fetching album images for %s", album_id)
-    album = await smugmugger.album.get_album(client, album_id)
-    album_images = await smugmugger.album.get_album_images(client, album_id)
+    album = await nthp_api.smugmugger.album.get_album(client, album_id)
+    album_images = await nthp_api.smugmugger.album.get_album_images(client, album_id)
     upsert_cached_album_images(album_id, album, album_images)
     log.info("Fetched album images for %s", album_id)
     return album_images

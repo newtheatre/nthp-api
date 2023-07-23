@@ -6,9 +6,8 @@ from typing import Any
 import peewee
 from slugify import slugify
 
-import nthp_build.models
-from nthp_build import database, models, schema, years
-from nthp_build.config import settings
+from nthp_api.nthp_build import database, models, schema, years
+from nthp_api.nthp_build.config import settings
 
 
 def get_person_id(name: str) -> str:
@@ -19,12 +18,12 @@ def save_person_roles(
     target: str,  # TODO: should be target_id
     target_type: str,  # TODO: why not PersonRoleType?
     target_year: int,
-    person_list: list[nthp_build.models.PersonRef],
-) -> list[nthp_build.models.PersonRole]:
+    person_list: list[models.PersonRef],
+) -> list[models.PersonRole]:
     rows = []
-    person_roles: list[nthp_build.models.PersonRole] = []
+    person_roles: list[models.PersonRole] = []
     for person_ref in person_list:
-        person_role = nthp_build.models.PersonRole(
+        person_role = models.PersonRole(
             person_id=get_person_id(person_ref.name) if person_ref.name else None,
             person_name=person_ref.name,
             role=person_ref.role,

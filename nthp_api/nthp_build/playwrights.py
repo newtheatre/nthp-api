@@ -3,7 +3,7 @@ from typing import NamedTuple
 
 from slugify import slugify
 
-from nthp_build import database, people, schema
+from nthp_api.nthp_build import database, people, schema
 
 
 def get_play_id(name: str) -> str:

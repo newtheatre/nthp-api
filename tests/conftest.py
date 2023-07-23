@@ -1,4 +1,8 @@
+from os import environ
+
 import pytest
+
+environ["CONTENT_ROOT"] = "content"
 
 
 @pytest.fixture(scope="module")

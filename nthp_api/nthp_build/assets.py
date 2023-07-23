@@ -4,10 +4,9 @@ import mimetypes
 from collections.abc import Generator, Iterable
 from enum import Enum
 
-from smugmugger import SmugMugImage
-
-from nthp_build import database, models, schema
-from nthp_build.documents import DocumentPath
+from nthp_api.nthp_build import database, models, schema
+from nthp_api.nthp_build.documents import DocumentPath
+from nthp_api.smugmugger import SmugMugImage
 
 log = logging.getLogger(__name__)
 

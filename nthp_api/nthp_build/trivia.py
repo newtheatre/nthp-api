@@ -1,4 +1,4 @@
-from nthp_build import database, models, people, schema
+from nthp_api.nthp_build import database, models, people, schema
 
 
 def save_trivia(  # noqa: PLR0913

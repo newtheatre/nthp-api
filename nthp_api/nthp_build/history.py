@@ -1,4 +1,4 @@
-from nthp_build import database, schema
+from nthp_api.nthp_build import database, schema
 
 
 def get_history_records() -> list[schema.HistoryRecord]:

@@ -1,5 +1,6 @@
 import pytest
-from smugmugger.client import get_pages, make_client
+
+from nthp_api.smugmugger.client import get_pages, make_client
 
 
 class TestGetPages:

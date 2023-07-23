@@ -1,4 +1,4 @@
-from nthp_build import spec
+from nthp_api.nthp_build import spec
 
 
 def test_spec_generates():

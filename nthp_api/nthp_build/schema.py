@@ -7,7 +7,7 @@ import humps
 from pydantic import BaseModel, Field
 from pydantic_collections import BaseCollectionModel
 
-from nthp_build import models, years
+from nthp_api.nthp_build import models, years
 
 
 class ResponseConfig:

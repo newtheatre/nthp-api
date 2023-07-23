@@ -1,5 +1,6 @@
 import pytest
-from nthp_build import content
+
+from nthp_api.nthp_build import content
 
 MARKDOWN_TEST_CASES = [
     (None, None, None),

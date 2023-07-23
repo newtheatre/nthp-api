@@ -1,5 +1,6 @@
 import pytest
-from nthp_build import venues
+
+from nthp_api.nthp_build import venues
 
 
 @pytest.mark.parametrize(

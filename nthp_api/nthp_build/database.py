@@ -2,7 +2,7 @@ import logging
 
 import peewee
 
-from nthp_build.config import settings
+from nthp_api.nthp_build.config import settings
 
 log = logging.getLogger(__name__)
 db = peewee.SqliteDatabase(settings.db_uri)

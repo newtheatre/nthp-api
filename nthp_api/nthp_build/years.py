@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-from nthp_build.documents import DocumentPath
+from nthp_api.nthp_build.documents import DocumentPath
 
 YEAR_ID_PATTERN = re.compile(r"^\d{2}_\d{2}$")
 YEAR_FULL_LENGTH = 4
