@@ -204,6 +204,9 @@ class PersonShowRoleItem(NthpSchema):
 class PersonShowRoles(NthpSchema):
     show_id: str
     show_title: str
+    show_year_id: str
+    show_year: int
+    show_primary_image: str | None
     roles: list[PersonShowRoleItem]
 
 

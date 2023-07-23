@@ -1,7 +1,6 @@
 import datetime
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Any
 
 import peewee
 from slugify import slugify
@@ -66,10 +65,11 @@ def get_person_show_roles(person_id: str) -> list[schema.PersonShowRoles]:
             on=(database.PersonRole.target_id == database.Show.id),
             attr="show",
         )
+        .order_by(database.Show.year_id.desc(), database.Show.season_sort.desc())
     )
     # Collect all results by show_id
     results_by_show_id: dict[str, list] = defaultdict(list)
-    shows: dict[str, Any] = defaultdict(list)
+    shows: dict[str, database.Show] = {}
     for result in query:
         results_by_show_id[result.target_id].append(result)
         shows[result.target_id] = result.show
@@ -78,6 +78,9 @@ def get_person_show_roles(person_id: str) -> list[schema.PersonShowRoles]:
         schema.PersonShowRoles(
             show_id=show_id,
             show_title=shows[show_id].title,
+            show_year_id=shows[show_id].year_id,
+            show_year=shows[show_id].year,
+            show_primary_image=shows[show_id].primary_image,
             roles=[
                 schema.PersonShowRoleItem(role=role.role, role_type=role.target_type)
                 for role in roles
