@@ -1,4 +1,5 @@
 import datetime
+from pathlib import Path
 
 from pydantic import BaseSettings
 
@@ -6,7 +7,7 @@ from pydantic import BaseSettings
 class Settings(BaseSettings):
     db_uri: str = "nthp.db"
     branch: str = "master"
-    content_root: str
+    content_root: Path
 
     year_start: int = 1940
     year_end: int = datetime.datetime.now().year

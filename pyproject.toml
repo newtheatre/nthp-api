@@ -1,12 +1,13 @@
 [tool.poetry]
 name = "nthp_api"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Will Pimblett <will@wjdp.uk>"]
 license = "MIT"
 
 [tool.poetry.scripts]
 nthp = "nthp_api.cli:cli"
+nthp_api = "nthp_api.cli:cli"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -42,6 +43,7 @@ python_version = "3.11"
 files = "nthp_api"
 pretty = true
 ignore_missing_imports = true
+plugins = [ "pydantic.mypy" ]
 
 [tool.pytest.ini_options]
 asyncio_mode = "strict"
