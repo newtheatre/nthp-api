@@ -1,4 +1,5 @@
 import json
+from importlib.metadata import version
 from pathlib import Path
 
 import pydantic.schema
@@ -114,7 +115,7 @@ SPEC = {
     "openapi": "3.1.0",
     "info": {
         "title": "New Theatre History Project API",
-        "version": "0.0.1",
+        "version": version("nthp_api"),
         "description": "API for serving the content for the New Theatre History "
         "Project. The API is generated from the content repo.",
     },
