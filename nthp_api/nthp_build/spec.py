@@ -1,5 +1,5 @@
 import json
-from importlib.metadata import version
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 import pydantic.schema
@@ -111,11 +111,18 @@ def make_detail_get_operation(  # noqa: PLR0913
     }
 
 
+def get_version() -> str:
+    try:
+        return version("nthp_api")
+    except PackageNotFoundError:
+        return "unknown"
+
+
 SPEC = {
     "openapi": "3.1.0",
     "info": {
         "title": "New Theatre History Project API",
-        "version": version("nthp_api"),
+        "version": get_version(),
         "description": "API for serving the content for the New Theatre History "
         "Project. The API is generated from the content repo.",
     },
