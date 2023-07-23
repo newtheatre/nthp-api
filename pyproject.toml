@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nthp_api"
-version = "0.1.3"
+version = "0.1.4"
 description = "This is a CLI tool for building the Nottingham New Theatre's History Project content database."
 authors = ["Will Pimblett <will@wjdp.uk>"]
 license = "MIT"
