@@ -8,38 +8,32 @@ on:
 env:
   # Task vars
   python-version: 3.11
-  poetry-version: 1.4.0
+  poetry-version: 1.5.1
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Clone code repo
-        uses: actions/checkout@v2
-      - name: Install python
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ env.python-version }}
+        uses: actions/checkout@v3
       - name: Install poetry
         uses: abatilo/actions-poetry@v2.3.0
         with:
           poetry-version: ${{ env.poetry-version }}
-      - name: Download poetry cache
-        uses: actions/cache@v1
+      - name: Install python
+        uses: actions/setup-python@v4
         with:
-          path: ~/.cache/pypoetry
-          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-poetry-2-
+          python-version: ${{ env.python-version }}
+          cache: poetry
       - name: Install python dependencies
         run: poetry install --no-root
       - name: Clone content repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: newtheatre/history-project
           path: content
       - name: Download SmugMug cache
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: nthp.smug.db
           key: smugmug-1

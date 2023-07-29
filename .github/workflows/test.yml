@@ -4,36 +4,31 @@ on: [push, pull_request]
 env:
   # Task vars
   python-version: 3.11
-  poetry-version: 1.4.0
+  poetry-version: 1.5.1
 
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ env.python-version }}
-      - uses: pre-commit/action@v2.0.3
+      - uses: pre-commit/action@v3.0.0
 
   pytest:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: ${{ env.python-version }}
+      - uses: actions/checkout@v3
       - uses: abatilo/actions-poetry@v2.3.0
         with:
           poetry-version: ${{ env.poetry-version }}
-      - uses: actions/cache@v1
+      - uses: actions/setup-python@v4
         with:
-          path: ~/.cache/pypoetry
-          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-poetry-2-
+          python-version: ${{ env.python-version }}
+          cache: poetry
       - run: poetry install --no-root
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: newtheatre/history-project
           path: content
@@ -42,18 +37,13 @@ jobs:
   mypy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: ${{ env.python-version }}
+      - uses: actions/checkout@v3
       - uses: abatilo/actions-poetry@v2.1.0
         with:
           poetry-version: ${{ env.poetry-version }}
-      - uses: actions/cache@v1
+      - uses: actions/setup-python@v4
         with:
-          path: ~/.cache/pypoetry
-          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-poetry-2-
+          python-version: ${{ env.python-version }}
+          cache: poetry
       - run: poetry install --no-root
       - run: poetry run mypy
