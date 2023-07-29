@@ -4,7 +4,7 @@ import datetime
 from enum import Enum
 
 import humps
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic_collections import BaseCollectionModel
 
 from nthp_api.nthp_build import models, years
@@ -16,9 +16,15 @@ class ResponseConfig:
     frozen = True
 
 
+RESPONSE_CONFIG = ConfigDict(
+    populate_by_name=True,
+    alias_generator=humps.camelize,
+    frozen=True,
+)
+
+
 class NthpSchema(BaseModel):
-    class Config(ResponseConfig):
-        pass
+    model_config = RESPONSE_CONFIG
 
 
 class Location(NthpSchema):
@@ -31,15 +37,14 @@ class Location(NthpSchema):
 
 
 class PersonRoleList(models.PersonRole):
-    class Config(ResponseConfig):
-        pass
+    model_config = RESPONSE_CONFIG
 
 
 class PersonList(NthpSchema):
     id: str
-    name: str | None
+    name: str | None = None
     is_person: bool
-    headshot: str | None
+    headshot: str | None = None
     has_bio: bool
 
 
@@ -70,7 +75,7 @@ class PlaywrightShow(Playwright):
 
 class ShowRole(NthpSchema):
     role: str | None = None
-    person: PersonList | None
+    person: PersonList | None = None
     note: str | None = None
 
 
@@ -96,63 +101,63 @@ class VenueShow(NthpSchema):
 class ShowDetail(NthpSchema):
     id: str
     title: str
-    play: PlayShow | None
-    playwright: PlaywrightShow | None
-    adaptor: str | None
-    translator: str | None
-    company: str | None
-    period: str | None
+    play: PlayShow | None = None
+    playwright: PlaywrightShow | None = None
+    adaptor: str | None = None
+    translator: str | None = None
+    company: str | None = None
+    period: str | None = None
     season: str
-    venue: VenueShow | None
-    date_start: datetime.date | None
-    date_end: datetime.date | None
+    venue: VenueShow | None = None
+    date_start: datetime.date | None = None
+    date_end: datetime.date | None = None
     # tour TODO
     cast: list[ShowRole]
     crew: list[ShowRole]
     cast_incomplete: bool
-    cast_note: str | None
+    cast_note: str | None = None
     crew_incomplete: bool
-    crew_note: str | None
+    crew_note: str | None = None
     assets: list[Asset]
-    primary_image: str | None
+    primary_image: str | None = None
 
-    content: str | None
+    content: str | None = None
 
 
 class ShowList(NthpSchema):
     id: str
     title: str
-    playwright: PlaywrightShow | None
-    adaptor: str | None
+    playwright: PlaywrightShow | None = None
+    adaptor: str | None = None
     devised: str | bool
-    season: str | None
-    venue: VenueShow | None
-    date_start: datetime.date | None
-    date_end: datetime.date | None
-    primary_image: str | None
+    season: str | None = None
+    venue: VenueShow | None = None
+    date_start: datetime.date | None = None
+    date_end: datetime.date | None = None
+    primary_image: str | None = None
 
 
 class PlaywrightShowListItem(NthpSchema):
     id: str
     title: str
-    date_start: datetime.date | None
-    date_end: datetime.date | None
-    primary_image: str | None
+    date_start: datetime.date | None = None
+    date_end: datetime.date | None = None
+    primary_image: str | None = None
 
 
 class VenueList(NthpSchema):
     id: str
     name: str
     show_count: int
-    built: int | None
-    location: Location | None
-    city: str | None
+    built: int | None = None
+    location: Location | None = None
+    city: str | None = None
 
 
 class VenueDetail(VenueList):
     assets: list[Asset] = []
     shows: list[ShowList] = []
-    content: str | None
+    content: str | None = None
 
 
 class VenueCollection(BaseCollectionModel[VenueList]):
@@ -197,7 +202,7 @@ class YearDetail(YearList):
 
 
 class PersonShowRoleItem(NthpSchema):
-    role: str | None
+    role: str | None = None
     role_type: str
 
 
@@ -206,7 +211,7 @@ class PersonShowRoles(NthpSchema):
     show_title: str
     show_year_id: str
     show_year: int
-    show_primary_image: str | None
+    show_primary_image: str | None = None
     roles: list[PersonShowRoleItem]
 
 
@@ -220,7 +225,7 @@ class PersonCommitteeRole(NthpSchema):
 class PersonCommitteeRoleList(NthpSchema):
     id: str
     title: str
-    headshot: str | None
+    headshot: str | None = None
     year_title: str
     year_decade: int
     year_id: str
@@ -234,7 +239,7 @@ class PersonCommitteeRoleListCollection(BaseCollectionModel[PersonCommitteeRoleL
 class PersonShowRoleList(NthpSchema):
     id: str
     title: str
-    headshot: str | None
+    headshot: str | None = None
     role: str
     show_count: int
 
@@ -271,12 +276,12 @@ class PersonGraduated(NthpSchema):
 class PersonDetail(NthpSchema):
     id: str
     title: str
-    submitted: datetime.date | None
-    headshot: str | None
-    graduated: PersonGraduated | None
+    submitted: datetime.date | None = None
+    headshot: str | None = None
+    graduated: PersonGraduated | None = None
     show_roles: list[PersonShowRoles]
     committee_roles: list[PersonCommitteeRole]
-    content: str | None
+    content: str | None = None
 
 
 class PersonCollaborator(NthpSchema):
@@ -284,8 +289,7 @@ class PersonCollaborator(NthpSchema):
     person_name: str
     target_ids: list[str]
 
-    class Config(ResponseConfig):
-        frozen = False  # Cannot be frozen as we need an ordered list
+    model_config = RESPONSE_CONFIG  # TODO frozen=False
 
 
 class PersonCollaboratorCollection(BaseCollectionModel[PersonCollaborator]):
@@ -392,11 +396,11 @@ class SearchDocument(NthpSchema):
     type: SearchDocumentType
     title: str
     id: str
-    image_id: str | None
-    playwright: PlaywrightShow | None
-    company: str | None
-    people: list[str] | None
-    plaintext: str | None
+    image_id: str | None = None
+    playwright: PlaywrightShow | None = None
+    company: str | None = None
+    people: list[str] | None = None
+    plaintext: str | None = None
 
 
 class SearchDocumentCollection(BaseCollectionModel[SearchDocument]):

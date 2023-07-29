@@ -1,14 +1,24 @@
 import json
+from collections.abc import Sequence
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
-import pydantic.schema
+from pydantic import BaseModel
+from pydantic.json_schema import JsonSchemaMode, models_json_schema
 from pydantic_collections import BaseCollectionModel
 
 from nthp_api.nthp_build import schema
 
-JSON_SCHEMA = pydantic.schema.schema(
-    (
+
+def make_models_json_schema_models(
+    *models: type[BaseModel],
+) -> Sequence[tuple[type[BaseModel], JsonSchemaMode]]:
+    json_schema_mode: JsonSchemaMode = "validation"
+    return [(model, json_schema_mode) for model in models]
+
+
+PYDANTIC_JSON_SCHEMA = models_json_schema(
+    make_models_json_schema_models(
         schema.AssetCollection,
         schema.HistoryRecordCollection,
         schema.PersonCollaboratorCollection,
@@ -30,14 +40,16 @@ JSON_SCHEMA = pydantic.schema.schema(
         schema.YearListCollection,
     ),
     title="My Schema",
-    ref_prefix="#/components/schemas/",
+    ref_template="#/components/schemas/{model}",
 )
+
+JSON_SCHEMA = PYDANTIC_JSON_SCHEMA[1]["$defs"]
 
 Model = type[schema.NthpSchema] | type[BaseCollectionModel]
 
 
 def check_model_present(model: Model):
-    if model.__name__ not in JSON_SCHEMA["definitions"]:
+    if model.__name__ not in JSON_SCHEMA:
         raise ValueError(f"Model {model} not found in JSON_SCHEMA")
 
 
@@ -279,7 +291,7 @@ SPEC = {
             model=schema.SearchDocumentCollection,
         ),
     },
-    "components": {"schemas": JSON_SCHEMA["definitions"]},
+    "components": {"schemas": JSON_SCHEMA},
 }
 
 
