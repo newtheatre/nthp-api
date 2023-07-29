@@ -2,7 +2,13 @@
 
 import datetime
 
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from nthp_build.fields import PermissiveStr
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    field_validator,
+    model_validator,
+)
 from pydantic_collections import BaseCollectionModel
 from slugify import slugify
 
@@ -17,14 +23,14 @@ class Link(NthpModel):
     type: str
     href: str | None = None
     snapshot: str | None = None
-    username: str | None = None
-    title: str | None = None
+    username: PermissiveStr | None = None
+    title: PermissiveStr | None = None
     date: datetime.date | None = None
-    publisher: str | None = None
-    rating: str | None = None
-    quote: str | None = None
-    note: str | None = None
-    comment: str | None = None
+    publisher: PermissiveStr | None = None
+    rating: PermissiveStr | None = None
+    quote: PermissiveStr | None = None
+    note: PermissiveStr | None = None
+    comment: PermissiveStr | None = None
 
 
 class Location(NthpModel):
@@ -33,24 +39,24 @@ class Location(NthpModel):
 
 
 class PersonRef(NthpModel):
-    role: str | None = None
+    role: PermissiveStr | None = None
     name: str | None = None
-    note: str | None = None
+    note: PermissiveStr | None = None
     person: bool = True
-    comment: str | None = None
+    comment: PermissiveStr | None = None
 
 
 class PersonRole(NthpModel):
     person_id: str | None = None
     person_name: str | None = None
-    role: str | None = None
-    note: str | None = None
+    role: PermissiveStr | None = None
+    note: PermissiveStr | None = None
     is_person: bool = True
-    comment: str | None = None
+    comment: PermissiveStr | None = None
 
 
 class ShowCanonical(NthpModel):
-    title: str | None = None
+    title: PermissiveStr | None = None
     playwright: str | None = None
 
 
@@ -59,7 +65,7 @@ class Asset(NthpModel):
     image: str | None = None
     video: str | None = None
     filename: str | None = None
-    title: str | None = None
+    title: PermissiveStr | None = None
     page: int | None = None
     display_image: bool = False
 
@@ -125,12 +131,12 @@ class Show(NthpModel):
     translator: str | None = None
     canonical: list[ShowCanonical] = []
     student_written: bool = False
-    company: str | None = None
-    company_sort: str | None = None
+    company: PermissiveStr | None = None
+    company_sort: PermissiveStr | None = None
     period: str | None = None
     season: str
     season_sort: int | None = None
-    venue: str | None = None
+    venue: PermissiveStr | None = None
     date_start: datetime.date | None = None
     date_end: datetime.date | None = None
     # tour TODO
@@ -138,13 +144,13 @@ class Show(NthpModel):
     cast: list[PersonRef] = []
     crew: list[PersonRef] = []
     cast_incomplete: bool = False
-    cast_note: str | None = None
+    cast_note: PermissiveStr | None = None
     crew_incomplete: bool = False
-    crew_note: str | None = None
+    crew_note: PermissiveStr | None = None
     prod_shots: str | None = None
     assets: list[Asset] = []
     links: list[Link] = []
-    comment: str | None = None
+    comment: PermissiveStr | None = None
 
 
 class Committee(NthpModel):
@@ -159,13 +165,13 @@ class Venue(NthpModel):
     location: Location | None = None
     city: str | None = None
     sort: int | None = None
-    comment: str | None = None
+    comment: PermissiveStr | None = None
 
 
 class Person(NthpModel):
     id: str | None = None
     title: str
-    submitted: datetime.date | None = None
+    submitted: datetime.date | bool | None = None
     headshot: str | None = None
     # course: List[str] = [] TODO: both lists and strings
     graduated: int | None = None
@@ -173,11 +179,11 @@ class Person(NthpModel):
     # career: Optional[str] TODO: both lists and strings
     links: list[Link] = []
     news: list[Link] = []
-    comment: str | None = None
+    comment: PermissiveStr | None = None
 
 
 class HistoryRecord(NthpModel):
-    year: str
+    year: PermissiveStr
     academic_year: str | None = None
     title: str
     description: str
