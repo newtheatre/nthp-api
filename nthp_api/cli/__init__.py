@@ -2,9 +2,9 @@ import logging
 from os import environ
 
 import click
-from nthp_build.version import get_version
 
 from nthp_api.cli import logs
+from nthp_api.nthp_build.version import get_version
 
 logs.init()
 
