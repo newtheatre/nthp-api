@@ -28,7 +28,7 @@ def run_cpu_task(task: Callable, error_queue: Queue):
 
 def run_cpu_tasks_in_parallel(tasks: list[Callable]):
     log.info("Running %d CPU tasks in parallel", len(tasks))
-    error_queue = Queue()
+    error_queue: Queue = Queue()
     running_tasks = [
         Process(target=run_cpu_task, args=(task, error_queue)) for task in tasks
     ]
