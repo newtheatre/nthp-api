@@ -133,13 +133,12 @@ SPEC = {
     },
     "servers": [
         {
-            "url": "https://nthp-api.wjdp.uk/v1/{branch}",
-            "description": "Production server",
+            "url": "https://content.nthp.wjdp.uk/v1/{branch}",
+            "description": "Production",
             "variables": {
                 "branch": {
                     "default": "master",
-                    "description": "The branch of the content repo, currently only "
-                    "supports master.",
+                    "description": "The production branch of the content repo.",
                 }
             },
         }
