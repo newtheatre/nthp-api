@@ -1,8 +1,8 @@
 import json
 from collections.abc import Sequence
-from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
+from nthp_build.version import get_version
 from pydantic import BaseModel
 from pydantic.json_schema import JsonSchemaMode, models_json_schema
 from pydantic_collections import BaseCollectionModel
@@ -121,13 +121,6 @@ def make_detail_get_operation(  # noqa: PLR0913
             },
         }
     }
-
-
-def get_version() -> str:
-    try:
-        return version("nthp_api")
-    except PackageNotFoundError:
-        return "unknown"
 
 
 SPEC = {

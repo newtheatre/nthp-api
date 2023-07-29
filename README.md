@@ -43,3 +43,7 @@ pre-commit hooks are used to lint the source code using [Black](https://black.re
 ### Tests
 
 Run `pytest` or use the included PyCharm run configuration.
+
+## Release
+
+See the `bin/release.sh` script for the release process. This assumes that your local machine has the correct credentials to publish to PyPi.

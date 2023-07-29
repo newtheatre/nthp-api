@@ -2,6 +2,7 @@ import logging
 from os import environ
 
 import click
+from nthp_build.version import get_version
 
 from nthp_api.cli import logs
 
@@ -14,6 +15,11 @@ log = logging.getLogger(__name__)
 @click.group()
 def cli():
     pass
+
+
+@cli.command()
+def version():
+    print(f"nthp-api {get_version()}")  # noqa T201
 
 
 @click.argument("path", type=click.Path(exists=True))
