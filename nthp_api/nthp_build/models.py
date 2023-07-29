@@ -2,7 +2,13 @@
 
 import datetime
 
-from pydantic import BaseModel, root_validator, validator
+from nthp_build.fields import PermissiveStr
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    field_validator,
+    model_validator,
+)
 from pydantic_collections import BaseCollectionModel
 from slugify import slugify
 
@@ -10,22 +16,21 @@ from nthp_api.nthp_build import years
 
 
 class NthpModel(BaseModel):
-    class Config:
-        frozen = True
+    model_config = ConfigDict(frozen=True)
 
 
 class Link(NthpModel):
     type: str
-    href: str | None
-    snapshot: str | None
-    username: str | None
-    title: str | None
-    date: datetime.date | None
-    publisher: str | None
-    rating: str | None
-    quote: str | None
-    note: str | None
-    comment: str | None
+    href: str | None = None
+    snapshot: str | None = None
+    username: PermissiveStr | None = None
+    title: PermissiveStr | None = None
+    date: datetime.date | None = None
+    publisher: PermissiveStr | None = None
+    rating: PermissiveStr | None = None
+    quote: PermissiveStr | None = None
+    note: PermissiveStr | None = None
+    comment: PermissiveStr | None = None
 
 
 class Location(NthpModel):
@@ -34,37 +39,38 @@ class Location(NthpModel):
 
 
 class PersonRef(NthpModel):
-    role: str | None
-    name: str | None
-    note: str | None
+    role: PermissiveStr | None = None
+    name: str | None = None
+    note: PermissiveStr | None = None
     person: bool = True
-    comment: str | None
+    comment: PermissiveStr | None = None
 
 
 class PersonRole(NthpModel):
-    person_id: str | None
-    person_name: str | None
-    role: str | None
-    note: str | None
+    person_id: str | None = None
+    person_name: str | None = None
+    role: PermissiveStr | None = None
+    note: PermissiveStr | None = None
     is_person: bool = True
-    comment: str | None
+    comment: PermissiveStr | None = None
 
 
 class ShowCanonical(NthpModel):
-    title: str | None
-    playwright: str | None
+    title: PermissiveStr | None = None
+    playwright: str | None = None
 
 
 class Asset(NthpModel):
     type: str
-    image: str | None
-    video: str | None
-    filename: str | None
-    title: str | None
-    page: int | None
+    image: str | None = None
+    video: str | None = None
+    filename: str | None = None
+    title: PermissiveStr | None = None
+    page: int | None = None
     display_image: bool = False
 
-    @root_validator()
+    @model_validator(mode="before")
+    @classmethod
     def require_image_xor_video_xor_filename(cls, values: dict) -> dict:
         if (
             sum(
@@ -79,37 +85,39 @@ class Asset(NthpModel):
             raise ValueError("Must have exactly one of image, video, or filename")
         return values
 
-    @validator("type")
+    @field_validator("type")
+    @classmethod
     def slugify_type(cls, value: str) -> str:
         return slugify(value)
 
-    @validator("title", always=True)
-    def require_title_with_filename(cls, value: str | None, values: dict) -> str | None:
-        if values.get("filename") is not None and value is None:
+    @model_validator(mode="after")
+    def require_title_with_filename(self) -> "Asset":
+        if self.filename is not None and self.title is None:
             raise ValueError("title is required if filename is provided")
-        return value
+        return self
 
-    @validator("display_image")
-    def display_image_only_for_images(cls, value: bool, values: dict) -> bool:
-        if value and not values.get("image"):
+    @model_validator(mode="after")
+    def display_image_only_for_images(self) -> "Asset":
+        if self.display_image and not self.image:
             raise ValueError("Can only set display_image for images")
-        return value
+        return self
 
 
 class Trivia(NthpModel):
     quote: str
-    name: str | None
-    submitted: datetime.date | None
+    name: str | None = None
+    submitted: datetime.date | None = None
 
 
 class Show(NthpModel):
     id: str
     title: str
-    playwright: str | None
+    playwright: str | None = None
 
     devised: str | bool = False
 
-    @validator("devised")
+    @field_validator("devised")
+    @classmethod
     def handle_devised_strings(cls, value: str | bool) -> str | bool:
         if isinstance(value, str):
             if value.lower() == "true":
@@ -119,30 +127,30 @@ class Show(NthpModel):
         return value
 
     improvised: bool = False
-    adaptor: str | None
-    translator: str | None
+    adaptor: str | None = None
+    translator: str | None = None
     canonical: list[ShowCanonical] = []
     student_written: bool = False
-    company: str | None
-    company_sort: str | None
-    period: str | None
+    company: PermissiveStr | None = None
+    company_sort: PermissiveStr | None = None
+    period: str | None = None
     season: str
-    season_sort: int | None
-    venue: str | None
-    date_start: datetime.date | None
-    date_end: datetime.date | None
+    season_sort: int | None = None
+    venue: PermissiveStr | None = None
+    date_start: datetime.date | None = None
+    date_end: datetime.date | None = None
     # tour TODO
     trivia: list[Trivia] = []
     cast: list[PersonRef] = []
     crew: list[PersonRef] = []
     cast_incomplete: bool = False
-    cast_note: str | None
+    cast_note: PermissiveStr | None = None
     crew_incomplete: bool = False
-    crew_note: str | None
-    prod_shots: str | None
+    crew_note: PermissiveStr | None = None
+    prod_shots: str | None = None
     assets: list[Asset] = []
     links: list[Link] = []
-    comment: str | None
+    comment: PermissiveStr | None = None
 
 
 class Committee(NthpModel):
@@ -152,18 +160,18 @@ class Committee(NthpModel):
 class Venue(NthpModel):
     title: str
     links: list[Link] = []
-    built: int | None
+    built: int | None = None
     images: list[str] = []
-    location: Location | None
+    location: Location | None = None
     city: str | None = None
     sort: int | None = None
-    comment: str | None = None
+    comment: PermissiveStr | None = None
 
 
 class Person(NthpModel):
     id: str | None = None
     title: str
-    submitted: datetime.date | None = None
+    submitted: datetime.date | bool | None = None
     headshot: str | None = None
     # course: List[str] = [] TODO: both lists and strings
     graduated: int | None = None
@@ -171,16 +179,17 @@ class Person(NthpModel):
     # career: Optional[str] TODO: both lists and strings
     links: list[Link] = []
     news: list[Link] = []
-    comment: str | None = None
+    comment: PermissiveStr | None = None
 
 
 class HistoryRecord(NthpModel):
-    year: str
+    year: PermissiveStr
     academic_year: str | None = None
     title: str
     description: str
 
-    @validator("academic_year")
+    @field_validator("academic_year")
+    @classmethod
     def require_valid_academic_year(cls, value: str | None) -> str | None:
         if value is not None and not years.check_year_id_is_valid(value):
             raise ValueError("Invalid academic year")

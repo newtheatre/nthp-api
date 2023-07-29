@@ -196,20 +196,41 @@ LOADERS: list[Loader] = [
 ]
 
 
+def loc_to_path(loc: str | tuple) -> str:
+    if isinstance(loc, tuple):
+        return ".".join(map(str, loc))
+    return loc
+
+
+def print_validation_error(validation_error: ValidationError, path: Path) -> None:
+    log.error(f"Validation error in {path}")
+    for error in validation_error.errors():
+        loc = loc_to_path(error["loc"])
+        log.warning(f"{loc} : {error['msg']}")
+        log.info(f"     {error['input']}")
+
+
 def run_document_loader(loader: Loader):
     doc_paths = find_documents(loader.path)
+    docs_that_failed_validation = []
     with database.db.atomic():
         for doc_path in doc_paths:
             document = load_document(doc_path.path)
             try:
                 data = loader.schema_type(**{"id": doc_path.id, **document.metadata})  # type: ignore[call-arg]
-            except ValidationError:
-                log.exception(f"Failed validation: {doc_path.content_path}")
+            except ValidationError as error:
+                print_validation_error(error, doc_path.path)
+                docs_that_failed_validation.append(doc_path)
                 continue
             loader.func(path=doc_path, document=document, data=data)  # type: ignore[call-arg]
+    if docs_that_failed_validation:
+        log.error(
+            f"{len(docs_that_failed_validation)} documents failed validation for {loader.path}"
+        )
 
 
 def run_data_loader(loader: Loader):
+    files_that_failed_validation = []
     with database.db.atomic():
         try:
             document_data = load_yaml(loader.path)
@@ -222,7 +243,8 @@ def run_data_loader(loader: Loader):
             else:
                 data = loader.schema_type(document_data)  # type: ignore[call-arg]
         except ValidationError:
-            log.exception(f"Failed validation: {loader.path}")
+            print_validation_error(ValidationError(), loader.path)
+            files_that_failed_validation.append(loader.path)
             return
         loader.func(
             path=DocumentPath(
@@ -234,6 +256,10 @@ def run_data_loader(loader: Loader):
             ),
             data=data,
         )  # type: ignore[call-arg]
+    if files_that_failed_validation:
+        log.error(
+            f"{len(files_that_failed_validation)} files failed validation for {loader.path}"
+        )
 
 
 def run_loader(loader: Loader):

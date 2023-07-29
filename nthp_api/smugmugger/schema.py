@@ -11,12 +11,12 @@ class SmugMugPages(BaseModel):
     RequestedCount: int
     FirstPage: str
     LastPage: str
-    NextPage: str | None
+    NextPage: str | None = None
 
 
 class SmugMugResponseInner(BaseModel):
     Uri: str
-    Pages: SmugMugPages | None
+    Pages: SmugMugPages | None = None
 
 
 class SmugMugResponse(BaseModel):
@@ -47,7 +47,7 @@ class SmugMugImage(BaseModel):
     IsVideo: bool
     OriginalHeight: int
     OriginalWidth: int
-    OriginalSize: int | None
+    OriginalSize: int | None = None
     Processing: bool
     ThumbnailUrl: str
     Title: str
