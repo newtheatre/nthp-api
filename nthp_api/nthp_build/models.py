@@ -2,7 +2,6 @@
 
 import datetime
 
-from nthp_build.fields import PermissiveStr
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -13,6 +12,7 @@ from pydantic_collections import BaseCollectionModel
 from slugify import slugify
 
 from nthp_api.nthp_build import years
+from nthp_api.nthp_build.fields import PermissiveStr
 
 
 class NthpModel(BaseModel):

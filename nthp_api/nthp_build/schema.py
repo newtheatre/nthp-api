@@ -4,11 +4,11 @@ import datetime
 from enum import Enum
 
 import humps
-from nthp_build.fields import PermissiveStr
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic_collections import BaseCollectionModel
 
 from nthp_api.nthp_build import models, years
+from nthp_api.nthp_build.fields import PermissiveStr
 
 
 class ResponseConfig:
