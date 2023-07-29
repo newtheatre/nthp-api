@@ -4,6 +4,7 @@ import datetime
 from enum import Enum
 
 import humps
+from nthp_build.fields import PermissiveStr
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic_collections import BaseCollectionModel
 
@@ -276,7 +277,7 @@ class PersonGraduated(NthpSchema):
 class PersonDetail(NthpSchema):
     id: str
     title: str
-    submitted: datetime.date | None = None
+    submitted: datetime.date | bool | None = None
     headshot: str | None = None
     graduated: PersonGraduated | None = None
     show_roles: list[PersonShowRoles]
@@ -354,7 +355,7 @@ class PersonTrivia(BaseTrivia):
         example="qABC123",
     )
     # Uses YYYY, not YY_YY, 2000 means 2000-2001
-    target_year: str | None = Field(
+    target_year: PermissiveStr | None = Field(
         title="Target Year",
         description="The year of the target of the quote",
         example="2000",
