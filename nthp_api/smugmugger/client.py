@@ -42,11 +42,35 @@ class SmugMugClient(NamedTuple):
 @contextlib.asynccontextmanager
 async def make_client() -> AsyncGenerator[SmugMugClient, None]:
     client = SmugMugClient(
-        client=httpx.AsyncClient(),
+        client=httpx.AsyncClient(timeout=settings.smugmug_timeout_seconds),
         connection_limit=asyncio.Semaphore(settings.smugmug_connection_limit),
     )
     yield client
     await client.client.aclose()
+
+
+async def _get_with_retry(
+    client: SmugMugClient, url: str, params: dict
+) -> httpx.Response:
+    last_exc: Exception | None = None
+    for attempt in range(settings.smugmug_retry_attempts):
+        if attempt:
+            delay = settings.smugmug_retry_backoff_seconds * 2 ** (attempt - 1)
+            log.warning(
+                f"Retrying {url} in {delay}s "
+                f"(attempt {attempt + 1}/{settings.smugmug_retry_attempts}): "
+                f"{last_exc!r}"
+            )
+            await asyncio.sleep(delay)
+        try:
+            async with client.connection_limit:
+                return await client.client.get(
+                    url, params=params, headers={"Accept": "application/json"}
+                )
+        except (httpx.TimeoutException, httpx.TransportError) as exc:
+            last_exc = exc
+    assert last_exc is not None
+    raise last_exc
 
 
 async def get(client: SmugMugClient, url, params=None):
@@ -55,10 +79,7 @@ async def get(client: SmugMugClient, url, params=None):
     if params is None:
         params = {}
     params["APIKey"] = settings.smugmug_api_key
-    async with client.connection_limit:
-        response = await client.client.get(
-            make_url(url), params=params, headers={"Accept": "application/json"}
-        )
+    response = await _get_with_retry(client, make_url(url), params)
     try:
         data = response.json()
     except ValueError as e:
