@@ -1,6 +1,9 @@
+from pathlib import Path
+
 import pytest
 
-from nthp_api.nthp_build import assets, models
+from nthp_api.nthp_build import assets, database, models, schema
+from nthp_api.nthp_build.documents import DocumentPath
 
 
 @pytest.mark.parametrize(
@@ -54,3 +57,42 @@ from nthp_api.nthp_build import assets, models
 )
 def test_pick_show_primary_image(input: list[models.Asset], expected: str):
     assert assets.pick_show_primary_image(input) == expected
+
+
+THE_TEMPEST = DocumentPath(
+    path=Path("shows/99_00/the_tempest.md"),
+    id="99_00/the_tempest",
+    content_path=Path("shows"),
+    filename="the_tempest.md",
+    basename="the_tempest",
+)
+
+
+class TestSaveShowAssets:
+    def test_title_and_page_are_stored(self, test_db):
+        assets.save_show_assets(
+            THE_TEMPEST,
+            [
+                schema.Asset(
+                    type="other",
+                    source="file",
+                    mime_type="application/pdf",
+                    id="programme.pdf",
+                    category="programme",
+                    title="Programme",
+                    page=3,
+                )
+            ],
+        )
+        asset = database.Asset.select().get()
+        assert asset.asset_title == "Programme"
+        assert asset.asset_page == 3  # noqa: PLR2004
+
+    def test_title_and_page_default_to_null(self, test_db):
+        assets.save_show_assets(
+            THE_TEMPEST,
+            [schema.Asset(type="album", source="smugmug", id="abc123")],
+        )
+        asset = database.Asset.select().get()
+        assert asset.asset_title is None
+        assert asset.asset_page is None

@@ -81,8 +81,8 @@ def save_asset(  # noqa: PLR0913, PLR0917
         asset_mime_type=get_mime_type(source, type, id),
         asset_id=id,
         asset_category=category,
-        title=title,
-        page=page,
+        asset_title=title,
+        asset_page=page,
     )
 
 
