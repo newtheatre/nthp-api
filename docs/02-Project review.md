@@ -113,9 +113,9 @@ optimising today; CI wall-time is dominated by checkout/setup.
 
 ### Smaller items
 
-- Leftover pydantic v1 API calls: `dumper.py:51` (`obj.json(...)`) and
+- ✅ Done — Leftover pydantic v1 API calls: `dumper.py:51` (`obj.json(...)`) and
   `smugmug.py:21` (`.json(...)`). Deprecated; removed in pydantic v3. Two-line
-  fix now, build-breaker later.
+  fix now, build-breaker later. Both now use `model_dump_json()`.
 - `SiteStats.build_time` uses naive `datetime.now()` — emit UTC ISO 8601.
 
 ## 3. Operating unattended for years
@@ -151,7 +151,7 @@ Ranked by likelihood of being the thing that breaks it:
 | High | Fix `year_end` off-by-one (1.2) | Trivial |
 | Medium | Fix `asset_title`/`asset_page` kwargs (1.1) | Trivial |
 | Medium | SmugMug: retry on 429/5xx, tolerate 404, fix Actions cache key | Small |
-| Medium | Replace deprecated `.json()` calls | Trivial |
+| Medium | ✅ Done — Replace deprecated `.json()` calls | Trivial |
 | Low | Pin `fork` start method or drop multiprocessing (1.4) | Small |
 | Low | Sort `find_documents` output (1.5) | Trivial |
 | Low | Fix Y2K39 window before 2039 | Trivial |

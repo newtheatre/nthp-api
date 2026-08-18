@@ -48,7 +48,9 @@ def make_out_path(directory: Path, file: str) -> Path:
 
 def write_file(path: Path, obj: pydantic.BaseModel) -> None:
     with path.open("w") as f:
-        f.write(obj.json(by_alias=True, exclude_none=True, exclude_unset=True))
+        f.write(
+            obj.model_dump_json(by_alias=True, exclude_none=True, exclude_unset=True)
+        )
 
 
 def dump_specs(state: DumperSharedState):

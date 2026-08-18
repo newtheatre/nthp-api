@@ -18,7 +18,7 @@ def get_albums_to_fetch():
 async def update_album(client: smugmugger.SmugMugClient, asset: database.Asset):
     log.debug(f"Updating {asset.asset_id}")
     image_collection = await smugmugger.get_album_images(client, asset.asset_id)
-    asset.asset_smugmug_data = image_collection.json(
+    asset.asset_smugmug_data = image_collection.model_dump_json(
         exclude_unset=True, exclude_none=True
     )
     asset.save()
