@@ -54,12 +54,6 @@ Changes from the example:
    costs a few MB in-repo and a manual update path; if unpkg dies the API
    itself is unaffected — only the docs page goes blank. Revisit if that
    trade-off feels wrong.
-
-## Open questions
-
-1. Vendor Elements assets instead of pinned unpkg? (See decision 1 — default
-   is pinned unpkg.)
-2. Delete `docs/spec.html` once implemented, or keep it as the reference the
-   task doc points at?
-3. Should the page get any project chrome (title beyond the `<title>` tag,
-   link back to the main history site), or is bare Elements fine?
+2. Delete `docs/spec.html` once implemented — the real page in
+   `nthp_api/nthp_build/static/` becomes the reference.
+3. No chrome — bare Elements with a sensible `<title>` is fine.
