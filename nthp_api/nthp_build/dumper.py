@@ -36,11 +36,17 @@ from nthp_api.nthp_build.parallel import (
 
 log = logging.getLogger(__name__)
 OUTPUT_DIR = Path("dist")
+STATIC_DIR = Path(__file__).parent / "static"
 
 
 def delete_output_dir():
     shutil.rmtree(OUTPUT_DIR, ignore_errors=True)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def copy_static_files() -> None:
+    """Copy the docs page, which renders the spec written alongside it."""
+    shutil.copy(STATIC_DIR / "index.html", OUTPUT_DIR / "index.html")
 
 
 def make_out_path(directory: Path, file: str) -> Path:
@@ -394,4 +400,5 @@ def dump_all():
         tasks = [functools.partial(run_dumper, dumper, state) for dumper in DUMPERS]
         parallel.run_cpu_tasks_in_parallel(tasks)
         [run_dumper(dumper, state) for dumper in POST_DUMPERS]
+    copy_static_files()
     log.info("Dump complete")

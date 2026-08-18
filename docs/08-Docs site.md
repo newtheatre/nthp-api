@@ -1,6 +1,6 @@
 ---
 type: task
-status: open
+status: done
 ---
 
 # API docs site
@@ -8,7 +8,8 @@ status: open
 Publish a human-readable docs site alongside the API: a single HTML page
 rendering `openapi.json` with [Stoplight Elements](https://github.com/stoplightio/elements),
 served as `index.html` at the root of the deployed API.
-[spec.html](spec.html) in this folder is the working example.
+The page now lives at `nthp_api/nthp_build/static/index.html`; the `spec.html`
+working example this task started from has been deleted (decision 2).
 
 ## The page
 
@@ -57,3 +58,14 @@ Changes from the example:
 2. Delete `docs/spec.html` once implemented — the real page in
    `nthp_api/nthp_build/static/` becomes the reference.
 3. No chrome — bare Elements with a sensible `<title>` is fine.
+
+## Outcome
+
+Done. Elements pinned to `@stoplight/elements@9` (current major; latest release
+at the time was 9.0.24) for both the script and the stylesheet.
+`dumper.copy_static_files()` copies the page in the parent process at the end
+of `dump_all()`, and `.s3deploy.yml` gained the matching `.html` route.
+
+Verified by serving `dist/` and rendering the page in headless Chrome: Elements
+loads from unpkg, resolves `openapi.json` relative to the page, and renders the
+spec's 19 paths into the sidebar layout.
