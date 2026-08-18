@@ -114,7 +114,7 @@ def dump_year(year: int, state: DumperSharedState) -> schema.YearDetail:
 def dump_year_index(year_details: list[schema.YearDetail]):
     path = make_out_path(Path("years"), "index")
     year_collection = schema.YearListCollection(
-        [schema.YearList(**year_detail.dict()) for year_detail in year_details]
+        [schema.YearList(**year_detail.model_dump()) for year_detail in year_details]
     )
     write_file(path, year_collection)
 
