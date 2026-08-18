@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Install poetry
-curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+# Install uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Install dependencies
-poetry install
+uv sync
 
 # Build the project
-time poetry run python nthp load
-time poetry run python nthp stats
-time poetry run python nthp dump
+time uv run python nthp load
+time uv run python nthp stats
+time uv run python nthp dump

@@ -14,18 +14,18 @@ if [[ -n $(git status --porcelain) ]]; then
     exit 1
 fi
 
-# Bump version of poetry project, using argument
-poetry version $1
-VERSION=$(poetry version -s)
+# Bump version of the project, using argument (e.g. patch/minor/major)
+uv version --bump "$1"
+VERSION=$(uv version --short)
 
 # Commit that change and tag
-git add pyproject.toml
+git add pyproject.toml uv.lock
 git commit -m "Bump version to $VERSION"
 git tag -a "v$VERSION" -m "v$VERSION"
 
 # Build and publish to PyPI
-poetry build
-poetry publish
+uv build
+uv publish
 
 # Push to GitHub
 git push origin master

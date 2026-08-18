@@ -17,8 +17,8 @@ This project generates a JSON API from the [history-project](https://github.com/
 
 ## From source
 
-- Ensure you have [Poetry](https://python-poetry.org/) installed.
-- Run `poetry install`.
+- Ensure you have [uv](https://docs.astral.sh/uv/) installed.
+- Run `uv sync`.
 - Clone the history project repository into the `content/` directory. You can do a shallow clone for this: `GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --branch master git@github.com:newtheatre/history-project content`.
 - Run `./nthp load` to generate the sqlite database from the content files.
 - Run `./nthp dump` to generate the API from the database into the `dist/` directory.
@@ -42,7 +42,7 @@ pre-commit hooks are used to lint the source code using [Black](https://black.re
 
 ### Tests
 
-Run `pytest` or use the included PyCharm run configuration.
+Run `uv run pytest` or use the included PyCharm run configuration.
 
 ## Release
 

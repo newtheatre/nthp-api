@@ -1,47 +1,54 @@
-[tool.poetry]
+[project]
 name = "nthp_api"
 version = "0.1.9"
 description = "This is a CLI tool for building the Nottingham New Theatre's History Project content database."
-authors = ["Will Pimblett <will@wjdp.uk>"]
+authors = [{ name = "Will Pimblett", email = "will@wjdp.uk" }]
 license = "MIT"
 readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.1.1,<3",
+    "python-frontmatter>=1.0.0,<2",
+    "peewee>=3.16.2,<4",
+    "python-slugify>=8.0.1,<9",
+    "pyhumps>=3.8.0,<4",
+    "click>=8.1.3,<9",
+    "coloredlogs>=15.0.1,<16",
+    "pydantic-collections>=0.5.0,<0.6",
+    "Markdown>=3.4.3,<4",
+    "PyYAML>=6.0,<7",
+    "httpx>=0.24.1,<0.25",
+    "pydantic-settings>=2.0.2,<3",
+]
+
+[project.urls]
 homepage = "https://github.com/newtheatre/nthp-api"
 repository = "https://github.com/newtheatre/nthp-api"
 
-[tool.poetry.scripts]
+[project.scripts]
 nthp = "nthp_api.cli:cli"
 nthp_api = "nthp_api.cli:cli"
 
-[tool.poetry.dependencies]
-python = "^3.10"
-pydantic = "^2.1.1"
-python-frontmatter = "^1.0.0"
-peewee = "^3.16.2"
-python-slugify = "^8.0.1"
-pyhumps = "^3.8.0"
-click = "^8.1.3"
-coloredlogs = "^15.0.1"
-pydantic-collections = "^0.5.0"
-Markdown = "^3.4.3"
-PyYAML = "^6.0"
-httpx = "^0.24.1"
-pydantic-settings = "^2.0.2"
-
-[tool.poetry.dev-dependencies]
-pytest = "^7.3.1"
-pytest-vcr = "^1.0.2"
-mypy = "^1.3.0"
-pytest-depends = "^1.0.1"
-types-python-slugify = "^8"
-types-Markdown = "^3.3.7"
-freezegun = "^1.2.2"
-types-PyYAML = "^6.0.1"
-pytest-asyncio = "^0.21.0"
+[dependency-groups]
+dev = [
+    "pytest>=7.3.1,<8",
+    "pytest-vcr>=1.0.2,<2",
+    "mypy>=1.3.0,<2",
+    "pytest-depends>=1.0.1,<2",
+    "types-python-slugify>=8,<9",
+    "types-Markdown>=3.3.7,<4",
+    "freezegun>=1.2.2,<2",
+    "types-PyYAML>=6.0.1,<7",
+    "pytest-asyncio>=0.21.0,<0.22",
+]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.12.3,<0.13.0"]
+build-backend = "uv_build"
 
+[tool.uv.build-backend]
+module-root = ""
+module-name = "nthp_api"
 [tool.mypy]
 python_version = "3.11"
 files = "nthp_api"
