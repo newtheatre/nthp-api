@@ -417,8 +417,8 @@ class SearchDocumentCollection(BaseCollectionModel[SearchDocument]):
 class SiteStats(NthpSchema):
     build_time: datetime.datetime = Field(
         title="Build Time",
-        description="When was the API built.",
-        json_schema_extra={"example": "2022-01-01T12:34:45.678901"},
+        description="When was the API built, in UTC.",
+        json_schema_extra={"example": "2022-01-01T12:34:45.678901Z"},
     )
     branch: str = Field(
         description="Branch API was built from.",

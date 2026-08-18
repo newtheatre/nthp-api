@@ -323,7 +323,7 @@ def dump_site_stats(state: DumperSharedState) -> None:
     write_file(
         path,
         schema.SiteStats(
-            build_time=datetime.datetime.now(),
+            build_time=datetime.datetime.now(datetime.UTC),
             branch=settings.branch,
             show_count=database.Show.select().count(),
             person_count=people.get_people_from_roles().count(),

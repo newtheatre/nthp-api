@@ -116,7 +116,8 @@ optimising today; CI wall-time is dominated by checkout/setup.
 - ✅ Done — Leftover pydantic v1 API calls: `dumper.py:51` (`obj.json(...)`) and
   `smugmug.py:21` (`.json(...)`). Deprecated; removed in pydantic v3. Two-line
   fix now, build-breaker later. Both now use `model_dump_json()`.
-- `SiteStats.build_time` uses naive `datetime.now()` — emit UTC ISO 8601.
+- ✅ Done — `SiteStats.build_time` uses naive `datetime.now()` — emit UTC ISO
+  8601. Now `datetime.now(datetime.UTC)`, serialised with a `Z` offset.
 
 ## 3. Operating unattended for years
 
