@@ -5,7 +5,7 @@ status: open
 
 # nthp-api Project Review
 
-*Reviewed 2026-08-18, at commit `a45c94a` (post uv migration / dependency upgrade).*
+_Reviewed 2026-08-18, at commit `a45c94a` (post uv migration / dependency upgrade)._
 
 The project converts the [history-project](https://github.com/newtheatre/history-project)
 content repo into a static JSON API: content → sqlite → JSON files deployed to S3.
@@ -41,7 +41,7 @@ leaving broken write-only columns invites a future dumper reading NULLs.
 ### 1.2 Current academic year missing from September to December
 
 `nthp_api/nthp_build/config.py:13` sets `year_end = datetime.now().year`, used
-as an *exclusive* bound in `dumper.py:122`. A show filed under `26_27` from
+as an _exclusive_ bound in `dumper.py:122`. A show filed under `26_27` from
 September 2026 gets a show page, but no year page and no `years/index` entry
 until 1 January 2027.
 
@@ -119,10 +119,9 @@ optimising today; CI wall-time is dominated by checkout/setup.
   review missed, `dumper.py:117` (`year_detail.dict()`), is now `model_dump()`.
   A full sweep found no other v1 API left (no `parse_obj`/`parse_raw`,
   `from_orm`, `construct`, `__fields__`, `@validator`, class-based `Config`).
-- ✅ Done — `SiteStats.build_time` uses naive `datetime.now()` — emit UTC ISO
-  8601. Now `datetime.now(datetime.UTC)`, serialised with a `Z` offset.
+- ✅ Done — `SiteStats.build_time` uses naive `datetime.now()` — emit UTC ISO 8601. Now `datetime.now(datetime.UTC)`, serialised with a `Z` offset.
   `smugmugger/smugmug.py:39` (`last_fetched`) was naive too, and sits in the
-  same table as `last_updated`, which stores SmugMug's *aware* timestamps —
+  same table as `last_updated`, which stores SmugMug's _aware_ timestamps —
   cache-age logic comparing the two would have raised `TypeError`. Now aware.
   Left naive deliberately: `people.py:192` and `config.py:13` read only the
   local year/month off the wall clock (`date.today()` has no tz concept, and
@@ -144,8 +143,7 @@ Ranked by likelihood of being the thing that breaks it:
    not when someone edits content years later.
 3. **Silent failure culture** (findings 1.2, 1.3). Unattended means nobody
    reads logs — every anomaly should be fatal or surfaced (badge/notification).
-4. **Y2K39.** `years.py` maps two-digit years < 40 to 2000s: `40_41` becomes
-   1940. Breaks in September 2039 — within a "runs for years" horizon.
+4. **Y2K39.** `years.py` maps two-digit years < 40 to 2000s: `40_41` becomes 1940. Breaks in September 2039 — within a "runs for years" horizon.
 5. **Dependency longevity** — low risk. peewee/click/markdown/pyyaml are
    geologically stable. `pytest-vcr` is unmaintained and `pydantic-collections`
    is a one-person shim; both are trivially replaceable (vcrpy directly; a
@@ -154,14 +152,14 @@ Ranked by likelihood of being the thing that breaks it:
 
 ## Recommended actions
 
-| Priority | Action | Effort |
-|---|---|---|
-| High | Fail the build on validation errors (with legacy allowlist) | Small |
-| High | Add scheduled monthly CI build | Trivial |
-| High | ✅ Done — Fix `year_end` off-by-one (1.2) | Trivial |
-| Medium | ✅ Done — Fix `asset_title`/`asset_page` kwargs (1.1) | Trivial |
-| Medium | SmugMug: retry on 429/5xx, tolerate 404, fix Actions cache key | Small |
-| Medium | ✅ Done — Replace deprecated `.json()` calls | Trivial |
-| Low | ✅ Done — Pin `fork` start method or drop multiprocessing (1.4) | Small |
-| Low | ✅ Done — Sort `find_documents` output (1.5) | Trivial |
-| Low | Fix Y2K39 window before 2039 | Trivial |
+| Priority | Action                                                          | Effort  |
+| -------- | --------------------------------------------------------------- | ------- |
+| High     | Fail the build on validation errors (with legacy allowlist)     | Small   |
+| High     | Add scheduled monthly CI build                                  | Trivial |
+| High     | ✅ Done — Fix `year_end` off-by-one (1.2)                       | Trivial |
+| Medium   | ✅ Done — Fix `asset_title`/`asset_page` kwargs (1.1)           | Trivial |
+| Medium   | SmugMug: retry on 429/5xx, tolerate 404, fix Actions cache key  | Small   |
+| Medium   | ✅ Done — Replace deprecated `.json()` calls                    | Trivial |
+| Low      | ✅ Done — Pin `fork` start method or drop multiprocessing (1.4) | Small   |
+| Low      | ✅ Done — Sort `find_documents` output (1.5)                    | Trivial |
+| Low      | Fix Y2K39 window before 2039                                    | Trivial |

@@ -27,7 +27,9 @@ to decide whether a person page is worth linking prominently).
     "title": "Aaron Tej",
     "headshot": "people/aaron_tej.jpg",
     "graduated": {
-      "yearTitle": "2016", "yearDecade": 2010, "yearId": "15_16",
+      "yearTitle": "2016",
+      "yearDecade": 2010,
+      "yearId": "15_16",
       "estimated": false
     },
     "submitted": "2016-05",
@@ -135,7 +137,7 @@ docstrings, and a test pins each behaviour.
 - Real people's fields come from `models.Person(**json.loads(inst.data))`, not
   from `database.Person` columns as the plan suggested. `submitted` is not a
   column at all, and `graduated` on a detail page is `get_graduation()`, which
-  *estimates* from credits when the document has no year — 2,941 of 3,470
+  _estimates_ from credits when the document has no year — 2,941 of 3,470
   graduation values are estimated, virtual people included. Reading the columns
   would have silently disagreed with the detail pages.
 - `PersonIndexItem` sits next to `PersonDetail` rather than `PersonList`, as it

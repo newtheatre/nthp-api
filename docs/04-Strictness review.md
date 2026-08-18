@@ -5,8 +5,8 @@ status: open
 
 # nthp-api Strictness Review
 
-*Assessed 2026-08-18. Companion to [02-Project review](02-Project%20review.md) and
-[03-Completeness review](03-Completeness%20review.md).*
+_Assessed 2026-08-18. Companion to [02-Project review](02-Project%20review.md) and
+[03-Completeness review](03-Completeness%20review.md)._
 
 Context: validation is currently lax because this is not yet the production
 build. The goal is to get stricter and fix up issues hidden in the source repo.
@@ -17,14 +17,14 @@ Grounded in a survey of the live content repo (1,049 shows, ~750 people).
 Of the documents currently failing validation, **5 are the schema being wrong
 for an archive, 1 is bad data**:
 
-| Document | Value | Verdict |
-|---|---|---|
-| `_shows/00_01/waiting_for_dildo.md` `date_start` | `2001-06` | Legitimate partial date |
-| `_people/katie_rowley-jones.md` `news.0.date` | `2002-05` | Legitimate partial date |
-| `_shows/04_05/shoe_story.md` `links.0.date` | `2005` | Year-only; YAML parses as int, pydantic reads int as unix timestamp → confusing "zero time" error |
-| `_shows/06_07/twinss.md` `links.0.date` | `2007` | Same |
-| `_shows/78_79/the_wit_to_woo.md` `links.0.date` | `2000` | Same |
-| `_people/nick_gill.md` `submitted` | `04/01/2017` | Genuinely malformed — **fix in source** (`2017-01-04`) |
+| Document                                         | Value        | Verdict                                                                                           |
+| ------------------------------------------------ | ------------ | ------------------------------------------------------------------------------------------------- |
+| `_shows/00_01/waiting_for_dildo.md` `date_start` | `2001-06`    | Legitimate partial date                                                                           |
+| `_people/katie_rowley-jones.md` `news.0.date`    | `2002-05`    | Legitimate partial date                                                                           |
+| `_shows/04_05/shoe_story.md` `links.0.date`      | `2005`       | Year-only; YAML parses as int, pydantic reads int as unix timestamp → confusing "zero time" error |
+| `_shows/06_07/twinss.md` `links.0.date`          | `2007`       | Same                                                                                              |
+| `_shows/78_79/the_wit_to_woo.md` `links.0.date`  | `2000`       | Same                                                                                              |
+| `_people/nick_gill.md` `submitted`               | `04/01/2017` | Genuinely malformed — **fix in source** (`2017-01-04`)                                            |
 
 ## Too strict: dates
 
@@ -107,11 +107,11 @@ precision instead of rejecting it.
 
 ## Immediate source-repo fixups
 
-| File | Fix |
-|---|---|
+| File                   | Fix                                    |
+| ---------------------- | -------------------------------------- |
 | `_people/nick_gill.md` | `submitted: 04/01/2017` → `2017-01-04` |
-| (1 show) | `period: spring` → `Spring` |
-| (1 show) | `period: unknown` → omit |
+| (1 show)               | `period: spring` → `Spring`            |
+| (1 show)               | `period: unknown` → omit               |
 
 The remaining 4 current failures become valid data once fuzzy dates land —
 fix the schema, not the data.

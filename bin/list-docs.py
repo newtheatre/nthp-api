@@ -16,7 +16,6 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DOCS_DIRECTORY = REPO_ROOT / "docs"
 

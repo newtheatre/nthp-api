@@ -25,14 +25,14 @@ class FuzzyDate:
 
 ### Accepts (validation)
 
-| Input | Source | Result |
-|---|---|---|
-| `datetime.date` | YAML parses `2001-06-14` | day precision |
-| `int` in year range | YAML parses bare `2007` | year precision |
-| `str` `YYYY` | quoted year | year precision |
-| `str` `YYYY-MM` | YAML leaves `2001-06` as str | month precision |
-| `str` `YYYY-MM-DD` | quoted full date | day precision |
-| `FuzzyDate` | revalidation on JSON round-trip | itself |
+| Input               | Source                          | Result          |
+| ------------------- | ------------------------------- | --------------- |
+| `datetime.date`     | YAML parses `2001-06-14`        | day precision   |
+| `int` in year range | YAML parses bare `2007`         | year precision  |
+| `str` `YYYY`        | quoted year                     | year precision  |
+| `str` `YYYY-MM`     | YAML leaves `2001-06` as str    | month precision |
+| `str` `YYYY-MM-DD`  | quoted full date                | day precision   |
+| `FuzzyDate`         | revalidation on JSON round-trip | itself          |
 
 Rejects: `bool` (checked before `int` — `bool` is an `int` subclass, and
 `Person.submitted` is `FuzzyDate | bool`), `datetime.datetime` (a time
