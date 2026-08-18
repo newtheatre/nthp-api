@@ -308,9 +308,9 @@ class BaseTrivia(NthpSchema):
     )
     submitted: FuzzyDate | None = Field(
         title="Submitted Date",
-        description="The date the quote was submitted, if null it's likely pulled from "
-        "the programme or other source.",
-        json_schema_extra={"example": "2022-01-01"},
+        description="The date the quote was submitted, of year, month or day "
+        "precision, if null it's likely pulled from the programme or other source.",
+        json_schema_extra={"example": "2022-01"},
     )
 
 

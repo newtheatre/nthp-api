@@ -1,6 +1,6 @@
 ---
 type: task
-status: open
+status: done
 ---
 
 # Fuzzy date field

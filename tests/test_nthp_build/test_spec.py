@@ -1,4 +1,32 @@
+from typing import Any
+
+import pytest
+
 from nthp_api.nthp_build import spec
+
+SCHEMAS = spec.SPEC["components"]["schemas"]
+
+FUZZY_DATE_SCHEMA = {"type": "string", "pattern": r"^\d{4}(-\d{2}(-\d{2})?)?$"}
+NULL_SCHEMA = {"type": "null"}
+BOOLEAN_SCHEMA = {"type": "boolean"}
+
+
+def get_property(model: str, field: str) -> dict[str, Any]:
+    return SCHEMAS[model]["properties"][field]
+
+
+def find_formats(node: Any, path: str = "") -> dict[str, str]:
+    """Map of path to the `format` of every schema below the given node."""
+    formats = {}
+    if isinstance(node, dict):
+        if "format" in node:
+            formats[path] = node["format"]
+        for key, value in node.items():
+            formats |= find_formats(value, f"{path}.{key}")
+    elif isinstance(node, list):
+        for index, value in enumerate(node):
+            formats |= find_formats(value, f"{path}[{index}]")
+    return formats
 
 
 def test_spec_generates():
@@ -7,4 +35,36 @@ def test_spec_generates():
     expected_number_of_paths = 2
     assert len(spec.SPEC["paths"]) > expected_number_of_paths
     expected_number_of_schema = 2
-    assert len(spec.SPEC["components"]["schemas"]) > expected_number_of_schema
+    assert len(SCHEMAS) > expected_number_of_schema
+
+
+class TestFuzzyDateFields:
+    @pytest.mark.parametrize(
+        ("model", "field"),
+        [
+            ("ShowDetail", "dateStart"),
+            ("ShowDetail", "dateEnd"),
+            ("ShowList", "dateStart"),
+            ("ShowList", "dateEnd"),
+            ("PlaywrightShowListItem", "dateStart"),
+            ("PlaywrightShowListItem", "dateEnd"),
+            ("TargetedTrivia", "submitted"),
+            ("PersonTrivia", "submitted"),
+        ],
+    )
+    def test_optional_fuzzy_date(self, model, field):
+        assert get_property(model, field)["anyOf"] == [FUZZY_DATE_SCHEMA, NULL_SCHEMA]
+
+    def test_person_submitted_admits_boolean(self):
+        assert get_property("PersonDetail", "submitted")["anyOf"] == [
+            FUZZY_DATE_SCHEMA,
+            BOOLEAN_SCHEMA,
+            NULL_SCHEMA,
+        ]
+
+    def test_trivia_submitted_example_shows_reduced_precision(self):
+        assert get_property("TargetedTrivia", "submitted")["example"] == "2022-01"
+
+    def test_no_date_formats_remain(self):
+        """Only the build time, a real timestamp, keeps a date format."""
+        assert find_formats(SCHEMAS) == {".SiteStats.properties.buildTime": "date-time"}
