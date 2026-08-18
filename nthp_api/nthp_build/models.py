@@ -1,7 +1,5 @@
 """The models for ingesting data"""
 
-import datetime
-
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -12,7 +10,7 @@ from pydantic_collections import BaseCollectionModel
 from slugify import slugify
 
 from nthp_api.nthp_build import years
-from nthp_api.nthp_build.fields import PermissiveStr
+from nthp_api.nthp_build.fields import FuzzyDate, PermissiveStr
 
 
 class NthpModel(BaseModel):
@@ -25,7 +23,7 @@ class Link(NthpModel):
     snapshot: str | None = None
     username: PermissiveStr | None = None
     title: PermissiveStr | None = None
-    date: datetime.date | None = None
+    date: FuzzyDate | None = None
     publisher: PermissiveStr | None = None
     rating: PermissiveStr | None = None
     quote: PermissiveStr | None = None
@@ -106,7 +104,7 @@ class Asset(NthpModel):
 class Trivia(NthpModel):
     quote: str
     name: str | None = None
-    submitted: datetime.date | None = None
+    submitted: FuzzyDate | None = None
 
 
 class Show(NthpModel):
@@ -137,8 +135,8 @@ class Show(NthpModel):
     season: str
     season_sort: int | None = None
     venue: PermissiveStr | None = None
-    date_start: datetime.date | None = None
-    date_end: datetime.date | None = None
+    date_start: FuzzyDate | None = None
+    date_end: FuzzyDate | None = None
     # tour TODO
     trivia: list[Trivia] = []
     cast: list[PersonRef] = []
@@ -171,7 +169,7 @@ class Venue(NthpModel):
 class Person(NthpModel):
     id: str | None = None
     title: str
-    submitted: datetime.date | bool | None = None
+    submitted: FuzzyDate | bool | None = None
     headshot: str | None = None
     # course: List[str] = [] TODO: both lists and strings
     graduated: int | None = None

@@ -1,7 +1,11 @@
+import datetime
+import json
+
 import pytest
 from pydantic import ValidationError
 
 from nthp_api.nthp_build import models
+from nthp_api.nthp_build.fields import FuzzyDate
 
 
 class TestAsset:
@@ -42,6 +46,65 @@ class TestAsset:
         models.Asset(type="poster", image="abc", display_image=True)
         with pytest.raises(ValidationError):
             models.Asset(type="poster", filename="abc", display_image=True)
+
+
+def make_show(**kwargs) -> models.Show:
+    return models.Show(id="a_show", title="A Show", season="Spring", **kwargs)
+
+
+class TestShowDates:
+    def test_day_precision(self):
+        show = make_show(date_start=datetime.date(2001, 6, 14))
+        assert show.date_start == FuzzyDate(2001, 6, 14)
+
+    def test_month_precision(self):
+        show = make_show(date_start="2001-06", date_end="2001-07")
+        assert show.date_start == FuzzyDate(2001, 6)
+        assert show.date_end == FuzzyDate(2001, 7)
+
+    def test_year_precision(self):
+        assert make_show(date_start=2001).date_start == FuzzyDate(2001)
+
+    def test_invalid_date(self):
+        with pytest.raises(ValidationError):
+            make_show(date_start="04/01/2017")
+
+    def test_json_round_trip(self):
+        show = make_show(date_start="2001-06")
+        dumped = show.model_dump_json()
+        assert json.loads(dumped)["date_start"] == "2001-06"
+        assert models.Show(**json.loads(dumped)) == show
+
+
+class TestLink:
+    def test_year_precision_date(self):
+        assert models.Link(type="review", date=2007).date == FuzzyDate(2007)
+
+
+class TestTrivia:
+    def test_month_precision_submitted(self):
+        trivia = models.Trivia(quote="Something happened", submitted="2001-06")
+        assert trivia.submitted == FuzzyDate(2001, 6)
+
+
+class TestPersonSubmitted:
+    @pytest.mark.parametrize("value", [True, False])
+    def test_bool_stays_bool(self, value):
+        person = models.Person(title="A Person", submitted=value)
+        assert person.submitted is value
+
+    def test_date(self):
+        person = models.Person(title="A Person", submitted="2001-06")
+        assert person.submitted == FuzzyDate(2001, 6)
+
+    def test_year_precision(self):
+        assert models.Person(title="A Person", submitted=2001).submitted == FuzzyDate(
+            2001
+        )
+
+    def test_invalid_date(self):
+        with pytest.raises(ValidationError):
+            models.Person(title="A Person", submitted="04/01/2017")
 
 
 class TestHistoryRecord:
