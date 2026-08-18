@@ -28,19 +28,23 @@ class FuzzyDate:
 | Input | Source | Result |
 |---|---|---|
 | `datetime.date` | YAML parses `2001-06-14` | day precision |
-| `int` 1000–9999 | YAML parses bare `2007` | year precision |
+| `int` in year range | YAML parses bare `2007` | year precision |
 | `str` `YYYY` | quoted year | year precision |
 | `str` `YYYY-MM` | YAML leaves `2001-06` as str | month precision |
 | `str` `YYYY-MM-DD` | quoted full date | day precision |
 | `FuzzyDate` | revalidation on JSON round-trip | itself |
 
 Rejects: `bool` (checked before `int` — `bool` is an `int` subclass, and
-`Person.submitted` is `FuzzyDate | bool`), non-4-digit ints, `2007-13`,
-`04/01/2017`, and anything else. Month/day validated by constructing
-`datetime.date(year, month, day or 1)` — real calendar dates only.
+`Person.submitted` is `FuzzyDate | bool`), `datetime.datetime` (a time
+component means malformed source — fix the document, keep the source clean),
+years outside the archive range, `2007-13`, `04/01/2017`, and anything else.
+Month/day validated by constructing `datetime.date(year, month, day or 1)` —
+real calendar dates only.
 
-Decision needed: `datetime.datetime` (YAML timestamp with a time component) —
-truncate to date, or reject? Propose truncate; no known cases in the content repo.
+Year range: clamp to the archive's plausible span, module constants
+`MIN_YEAR = 1900`, `MAX_YEAR = 2100` (theatre founded 1920; generous headroom
+either side). Applies to all input paths, including the year of a full
+`datetime.date`.
 
 ### Serialises (output)
 
@@ -69,8 +73,8 @@ Ingest, `models.py`:
 - `Trivia.submitted` (`models.py:109`)
 - `Person.submitted` (`models.py:174`) — becomes `FuzzyDate | bool | None`
 
-Output, `schema.py` (breaking API change — camelCase fields switch from
-`format: date` to fuzzy string; fine while not yet the production build):
+Output, `schema.py` (breaking API change, accepted — camelCase fields switch
+from `format: date` to fuzzy string while not yet the production build):
 
 - `ShowDetail.date_start/date_end` (`schema.py:113`)
 - `ShowList.date_start/date_end` (`schema.py:136`)
@@ -103,7 +107,8 @@ Not changing: `Venue.built` (plain int year is fine), `HistoryRecord.year`
 `tests/test_nthp_build/` — new `test_fields.py` (or extend `test_models.py`):
 
 - Each accepted input form → expected precision and str output
-- Rejections: bool, `2007-13`, `2001-06-31`, `04/01/2017`, 3/5-digit ints
+- Rejections: bool, datetime, out-of-range years (`1899`, `2101`), `2007-13`,
+  `2001-06-31`, `04/01/2017`
 - Ordering: mixed-precision sort matches expected chronology
 - Round-trip: model → JSON → model equality, for a Show with `YYYY-MM` date
 - `Person.submitted: true` still validates as bool
@@ -117,11 +122,8 @@ Not changing: `Venue.built` (plain int year is fine), `HistoryRecord.year`
 3. Swap output schema fields + DB columns + loader/dumper call sites
 4. Regenerate/verify OpenAPI spec, update tests
 
-## Unanswered questions
+## Decisions
 
-1. `datetime.datetime` input: truncate to date (proposed) or reject?
-2. Year bounds: any 4-digit year (proposed), or clamp to a plausible archive
-   range now rather than waiting for the date-sanity task?
-3. OK to break the output API shape now (fuzzy strings instead of
-   `format: date`), or does the frontend consume these fields already and need
-   warning?
+1. `datetime.datetime` input: reject — keep the source clean.
+2. Year bounds: clamp to archive range (1900–2100).
+3. Output API shape: break it now — fuzzy strings replace `format: date`.
