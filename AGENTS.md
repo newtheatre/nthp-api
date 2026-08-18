@@ -11,7 +11,7 @@ Start at [docs/00-Docs.md](docs/00-Docs.md) — index of plans, reviews and task
 - `uv sync` — install dependencies
 - `./nthp load` / `./nthp dump` / `./nthp build` — run the generator
 - `uv run pytest` — tests
-- `pre-commit install` — lint and format hooks (ruff)
+- `prek install` — lint and format git hooks (ruff), `prek run --all-files` to run them
 
 ## Conventions
 

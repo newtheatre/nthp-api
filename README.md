@@ -33,12 +33,13 @@ Alternatively you can run `nthp build` to run both steps in one go.
 
 ## Contributing
 
-### pre-commit hooks
+### Git hooks
 
-pre-commit hooks are used to lint and format the source code using [ruff](https://docs.astral.sh/ruff/)
+Git hooks are used to lint and format the source code using [ruff](https://docs.astral.sh/ruff/)
 
-- Ensure you have [pre-commit](https://pre-commit.com/) installed.
-- Run `pre-commit install` to install pre-commit hooks.
+- Ensure you have [prek](https://prek.j178.dev/) installed.
+- Run `prek install` to install the hooks.
+- Run `prek run --all-files` to check everything.
 
 ### Tests
 

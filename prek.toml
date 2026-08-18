@@ -1,0 +1,25 @@
+# Configuration file for `prek`, a git hook framework written in Rust.
+# See https://prek.j178.dev for more information.
+#:schema https://www.schemastore.org/prek.json
+
+[[repos]]
+repo = "https://github.com/astral-sh/ruff-pre-commit"
+rev = "v0.16.3" # https://github.com/astral-sh/ruff-pre-commit/tags
+hooks = [
+  {
+    id = "ruff-check",
+    args = [
+      "--fix",
+      "--exit-non-zero-on-fix"
+    ]
+  },
+  { id = "ruff-format" }
+]
+
+# pre-commit/mirrors-prettier is archived, this is the maintained fork
+[[repos]]
+repo = "https://github.com/rbubley/mirrors-prettier"
+rev = "v3.9.6" # https://github.com/rbubley/mirrors-prettier/tags
+hooks = [
+  { id = "prettier" }
+]
