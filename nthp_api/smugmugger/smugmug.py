@@ -36,7 +36,7 @@ def upsert_cached_album_images(
     database.SmugMugResponse.replace(
         id=album_id,
         last_updated=album.ImagesLastUpdated,
-        last_fetched=datetime.datetime.now(),
+        last_fetched=datetime.datetime.now(datetime.UTC),
         data=album_images.model_dump_json(),
     ).execute()
 

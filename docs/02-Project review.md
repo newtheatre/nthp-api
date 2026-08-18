@@ -115,9 +115,18 @@ optimising today; CI wall-time is dominated by checkout/setup.
 
 - ✅ Done — Leftover pydantic v1 API calls: `dumper.py:51` (`obj.json(...)`) and
   `smugmug.py:21` (`.json(...)`). Deprecated; removed in pydantic v3. Two-line
-  fix now, build-breaker later. Both now use `model_dump_json()`.
+  fix now, build-breaker later. Both now use `model_dump_json()`. A third the
+  review missed, `dumper.py:117` (`year_detail.dict()`), is now `model_dump()`.
+  A full sweep found no other v1 API left (no `parse_obj`/`parse_raw`,
+  `from_orm`, `construct`, `__fields__`, `@validator`, class-based `Config`).
 - ✅ Done — `SiteStats.build_time` uses naive `datetime.now()` — emit UTC ISO
   8601. Now `datetime.now(datetime.UTC)`, serialised with a `Z` offset.
+  `smugmugger/smugmug.py:39` (`last_fetched`) was naive too, and sits in the
+  same table as `last_updated`, which stores SmugMug's *aware* timestamps —
+  cache-age logic comparing the two would have raised `TypeError`. Now aware.
+  Left naive deliberately: `people.py:192` and `config.py:13` read only the
+  local year/month off the wall clock (`date.today()` has no tz concept, and
+  UK local time is the right frame for an academic calendar).
 
 ## 3. Operating unattended for years
 
