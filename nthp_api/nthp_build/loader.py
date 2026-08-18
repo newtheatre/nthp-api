@@ -225,7 +225,8 @@ def run_document_loader(loader: Loader):
             loader.func(path=doc_path, document=document, data=data)  # type: ignore[call-arg]
     if docs_that_failed_validation:
         log.error(
-            f"{len(docs_that_failed_validation)} documents failed validation for {loader.path}"
+            f"{len(docs_that_failed_validation)} documents failed validation"
+            f" for {loader.path}"
         )
 
 
@@ -258,7 +259,8 @@ def run_data_loader(loader: Loader):
         )  # type: ignore[call-arg]
     if files_that_failed_validation:
         log.error(
-            f"{len(files_that_failed_validation)} files failed validation for {loader.path}"
+            f"{len(files_that_failed_validation)} files failed validation"
+            f" for {loader.path}"
         )
 
 

@@ -35,7 +35,7 @@ Alternatively you can run `nthp build` to run both steps in one go.
 
 ### pre-commit hooks
 
-pre-commit hooks are used to lint the source code using [Black](https://black.readthedocs.io/en/stable/) and [ruff](https://ruff.rs)
+pre-commit hooks are used to lint and format the source code using [ruff](https://docs.astral.sh/ruff/)
 
 - Ensure you have [pre-commit](https://pre-commit.com/) installed.
 - Run `pre-commit install` to install pre-commit hooks.

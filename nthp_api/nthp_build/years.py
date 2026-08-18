@@ -14,7 +14,7 @@ def check_year_id_is_valid(year_id: str) -> bool:
 
 
 def get_year_id(year: int) -> str:
-    return f"{str(year)[-2:]}_{str(year+1)[-2:]}"
+    return f"{str(year)[-2:]}_{str(year + 1)[-2:]}"
 
 
 def get_year_id_from_show_path(path: DocumentPath) -> str:

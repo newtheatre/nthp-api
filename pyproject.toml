@@ -39,6 +39,7 @@ dev = [
     "freezegun>=1.5.5,<2",
     "types-pyyaml>=6.0.12.20260815,<7",
     "pytest-asyncio>=1.4.0,<2",
+    "ruff>=0.16.3,<0.17",
 ]
 
 [build-system]
@@ -60,6 +61,10 @@ asyncio_mode = "strict"
 asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
+# Matches the formatter
+line-length = 88
+
+[tool.ruff.lint]
 select = [
     "E", # pycodestyle errors
     "F", # pyflakes
@@ -79,7 +84,7 @@ select = [
     "RET", # flake8-return
     "SLF", # flake8-self
     "SIM", # flake8-simplify
-    "TCH", # flake8-type-checking
+    "TC", # flake8-type-checking (was TCH)
     "PTH", # flake8-use-pathlib
     "ERA", # eradicate
     "PL", # pylint
@@ -88,12 +93,11 @@ select = [
 ]
 ignore = [
     "TRY003", # Permit long exception messages
+    "ISC001", # Conflicts with the formatter
+    "PLC0415", # Permit deferred imports, used in the CLI to speed up startup
 ]
 
-# Higher than black to give wiggle room
-line-length = 120
-
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "bin/*" = ["INP001"]
 "dev/*" = ["INP001"]
 "*/fixtures/*" = ["E501"]
