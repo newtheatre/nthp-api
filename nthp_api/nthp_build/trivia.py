@@ -1,4 +1,5 @@
 from nthp_api.nthp_build import database, models, people, schema
+from nthp_api.nthp_build.fields import FuzzyDate
 
 
 def save_trivia(  # noqa: PLR0913
@@ -22,7 +23,7 @@ def save_trivia(  # noqa: PLR0913
                 "person_id": people.get_person_id(trivia.name) if trivia.name else None,
                 "person_name": trivia.name if trivia.name else None,
                 "quote": trivia.quote,
-                "submitted": trivia.submitted,
+                "submitted": FuzzyDate.to_db_value(trivia.submitted),
                 "data": trivia.model_dump_json(),
             }
         )

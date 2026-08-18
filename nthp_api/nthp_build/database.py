@@ -49,8 +49,9 @@ class Show(NthpDbModel):
     title = peewee.CharField()
     venue_id = peewee.CharField(index=True, null=True)
     season_sort = peewee.IntegerField(null=True, index=True)
-    date_start = peewee.DateField(null=True, index=True)
-    date_end = peewee.DateField(null=True)
+    # Reduced ISO 8601 strings, see fields.FuzzyDate. Text sort is date order.
+    date_start = peewee.CharField(null=True, index=True)
+    date_end = peewee.CharField(null=True)
     primary_image = peewee.CharField(null=True)
     assets = peewee.TextField()
     data = peewee.TextField()
@@ -97,7 +98,7 @@ class Trivia(NthpDbModel):
     person_name = peewee.CharField(null=True)
 
     quote = peewee.TextField()
-    submitted = peewee.DateField(null=True, index=True)
+    submitted = peewee.CharField(null=True, index=True)
 
     data = peewee.TextField()
 

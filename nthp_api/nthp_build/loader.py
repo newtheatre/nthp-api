@@ -30,6 +30,7 @@ from nthp_api.nthp_build.documents import (
     load_document,
     load_yaml,
 )
+from nthp_api.nthp_build.fields import FuzzyDate
 
 log = logging.getLogger(__name__)
 
@@ -46,8 +47,8 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
         title=data.title,
         venue_id=venues.get_venue_id(data.venue) if data.venue else None,
         season_sort=data.season_sort,
-        date_start=data.date_start,
-        date_end=data.date_end,
+        date_start=FuzzyDate.to_db_value(data.date_start),
+        date_end=FuzzyDate.to_db_value(data.date_end),
         primary_image=primary_image,
         assets=schema.AssetCollection(show_assets).model_dump_json(),
         data=data.model_dump_json(),

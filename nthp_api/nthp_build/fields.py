@@ -107,13 +107,24 @@ class FuzzyDate:
         )
 
     @classmethod
+    def to_db_value(cls, value: "FuzzyDate | None") -> str | None:
+        """Reduced ISO string for storage, sortable as text."""
+        return str(value) if value is not None else None
+
+    @classmethod
+    def _serialise(cls, value: Any) -> Any:
+        # A union such as `FuzzyDate | bool` hands every member of the union to this
+        # serialiser, so anything that isn't ours passes through untouched.
+        return str(value) if isinstance(value, FuzzyDate) else value
+
+    @classmethod
     def __get_pydantic_core_schema__(
         cls, source_type: Any, handler: GetCoreSchemaHandler
     ) -> core_schema.CoreSchema:
         return core_schema.no_info_plain_validator_function(
             cls.parse,
             serialization=core_schema.plain_serializer_function_ser_schema(
-                str, return_schema=core_schema.str_schema(), when_used="json"
+                cls._serialise, when_used="json"
             ),
         )
 

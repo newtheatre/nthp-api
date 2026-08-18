@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from pydantic_collections import BaseCollectionModel
 
 from nthp_api.nthp_build import models, years
-from nthp_api.nthp_build.fields import PermissiveStr
+from nthp_api.nthp_build.fields import FuzzyDate, PermissiveStr
 
 
 class ResponseConfig:
@@ -110,8 +110,8 @@ class ShowDetail(NthpSchema):
     period: str | None = None
     season: str
     venue: VenueShow | None = None
-    date_start: datetime.date | None = None
-    date_end: datetime.date | None = None
+    date_start: FuzzyDate | None = None
+    date_end: FuzzyDate | None = None
     # tour TODO
     cast: list[ShowRole]
     crew: list[ShowRole]
@@ -133,16 +133,16 @@ class ShowList(NthpSchema):
     devised: str | bool
     season: str | None = None
     venue: VenueShow | None = None
-    date_start: datetime.date | None = None
-    date_end: datetime.date | None = None
+    date_start: FuzzyDate | None = None
+    date_end: FuzzyDate | None = None
     primary_image: str | None = None
 
 
 class PlaywrightShowListItem(NthpSchema):
     id: str
     title: str
-    date_start: datetime.date | None = None
-    date_end: datetime.date | None = None
+    date_start: FuzzyDate | None = None
+    date_end: FuzzyDate | None = None
     primary_image: str | None = None
 
 
@@ -277,7 +277,7 @@ class PersonGraduated(NthpSchema):
 class PersonDetail(NthpSchema):
     id: str
     title: str
-    submitted: datetime.date | bool | None = None
+    submitted: FuzzyDate | bool | None = None
     headshot: str | None = None
     graduated: PersonGraduated | None = None
     show_roles: list[PersonShowRoles]
@@ -306,7 +306,7 @@ class BaseTrivia(NthpSchema):
             "perfectly circular Victoria Sponge"
         },
     )
-    submitted: datetime.date | None = Field(
+    submitted: FuzzyDate | None = Field(
         title="Submitted Date",
         description="The date the quote was submitted, if null it's likely pulled from "
         "the programme or other source.",

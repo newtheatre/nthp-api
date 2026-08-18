@@ -106,6 +106,11 @@ class TestPersonSubmitted:
         with pytest.raises(ValidationError):
             models.Person(title="A Person", submitted="04/01/2017")
 
+    @pytest.mark.parametrize("value", [True, False])
+    def test_bool_serialises_as_bool(self, value):
+        person = models.Person(title="A Person", submitted=value)
+        assert json.loads(person.model_dump_json())["submitted"] is value
+
 
 class TestHistoryRecord:
     def test_creation(self):
