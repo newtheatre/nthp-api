@@ -225,7 +225,7 @@ def dump_crew_roles():
         path=make_out_path(Path("roles/crew"), "index"),
         obj=schema.RoleCollection(
             [
-                schema.Role(role=role.name, aliases=list(role.aliases))
+                schema.Role(role=role.name, aliases=sorted(role.aliases))
                 for role in roles.CREW_ROLE_DEFINITIONS
             ]
         ),
@@ -339,7 +339,12 @@ def dump_site_stats(state: DumperSharedState) -> None:
 
 def dump_search_documents(state: DumperSharedState):
     path = make_out_path(Path("search"), "documents")
-    collection = schema.SearchDocumentCollection(list(state.search_documents))
+    collection = schema.SearchDocumentCollection(
+        sorted(
+            state.search_documents,
+            key=lambda document: (document.type.value, document.id),
+        )
+    )
     write_file(path, collection)
 
 

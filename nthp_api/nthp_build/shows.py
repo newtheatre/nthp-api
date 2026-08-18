@@ -173,7 +173,7 @@ def get_show_detail(show_inst: database.Show) -> schema.ShowDetail:
     )
 
 
-def get_show_people_names(show: schema.ShowDetail) -> set[str]:
+def get_show_people_names(show: schema.ShowDetail) -> list[str]:
     people_names = set()
     for credit in show.cast:
         if credit.person and credit.person.name is not None:
@@ -181,4 +181,4 @@ def get_show_people_names(show: schema.ShowDetail) -> set[str]:
     for person in show.crew:
         if person.person and person.person.name is not None:
             people_names.add(person.person.name)
-    return people_names
+    return sorted(people_names)

@@ -34,13 +34,10 @@ def find_documents(content_directory: Path | str) -> Iterable[DocumentPath]:
             basename=path.stem,
         )
 
-    return [
-        doc_path
-        for doc_path in map(
-            map_path, (settings.content_root / Path(content_directory)).rglob("*.md")
-        )
-        if doc_path is not None
-    ]
+    found_paths = sorted(
+        (settings.content_root / Path(content_directory)).rglob("*.md")
+    )
+    return [doc_path for doc_path in map(map_path, found_paths) if doc_path is not None]
 
 
 def load_document(path: Path) -> frontmatter.Post:
