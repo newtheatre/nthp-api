@@ -97,5 +97,5 @@ from nthp_api.nthp_build import models, schema, shows
     ],
 )
 def test_get_show_playwright(input: dict, expected: schema.PlaywrightShow):
-    show = models.Show.construct(**input)
+    show = models.Show.model_construct(**input)
     assert shows.get_show_playwright(show) == expected

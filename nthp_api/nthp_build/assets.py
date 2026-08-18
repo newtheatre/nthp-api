@@ -63,7 +63,7 @@ def get_mime_type(source: AssetSource, type: AssetType, id: str) -> str | None:
     raise ValueError(f"Unhandled asset source {source}")
 
 
-def save_asset(  # noqa: PLR0913
+def save_asset(  # noqa: PLR0913, PLR0917
     target_id: str,
     target_type: AssetTarget,
     source: AssetSource,

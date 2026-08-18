@@ -47,7 +47,7 @@ def get_playwright_shows() -> PlaywrightShowMapping:
     playwright_shows = defaultdict(list)
     for result in query:
         playwright_shows[(result.playwright_id, result.playwright_name)].append(
-            result.show
+            result.show  # type: ignore[attr-defined]
         )
     return playwright_shows
 
@@ -100,6 +100,7 @@ def get_play_shows() -> PlayShowMapping:
     )
     play_shows = defaultdict(list)
     for result in query:
+        show = result.show  # type: ignore[attr-defined]
         play_shows[
             PlayRef(
                 play_id=result.play_id,
@@ -107,7 +108,7 @@ def get_play_shows() -> PlayShowMapping:
                 playwright_id=result.playwright_id,
                 playwright_name=result.playwright_name,
             )
-        ].append(result.show)
+        ].append(show)
     return play_shows
 
 

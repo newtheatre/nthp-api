@@ -23,7 +23,7 @@ def save_trivia(  # noqa: PLR0913
                 "person_name": trivia.name if trivia.name else None,
                 "quote": trivia.quote,
                 "submitted": trivia.submitted,
-                "data": trivia.json(),
+                "data": trivia.model_dump_json(),
             }
         )
     database.Trivia.insert_many(rows).execute()

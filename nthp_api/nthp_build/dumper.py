@@ -275,7 +275,9 @@ def dump_people_trivia(state: DumperSharedState):
         .where(database.Trivia.person_id.is_null(False))
         .group_by(database.Trivia.person_id)
     )
-    [dump_person_trivia(result.person_id) for result in people_trivia_query]
+    for result in people_trivia_query:
+        if result.person_id is not None:
+            dump_person_trivia(result.person_id)
 
 
 def dump_playwrights(state: DumperSharedState):
@@ -315,7 +317,7 @@ def dump_albums(state: DumperSharedState):
 
 
 def dump_site_stats(state: DumperSharedState) -> None:
-    path = make_out_path(Path(""), "index")
+    path = make_out_path(Path(), "index")
     write_file(
         path,
         schema.SiteStats(

@@ -8,7 +8,7 @@ def add_document(
     title: str,
     id: str,
     image_id: str | None = None,
-    **kwargs
+    **kwargs,
 ):
     state.search_documents.append(
         schema.SearchDocument(

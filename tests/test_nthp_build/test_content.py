@@ -16,7 +16,7 @@ MARKDOWN_TEST_CASES = [
 
 @pytest.mark.parametrize(
     "input, expected",
-    ((x[0], x[1]) for x in MARKDOWN_TEST_CASES),
+    [(x[0], x[1]) for x in MARKDOWN_TEST_CASES],
 )
 def test_markdown_to_html(input: str | None, expected: str | None) -> None:
     assert content.markdown_to_html(input) == expected
@@ -24,7 +24,7 @@ def test_markdown_to_html(input: str | None, expected: str | None) -> None:
 
 @pytest.mark.parametrize(
     "input, expected",
-    ((x[0], x[2]) for x in MARKDOWN_TEST_CASES),
+    [(x[0], x[2]) for x in MARKDOWN_TEST_CASES],
 )
 def test_markdown_to_plaintext(input: str | None, expected: str | None) -> None:
     assert content.markdown_to_plaintext(input) == expected

@@ -81,7 +81,7 @@ def make_basic_get_operation(
     }
 
 
-def make_detail_get_operation(  # noqa: PLR0913
+def make_detail_get_operation(  # noqa: PLR0913, PLR0917
     operation_id: str,
     tags: list[str],
     summary: str,

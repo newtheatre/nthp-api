@@ -72,9 +72,9 @@ def get_show_playwright(  # noqa: PLR0911
             id=playwrights.get_playwright_id(show.playwright),
             name=show.playwright,
             descriptor=f"by {show.playwright}",
-            person_id=people.get_person_id(show.playwright)
-            if show.student_written
-            else None,
+            person_id=(
+                people.get_person_id(show.playwright) if show.student_written else None
+            ),
             student_written=show.student_written,
         )
     return None
@@ -98,15 +98,17 @@ def get_show_roles(person_refs: list[models.PersonRef]) -> list[schema.ShowRole]
         show_roles.append(
             schema.ShowRole(
                 role=person_ref.role,
-                person=schema.PersonList(
-                    id=person_id,
-                    name=person_ref.name,
-                    is_person=person_ref.person,
-                    headshot=person_id_to_headshot.get(person_id, None),
-                    has_bio=has_bio,
-                )
-                if person_id
-                else None,
+                person=(
+                    schema.PersonList(
+                        id=person_id,
+                        name=person_ref.name,
+                        is_person=person_ref.person,
+                        headshot=person_id_to_headshot.get(person_id),
+                        has_bio=has_bio,
+                    )
+                    if person_id
+                    else None
+                ),
                 note=person_ref.note,
             )
         )

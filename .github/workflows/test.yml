@@ -3,17 +3,17 @@ on: [push, pull_request]
 
 env:
   # Task vars
-  python-version: 3.11
+  python-version: 3.13
 
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.python-version }}
-      - uses: pre-commit/action@v3.0.0
+      - uses: pre-commit/action@v3.0.1
 
   pytest:
     runs-on: ubuntu-latest

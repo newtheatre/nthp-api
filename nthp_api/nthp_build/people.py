@@ -1,12 +1,15 @@
 import datetime
 from collections import defaultdict
 from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
-import peewee
 from slugify import slugify
 
 from nthp_api.nthp_build import database, models, schema, years
 from nthp_api.nthp_build.config import settings
+
+if TYPE_CHECKING:
+    import peewee
 
 
 def get_person_id(name: str) -> str:
@@ -40,14 +43,14 @@ def save_person_roles(
                 "person_name": person_role.person_name,
                 "role": person_role.role,
                 "is_person": person_role.is_person,
-                "data": person_role.json(),
+                "data": person_role.model_dump_json(),
             }
         )
     database.PersonRole.insert_many(rows).execute()
     return person_roles
 
 
-def get_real_people() -> peewee.ModelSelect:
+def get_real_people() -> "peewee.ModelSelect[database.Person]":
     return database.Person.select()
 
 
@@ -72,7 +75,7 @@ def get_person_show_roles(person_id: str) -> list[schema.PersonShowRoles]:
     shows: dict[str, database.Show] = {}
     for result in query:
         results_by_show_id[result.target_id].append(result)
-        shows[result.target_id] = result.show
+        shows[result.target_id] = result.show  # type: ignore[attr-defined]
 
     return [
         schema.PersonShowRoles(
@@ -155,7 +158,7 @@ def get_person_collaborators(person_id: str) -> list[schema.PersonCollaborator]:
 
 def get_people_from_roles(
     excluded_ids: Iterable[str] | None = None,
-) -> peewee.ModelSelect:
+) -> "peewee.ModelSelect[database.PersonRole]":
     """
     Get people from person roles, optionally excluding a list of person ids.
     """
@@ -188,9 +191,8 @@ def get_graduation(model: models.Person) -> schema.PersonGraduated | None:
     if last_year_active:
         how_many_years_ago_was_that = datetime.date.today().year - last_year_active
         # Only use the estimate if a certain amount of time has passed.
-        if (
-            how_many_years_ago_was_that > settings.graduation_recency_limit
-            or how_many_years_ago_was_that == settings.graduation_recency_limit
+        if how_many_years_ago_was_that > settings.graduation_recency_limit or (
+            how_many_years_ago_was_that == settings.graduation_recency_limit
             and datetime.date.today().month >= settings.graduation_month
         ):
             return schema.PersonGraduated.from_year(

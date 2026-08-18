@@ -3,8 +3,8 @@ from .schema import SmugMugAlbum, SmugMugImage, SmugMugImageCollection
 from .smugmug import get_album_images
 
 __all__ = [
-    "SmugMugClient",
     "SmugMugAlbum",
+    "SmugMugClient",
     "SmugMugImage",
     "SmugMugImageCollection",
     "get_album_images",

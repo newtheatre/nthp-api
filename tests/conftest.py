@@ -3,6 +3,7 @@ from os import environ
 import pytest
 
 environ["CONTENT_ROOT"] = "content"
+environ["SMUGMUG_API_KEY"] = environ.get("SMUGMUG_API_KEY", "a123")
 
 
 @pytest.fixture(scope="module")

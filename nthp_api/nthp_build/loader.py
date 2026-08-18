@@ -49,8 +49,8 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
         date_start=data.date_start,
         date_end=data.date_end,
         primary_image=primary_image,
-        assets=schema.AssetCollection(show_assets).json(),
-        data=data.json(),
+        assets=schema.AssetCollection(show_assets).model_dump_json(),
+        data=data.model_dump_json(),
         content=markdown_to_html(document.content),
         plaintext=markdown_to_plaintext(document.content),
     )
@@ -106,7 +106,7 @@ def load_venue(path: DocumentPath, document: frontmatter.Post, data: models.Venu
     database.Venue.create(
         id=path.id,
         name=data.title,
-        data=data.json(),
+        data=data.model_dump_json(),
         content=markdown_to_html(document.content),
         plaintext=markdown_to_plaintext(document.content),
     )
@@ -119,7 +119,7 @@ def load_person(path: DocumentPath, document: frontmatter.Post, data: models.Per
             title=data.title,
             graduated=data.graduated,
             headshot=data.headshot,
-            data=data.json(),
+            data=data.model_dump_json(),
             content=markdown_to_html(document.content),
             plaintext=markdown_to_plaintext(document.content),
         )
@@ -241,7 +241,7 @@ def run_data_loader(loader: Loader):
             if isinstance(loader.schema_type, models.NthpModel):
                 data = loader.schema_type(**document_data)  # type: ignore[call-arg]
             else:
-                data = loader.schema_type(document_data)  # type: ignore[call-arg]
+                data = loader.schema_type(document_data)  # type: ignore[call-arg,misc]
         except ValidationError:
             print_validation_error(ValidationError(), loader.path)
             files_that_failed_validation.append(loader.path)

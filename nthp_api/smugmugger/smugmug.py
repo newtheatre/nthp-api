@@ -37,7 +37,7 @@ def upsert_cached_album_images(
         id=album_id,
         last_updated=album.ImagesLastUpdated,
         last_fetched=datetime.datetime.now(),
-        data=album_images.json(),
+        data=album_images.model_dump_json(),
     ).execute()
 
 

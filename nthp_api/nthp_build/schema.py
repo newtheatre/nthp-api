@@ -301,14 +301,16 @@ class BaseTrivia(NthpSchema):
     quote: str = Field(
         title="Quote",
         description="The quote",
-        example="Every character in this play was portrayed by a perfectly circular "
-        "Victoria Sponge",
+        json_schema_extra={
+            "example": "Every character in this play was portrayed by a "
+            "perfectly circular Victoria Sponge"
+        },
     )
     submitted: datetime.date | None = Field(
         title="Submitted Date",
         description="The date the quote was submitted, if null it's likely pulled from "
         "the programme or other source.",
-        example="2022-01-01",
+        json_schema_extra={"example": "2022-01-01"},
     )
 
 
@@ -318,12 +320,12 @@ class TargetedTrivia(BaseTrivia):
     person_id: str | None = Field(
         title="Person ID",
         description="The person ID of the person who submitted the quote",
-        example="fred_bloggs",
+        json_schema_extra={"example": "fred_bloggs"},
     )
     person_name: str | None = Field(
         title="Person Name",
         description="The name of the person who submitted the quote",
-        example="Fred Bloggs",
+        json_schema_extra={"example": "Fred Bloggs"},
     )
 
 
@@ -337,28 +339,28 @@ class PersonTrivia(BaseTrivia):
     target_id: str = Field(
         title="Target ID",
         description="The ID of the target of the quote",
-        example="the_show",
+        json_schema_extra={"example": "the_show"},
     )
     target_type: str = Field(
         title="Target Type",
         description="The type of the target of the quote",
-        example="show",
+        json_schema_extra={"example": "show"},
     )
     target_name: str = Field(
         title="Target Name",
         description="The name of the target of the quote",
-        example="The Show",
+        json_schema_extra={"example": "The Show"},
     )
     target_image_id: str | None = Field(
         title="Target Image ID",
         description="The image ID of the target of the quote",
-        example="qABC123",
+        json_schema_extra={"example": "qABC123"},
     )
     # Uses YYYY, not YY_YY, 2000 means 2000-2001
     target_year: PermissiveStr | None = Field(
         title="Target Year",
         description="The year of the target of the quote",
-        example="2000",
+        json_schema_extra={"example": "2000"},
     )
 
 
@@ -370,15 +372,19 @@ class HistoryRecord(NthpSchema):
     year: str = Field(
         description="Short description of the year of the record, "
         "e.g. '1940' / '1940s'",
-        example="1940s",
+        json_schema_extra={"example": "1940s"},
     )
     year_id: str | None = Field(
-        description="Exact year ID of the record", example="40_41"
+        description="Exact year ID of the record",
+        json_schema_extra={"example": "40_41"},
     )
-    title: str = Field(description="Title of the record", example="Theatre built")
+    title: str = Field(
+        description="Title of the record",
+        json_schema_extra={"example": "Theatre built"},
+    )
     description: str = Field(
         description="Description of the record, in HTML",
-        example="<p>Theatre built in 1940</p>",
+        json_schema_extra={"example": "<p>Theatre built in 1940</p>"},
     )
 
 
@@ -412,29 +418,34 @@ class SiteStats(NthpSchema):
     build_time: datetime.datetime = Field(
         title="Build Time",
         description="When was the API built.",
-        example="2022-01-01T12:34:45.678901",
+        json_schema_extra={"example": "2022-01-01T12:34:45.678901"},
     )
-    branch: str = Field(description="Branch API was built from.", example="master")
+    branch: str = Field(
+        description="Branch API was built from.",
+        json_schema_extra={"example": "master"},
+    )
     show_count: int = Field(
-        title="Show Count", description="Number of shows in the database.", example=1234
+        title="Show Count",
+        description="Number of shows in the database.",
+        json_schema_extra={"example": 1234},
     )
     person_count: int = Field(
         title="Person Count",
         description="Number of people in the database.",
-        example=1234,
+        json_schema_extra={"example": 1234},
     )
     person_with_bio_count: int = Field(
         title="Person with bio count",
         description="Number of people with bio records.",
-        example=1234,
+        json_schema_extra={"example": 1234},
     )
     credit_count: int = Field(
         title="Credit Count",
         description="Number of credits, inc. cast/crew/committee roles.",
-        example=1234,
+        json_schema_extra={"example": 1234},
     )
     trivia_count: int = Field(
         title="Trivia Count",
         description="Number of bits of trivia or stories.",
-        example=1234,
+        json_schema_extra={"example": 1234},
     )

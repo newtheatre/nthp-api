@@ -8,7 +8,7 @@ from nthp_api.nthp_build import database, schema, years
 
 class RoleDefinition(NamedTuple):
     name: str
-    aliases: set[str] = set()
+    aliases: set[str] = set()  # noqa: RUF012
 
 
 COMMITTEE_ROLE_DEFINITIONS: list[RoleDefinition] = [
@@ -111,7 +111,7 @@ def get_people_committee_roles_by_role(
             schema.PersonCommitteeRoleList(
                 id=r.person_id,
                 title=r.person_name,
-                headshot=r.person.headshot if getattr(r, "person", None) else None,
+                headshot=r.person.headshot if getattr(r, "person", None) else None,  # type: ignore[attr-defined]
                 year_title=years.get_year_title(
                     years.get_year_from_year_id(r.target_id)
                 ),
@@ -161,9 +161,9 @@ def get_people_crew_roles_by_role(role_name: str) -> list[schema.PersonShowRoleL
             schema.PersonShowRoleList(
                 id=r.person_id,
                 title=r.person_name,
-                headshot=r.person.headshot if getattr(r, "person", None) else None,
+                headshot=r.person.headshot if getattr(r, "person", None) else None,  # type: ignore[attr-defined]
                 role=role_name,
-                show_count=r.show_count,
+                show_count=r.show_count,  # type: ignore[attr-defined]
             )
             for r in query
         ],
@@ -203,9 +203,9 @@ def get_people_cast() -> list[schema.PersonShowRoleList]:
             schema.PersonShowRoleList(
                 id=r.person_id,
                 title=r.person_name,
-                headshot=r.person.headshot if getattr(r, "person", None) else None,
+                headshot=r.person.headshot if getattr(r, "person", None) else None,  # type: ignore[attr-defined]
                 role="Actor",
-                show_count=r.show_count,
+                show_count=r.show_count,  # type: ignore[attr-defined]
             )
             for r in query
         ],

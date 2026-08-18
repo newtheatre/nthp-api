@@ -1,12 +1,15 @@
 import json
 from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
-from peewee import ModelSelect
 from slugify import slugify
 
 from nthp_api.nthp_build import database, models
 from nthp_api.nthp_build.schema import Location, VenueCollection, VenueDetail, VenueList
 from nthp_api.nthp_build.shows import get_show_list_item
+
+if TYPE_CHECKING:
+    from peewee import ModelSelect
 
 
 def get_venue_id(name: str) -> str:
@@ -16,7 +19,7 @@ def get_venue_id(name: str) -> str:
 ShowVenueMap = dict[str, list[database.Show]]
 
 
-def get_show_venue_map(venue_query: ModelSelect) -> ShowVenueMap:
+def get_show_venue_map(venue_query: "ModelSelect[database.Venue]") -> ShowVenueMap:
     """
     Returns a map of venue IDs to a list of shows for that venue.
     """
@@ -39,9 +42,11 @@ def get_venue_collection(
                 name=venue_inst.name,
                 show_count=len(show_venue_map[venue_inst.id]),
                 built=venue_model.built,
-                location=Location.from_model(venue_model.location)
-                if venue_model.location
-                else None,
+                location=(
+                    Location.from_model(venue_model.location)
+                    if venue_model.location
+                    else None
+                ),
                 city=venue_model.city,
             )
             for venue_inst, venue_model in (
@@ -60,9 +65,9 @@ def get_venue_detail(
         name=venue_inst.name,
         show_count=len(shows),
         built=venue_data.built,
-        location=Location.from_model(venue_data.location)
-        if venue_data.location
-        else None,
+        location=(
+            Location.from_model(venue_data.location) if venue_data.location else None
+        ),
         city=venue_data.city,
         shows=[get_show_list_item(show) for show in shows],
         content=venue_inst.content,

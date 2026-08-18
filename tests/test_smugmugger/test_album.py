@@ -14,7 +14,7 @@ class TestGetAlbum:
             east = await album.get_album(client, "dvVPZh")
         assert east.Name == "East 2013"
         assert east.ImagesLastUpdated == datetime.datetime(
-            2015, 11, 6, 16, 55, 22, tzinfo=datetime.timezone.utc
+            2015, 11, 6, 16, 55, 22, tzinfo=datetime.UTC
         )
 
 
