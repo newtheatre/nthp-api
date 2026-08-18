@@ -1,5 +1,6 @@
 from typing import Any
 
+import humps
 import pytest
 
 from nthp_api.nthp_build import spec
@@ -68,3 +69,19 @@ class TestFuzzyDateFields:
     def test_no_date_formats_remain(self):
         """Only the build time, a real timestamp, keeps a date format."""
         assert find_formats(SCHEMAS) == {".SiteStats.properties.buildTime": "date-time"}
+
+
+class TestFieldTitles:
+    def test_titles_from_field_names_not_aliases(self):
+        assert get_property("ShowDetail", "dateStart")["title"] == "Date Start"
+        assert get_property("ShowDetail", "dateEnd")["title"] == "Date End"
+
+    def test_no_title_case_mangled_aliases(self):
+        """Camelised aliases must not be title-cased into words like Datestart."""
+        mangled = {
+            f"{model}.{field}": prop["title"]
+            for model, model_schema in SCHEMAS.items()
+            for field, prop in model_schema.get("properties", {}).items()
+            if humps.decamelize(field) != field and prop.get("title") == field.title()
+        }
+        assert mangled == {}

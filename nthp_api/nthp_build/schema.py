@@ -5,21 +5,21 @@ from enum import Enum
 
 import humps
 from pydantic import BaseModel, ConfigDict, Field
+from pydantic.fields import ComputedFieldInfo, FieldInfo
 from pydantic_collections import BaseCollectionModel
 
 from nthp_api.nthp_build import models, years
 from nthp_api.nthp_build.fields import FuzzyDate, PermissiveStr
 
 
-class ResponseConfig:
-    allow_population_by_field_name = True
-    alias_generator = humps.camelize
-    frozen = True
+def field_title(field_name: str, _field_info: FieldInfo | ComputedFieldInfo) -> str:
+    return field_name.replace("_", " ").title()
 
 
 RESPONSE_CONFIG = ConfigDict(
     populate_by_name=True,
     alias_generator=humps.camelize,
+    field_title_generator=field_title,
     frozen=True,
 )
 
