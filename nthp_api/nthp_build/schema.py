@@ -285,6 +285,21 @@ class PersonDetail(NthpSchema):
     content: str | None = None
 
 
+class PersonIndexItem(NthpSchema):
+    id: str
+    title: str
+    submitted: FuzzyDate | bool | None = None
+    headshot: str | None = None
+    graduated: PersonGraduated | None = None
+    show_role_count: int
+    committee_role_count: int
+    has_bio: bool
+
+
+class PersonIndexCollection(BaseCollectionModel[PersonIndexItem]):
+    pass
+
+
 class PersonCollaborator(NthpSchema):
     person_id: str
     person_name: str

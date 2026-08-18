@@ -205,6 +205,51 @@ def dump_virtual_people(state: DumperSharedState):
         dump_virtual_person(ref, state)
 
 
+def make_person_index_item(
+    model: models.Person,
+    *,
+    has_bio: bool,
+    show_role_counts: dict[str, int],
+    committee_role_counts: dict[str, int],
+) -> schema.PersonIndexItem:
+    assert model.id is not None, "Person model should have id by now"
+    return schema.PersonIndexItem(
+        id=model.id,
+        title=model.title,
+        submitted=model.submitted,
+        headshot=model.headshot,
+        graduated=people.get_graduation(model),
+        show_role_count=show_role_counts.get(model.id, 0),
+        committee_role_count=committee_role_counts.get(model.id, 0),
+        has_bio=has_bio,
+    )
+
+
+def dump_people_index(state: DumperSharedState):
+    """Index every person who gets a detail page, real and virtual alike."""
+    path = make_out_path(Path("people"), "index")
+    counts = {
+        "show_role_counts": people.get_show_role_counts(),
+        "committee_role_counts": people.get_committee_role_counts(),
+    }
+
+    real_people_ids = [inst.id for inst in database.Person.select(database.Person.id)]
+    items = [
+        make_person_index_item(
+            models.Person(**json.loads(person_inst.data)), has_bio=True, **counts
+        )
+        for person_inst in people.get_real_people()
+    ] + [
+        make_person_index_item(
+            people.make_virtual_person_model(ref), has_bio=False, **counts
+        )
+        for ref in people.get_people_from_roles(excluded_ids=real_people_ids)
+    ]
+
+    collection = schema.PersonIndexCollection(sorted(items, key=lambda item: item.id))
+    write_file(path, collection)
+
+
 def dump_collaborators_for_person(ref, state: DumperSharedState):
     path = make_out_path(Path("collaborators"), ref.person_id)
     collaborators = people.get_person_collaborators(ref.person_id)
@@ -371,6 +416,7 @@ DUMPERS: list[Dumper] = [
     Dumper("venues", dump_venues),
     Dumper("real people", dump_real_people),
     Dumper("virtual people", dump_virtual_people),
+    Dumper("people index", dump_people_index),
     Dumper("collaborators", dump_collaborators),
     Dumper("roles", dump_roles),
     Dumper("targeted trivia", dump_targeted_trivia),

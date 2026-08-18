@@ -1,15 +1,14 @@
 import datetime
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import TYPE_CHECKING
 
+import peewee
 from slugify import slugify
 
 from nthp_api.nthp_build import database, models, schema, years
 from nthp_api.nthp_build.config import settings
 
-if TYPE_CHECKING:
-    import peewee
+SHOW_ROLE_TYPES = [database.PersonRoleType.CAST, database.PersonRoleType.CREW]
 
 
 def get_person_id(name: str) -> str:
@@ -59,9 +58,7 @@ def get_person_show_roles(person_id: str) -> list[schema.PersonShowRoles]:
         database.PersonRole.select(database.PersonRole, database.Show)
         .where(
             database.PersonRole.person_id == person_id,
-            database.PersonRole.target_type.in_(
-                [database.PersonRoleType.CAST, database.PersonRoleType.CREW]
-            ),
+            database.PersonRole.target_type.in_(SHOW_ROLE_TYPES),
         )
         .join(
             database.Show,
@@ -112,6 +109,50 @@ def get_person_committee_roles(person_id: str) -> list[schema.PersonCommitteeRol
         )
         for person_role in query
     ]
+
+
+def get_show_role_counts() -> dict[str, int]:
+    """
+    Count shows worked on, per person, in a single query.
+
+    Counts distinct shows rather than role rows, as `get_person_show_roles` groups
+    a person's roles by show.
+    """
+    query = (
+        database.PersonRole.select(
+            database.PersonRole.person_id,
+            peewee.fn.COUNT(peewee.fn.DISTINCT(database.PersonRole.target_id)).alias(
+                "role_count"
+            ),
+        )
+        .where(
+            database.PersonRole.person_id.is_null(False),
+            database.PersonRole.target_type.in_(SHOW_ROLE_TYPES),
+        )
+        .group_by(database.PersonRole.person_id)
+    )
+    return {row.person_id: row.role_count for row in query}
+
+
+def get_committee_role_counts() -> dict[str, int]:
+    """
+    Count committee positions held, per person, in a single query.
+
+    Counts role rows, as `get_person_committee_roles` emits one entry per row: a
+    person holding the same position twice holds it twice.
+    """
+    query = (
+        database.PersonRole.select(
+            database.PersonRole.person_id,
+            peewee.fn.COUNT(database.PersonRole.id).alias("role_count"),
+        )
+        .where(
+            database.PersonRole.person_id.is_null(False),
+            database.PersonRole.target_type == database.PersonRoleType.COMMITTEE,
+        )
+        .group_by(database.PersonRole.person_id)
+    )
+    return {row.person_id: row.role_count for row in query}
 
 
 def get_person_collaborators(person_id: str) -> list[schema.PersonCollaborator]:

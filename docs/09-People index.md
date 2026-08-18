@@ -1,6 +1,6 @@
 ---
 type: task
-status: open
+status: done
 ---
 
 # People index
@@ -108,3 +108,38 @@ still a single acceptable fetch for list views.
 2. Full `PersonGraduated`, identical to the detail page.
 3. Virtual people included, `hasBio: false`.
 4. Also carry `submitted` and `showRoleCount` / `committeeRoleCount`.
+
+## Outcome
+
+Done. 3,480 entries, 656 KB raw / 65 KB gzipped — inside the estimate, and the
+gzipped figure is what consumers actually fetch. `dump_people_index` takes
+0.84 s.
+
+Every entry was checked against its own detail page after a real build: all
+3,480 match on `title`, `headshot`, `graduated`, `submitted` and both counts,
+and the index covers exactly the set of detail pages, sorted and unique.
+
+### The two counts are not counted the same way
+
+`showRoleCount` counts **distinct shows** while `committeeRoleCount` counts
+**role rows**, because that is what the detail page does:
+`get_person_show_roles` groups a person's roles by show (two credits on one
+show is one entry), whereas `get_person_committee_roles` emits one entry per
+row (holding President twice is two entries). Counting rows for both would
+have inflated `showRoleCount` for **496 of 3,632 people** — Zoe Smith would
+have read 103 instead of 78. The helpers in `people.py` carry this in their
+docstrings, and a test pins each behaviour.
+
+### Deviations from the plan
+
+- Real people's fields come from `models.Person(**json.loads(inst.data))`, not
+  from `database.Person` columns as the plan suggested. `submitted` is not a
+  column at all, and `graduated` on a detail page is `get_graduation()`, which
+  *estimates* from credits when the document has no year — 2,941 of 3,470
+  graduation values are estimated, virtual people included. Reading the columns
+  would have silently disagreed with the detail pages.
+- `PersonIndexItem` sits next to `PersonDetail` rather than `PersonList`, as it
+  refers to `PersonGraduated`, which is defined below `PersonList`.
+- Role counts take two aggregate queries rather than one grouped by role kind:
+  a person who both acted in and crewed the same show must count that show
+  once, which a per-kind grouping cannot express.

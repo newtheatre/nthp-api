@@ -39,6 +39,27 @@ def test_spec_generates():
     assert len(SCHEMAS) > expected_number_of_schema
 
 
+class TestPeopleIndex:
+    def test_path_present(self):
+        operation = spec.SPEC["paths"]["/people/index.json"]["get"]
+        assert operation["operationId"] == "getPersonIndex"
+        assert operation["responses"]["200"]["content"]["application/json"]["schema"][
+            "$ref"
+        ].endswith("PersonIndexCollection")
+
+    def test_model_present(self):
+        assert set(SCHEMAS["PersonIndexItem"]["properties"]) == {
+            "id",
+            "title",
+            "submitted",
+            "headshot",
+            "graduated",
+            "showRoleCount",
+            "committeeRoleCount",
+            "hasBio",
+        }
+
+
 class TestFuzzyDateFields:
     @pytest.mark.parametrize(
         ("model", "field"),

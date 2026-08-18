@@ -24,6 +24,7 @@ PYDANTIC_JSON_SCHEMA = models_json_schema(
         schema.PersonCollaboratorCollection,
         schema.PersonCommitteeRoleListCollection,
         schema.PersonDetail,
+        schema.PersonIndexCollection,
         schema.PersonShowRoleListCollection,
         schema.PersonTriviaCollection,
         schema.PlayCollection,
@@ -186,6 +187,14 @@ SPEC = {
             description="Details of a single venue, including show list.",
             model=schema.VenueDetail,
             key="id",
+        ),
+        "/people/index.json": make_basic_get_operation(
+            operation_id="getPersonIndex",
+            tags=["people"],
+            summary="Get index of people",
+            description="Every person with a detail page, real and virtual, sorted "
+            "by id.",
+            model=schema.PersonIndexCollection,
         ),
         "/people/{id}.json": make_detail_get_operation(
             operation_id="getPersonDetail",
