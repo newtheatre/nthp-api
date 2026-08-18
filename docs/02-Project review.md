@@ -158,10 +158,10 @@ Ranked by likelihood of being the thing that breaks it:
 |---|---|---|
 | High | Fail the build on validation errors (with legacy allowlist) | Small |
 | High | Add scheduled monthly CI build | Trivial |
-| High | Fix `year_end` off-by-one (1.2) | Trivial |
-| Medium | Fix `asset_title`/`asset_page` kwargs (1.1) | Trivial |
+| High | ✅ Done — Fix `year_end` off-by-one (1.2) | Trivial |
+| Medium | ✅ Done — Fix `asset_title`/`asset_page` kwargs (1.1) | Trivial |
 | Medium | SmugMug: retry on 429/5xx, tolerate 404, fix Actions cache key | Small |
 | Medium | ✅ Done — Replace deprecated `.json()` calls | Trivial |
-| Low | Pin `fork` start method or drop multiprocessing (1.4) | Small |
-| Low | Sort `find_documents` output (1.5) | Trivial |
+| Low | ✅ Done — Pin `fork` start method or drop multiprocessing (1.4) | Small |
+| Low | ✅ Done — Sort `find_documents` output (1.5) | Trivial |
 | Low | Fix Y2K39 window before 2039 | Trivial |

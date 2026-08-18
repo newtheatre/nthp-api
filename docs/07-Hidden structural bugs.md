@@ -1,6 +1,6 @@
 ---
 type: task
-status: open
+status: done
 ---
 
 # Hidden structural bugs
@@ -78,3 +78,39 @@ Decision: pin `fork`, keep the multiprocessing pool (and its speed).
 3. 1.3: skipped for now — pre-production, stay tolerant. Review stays open on
    this point.
 4. 1.4: pin `fork`, keep the pool.
+
+## Outcome
+
+Done. One commit per finding; 1.3 left open as agreed.
+
+- **1.1**: 698 asset rows now carry a title and 89 a page, from 0 of 1,913
+  before. Output is unchanged — verified by building `dist/` with and without
+  the fix back to back, which differed only in `buildTime`.
+- **1.2**: `get_current_year_end(today)` lives in `config.py`, not `years.py`,
+  because `years` imports `documents` which imports `config` — putting it in
+  `years` would have been a cycle. `year_end` is now a `default_factory`.
+  Today (August 2026) it still returns 2026, so no output change until
+  September.
+- **1.4**: `parallel.MP_CONTEXT = multiprocessing.get_context("fork")` supplies
+  `Process`, `Queue` and the `Manager`, so no global state is touched.
+  Verified by running the in-memory build under
+  `multiprocessing.set_start_method("forkserver")` — the Python 3.14 default:
+  it fails with `no such table: personrole` without the fix and completes
+  normally with it.
+- **1.5**: sorting `find_documents` alone did **not** make builds reproducible.
+  Two further sources of ordering churn had to go, both sets iterated under
+  hash randomisation, plus one list assembled concurrently:
+  - `dump_crew_roles` emitted `list(role.aliases)` from a `set`;
+  - `get_show_people_names` returned a `set`, feeding `search/documents.json`;
+  - the search document list is appended to by parallel dumpers, so it now
+    sorts by `(type, id)` before it is written.
+
+  Two consecutive full builds now differ only in `buildTime`.
+
+### Noticed in passing
+
+`content/_people/nick_gill.md` fails validation on `submitted: 04/01/2017`, so
+a Fellowship holder is silently absent from the API — his headshot and bio are
+missing and every show he crewed reports `hasBio: false`. Exactly the failure
+mode finding 1.3 describes, now with a name attached. Worth weighing when 1.3
+is picked up.
