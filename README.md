@@ -42,7 +42,7 @@ pre-commit hooks are used to lint and format the source code using [ruff](https:
 
 ### Tests
 
-Run `uv run pytest` or use the included PyCharm run configuration.
+Run `uv run pytest`.
 
 ## Release
 
