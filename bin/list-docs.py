@@ -19,6 +19,8 @@ from rich.text import Text
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DOCS_DIRECTORY = REPO_ROOT / "docs"
 
+MIN_WIDTH_FOR_TITLES = 120
+
 TYPE_COLOURS = {
     "reference": "bright_cyan",
     "review": "bright_magenta",
@@ -101,7 +103,7 @@ def document_path(path: Path) -> Text:
 
 def render_documents(documents: list[Document]) -> None:
     console = Console()
-    show_titles = console.width >= 120
+    show_titles = console.width >= MIN_WIDTH_FOR_TITLES
     table = Table(
         title=f"Lumina documentation · {len(documents)} files",
         title_style="bold bright_white",

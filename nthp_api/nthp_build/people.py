@@ -1,6 +1,7 @@
 import datetime
 from collections import defaultdict
 from collections.abc import Iterable
+from typing import Any, cast
 
 import peewee
 from slugify import slugify
@@ -111,6 +112,11 @@ def get_person_committee_roles(person_id: str) -> list[schema.PersonCommitteeRol
     ]
 
 
+def _role_count_map(query: "peewee.ModelSelect[Any]") -> dict[str, int]:
+    rows = cast("Iterable[dict[str, Any]]", query.dicts())
+    return {row["person_id"]: row["role_count"] for row in rows}
+
+
 def get_show_role_counts() -> dict[str, int]:
     """
     Count shows worked on, per person, in a single query.
@@ -131,7 +137,7 @@ def get_show_role_counts() -> dict[str, int]:
         )
         .group_by(database.PersonRole.person_id)
     )
-    return {row.person_id: row.role_count for row in query}
+    return _role_count_map(query)
 
 
 def get_committee_role_counts() -> dict[str, int]:
@@ -144,7 +150,7 @@ def get_committee_role_counts() -> dict[str, int]:
     query = (
         database.PersonRole.select(
             database.PersonRole.person_id,
-            peewee.fn.COUNT(database.PersonRole.id).alias("role_count"),
+            peewee.fn.COUNT(database.PersonRole.person_id).alias("role_count"),
         )
         .where(
             database.PersonRole.person_id.is_null(False),
@@ -152,7 +158,7 @@ def get_committee_role_counts() -> dict[str, int]:
         )
         .group_by(database.PersonRole.person_id)
     )
-    return {row.person_id: row.role_count for row in query}
+    return _role_count_map(query)
 
 
 def get_person_collaborators(person_id: str) -> list[schema.PersonCollaborator]:
