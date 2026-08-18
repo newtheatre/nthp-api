@@ -4,7 +4,6 @@ import json
 import logging
 import shutil
 import time
-from multiprocessing import Manager
 from pathlib import Path
 from typing import NamedTuple, Protocol
 
@@ -29,7 +28,11 @@ from nthp_api.nthp_build import (
 )
 from nthp_api.nthp_build.assets import AssetType
 from nthp_api.nthp_build.config import settings
-from nthp_api.nthp_build.parallel import DumperSharedState, make_dumper_state
+from nthp_api.nthp_build.parallel import (
+    MP_CONTEXT,
+    DumperSharedState,
+    make_dumper_state,
+)
 
 log = logging.getLogger(__name__)
 OUTPUT_DIR = Path("dist")
@@ -381,7 +384,7 @@ def run_dumper(dumper: Dumper, state: DumperSharedState):
 
 
 def dump_all():
-    with Manager() as manager:
+    with MP_CONTEXT.Manager() as manager:
         state = make_dumper_state(manager)
         tasks = [functools.partial(run_dumper, dumper, state) for dumper in DUMPERS]
         parallel.run_cpu_tasks_in_parallel(tasks)

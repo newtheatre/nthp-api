@@ -1,11 +1,17 @@
 import logging
+import multiprocessing
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
-from multiprocessing import Process, Queue
+from multiprocessing import Queue
 from multiprocessing.managers import SyncManager
 from typing import Any, NamedTuple
 
 log = logging.getLogger(__name__)
+
+# Children must inherit the parent's memory: `nthp build` loads into an in-memory
+# database that only forked processes can see. Python 3.14 makes forkserver the
+# Linux default, so ask for fork explicitly rather than relying on it.
+MP_CONTEXT = multiprocessing.get_context("fork")
 
 
 class MultiProcessError(Exception):
@@ -28,9 +34,10 @@ def run_cpu_task(task: Callable, error_queue: Queue):
 
 def run_cpu_tasks_in_parallel(tasks: list[Callable]):
     log.info("Running %d CPU tasks in parallel", len(tasks))
-    error_queue: Queue = Queue()
+    error_queue: Queue = MP_CONTEXT.Queue()
     running_tasks = [
-        Process(target=run_cpu_task, args=(task, error_queue)) for task in tasks
+        MP_CONTEXT.Process(target=run_cpu_task, args=(task, error_queue))
+        for task in tasks
     ]
     for running_task in running_tasks:
         running_task.start()
