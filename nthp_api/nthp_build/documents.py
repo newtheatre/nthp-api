@@ -54,8 +54,10 @@ class DuplicateKeyDetectingYAMLHandler(YAMLHandler):
 def _log_duplicate_keys(
     path: Path | str, duplicate_keys: Iterable[DuplicateKey]
 ) -> None:
+    if Path(path).is_relative_to(settings.content_root):
+        path = Path(path).relative_to(settings.content_root)
     for duplicate_key in duplicate_keys:
-        log.warning(
+        log.error(
             "Duplicate key '%s' in %s (lines %d and %d); first value discarded",
             duplicate_key.key,
             path,

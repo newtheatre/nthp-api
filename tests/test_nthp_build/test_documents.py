@@ -27,9 +27,10 @@ def test_load_document_logs_duplicate_frontmatter_key(
 
     assert post.metadata["title"] == "Second"
     assert len(caplog.records) == 1
+    assert caplog.records[0].levelno == logging.ERROR
     message = caplog.records[0].getMessage()
     assert "Duplicate key 'title'" in message
-    assert str(path) in message
+    assert "in show.md" in message
     assert "lines 2 and 4" in message
 
 
@@ -57,6 +58,7 @@ def test_load_yaml_logs_duplicate_key(
 
     assert data["title"] == "Second"
     assert len(caplog.records) == 1
+    assert caplog.records[0].levelno == logging.ERROR
     message = caplog.records[0].getMessage()
     assert "Duplicate key 'title'" in message
     assert "lines 1 and 3" in message
