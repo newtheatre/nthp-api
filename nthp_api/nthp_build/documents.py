@@ -4,9 +4,10 @@ from pathlib import Path
 from typing import Any, NamedTuple
 
 import frontmatter
-import yaml
+from frontmatter.default_handlers import YAMLHandler
 
 from nthp_api.nthp_build.config import settings
+from nthp_api.nthp_build.yaml_loader import DuplicateKey, load_yaml_detecting_duplicates
 
 log = logging.getLogger(__name__)
 
@@ -40,13 +41,38 @@ def find_documents(content_directory: Path | str) -> Iterable[DocumentPath]:
     return [doc_path for doc_path in map(map_path, found_paths) if doc_path is not None]
 
 
+class DuplicateKeyDetectingYAMLHandler(YAMLHandler):
+    def __init__(self) -> None:
+        super().__init__()
+        self.duplicate_keys: list[DuplicateKey] = []
+
+    def load(self, fm: str, **kwargs: object) -> Any:
+        data, self.duplicate_keys = load_yaml_detecting_duplicates(fm)
+        return data
+
+
+def _log_duplicate_keys(
+    path: Path | str, duplicate_keys: Iterable[DuplicateKey]
+) -> None:
+    for duplicate_key in duplicate_keys:
+        log.warning(
+            "Duplicate key '%s' in %s (lines %d and %d); first value discarded",
+            duplicate_key.key,
+            path,
+            duplicate_key.first_line,
+            duplicate_key.duplicate_line,
+        )
+
+
 def load_document(path: Path) -> frontmatter.Post:
-    return frontmatter.load(path)
+    handler = DuplicateKeyDetectingYAMLHandler()
+    post = frontmatter.load(path, handler=handler)
+    _log_duplicate_keys(path, handler.duplicate_keys)
+    return post
 
 
 def load_yaml(path: Path | str) -> Any:
     with (settings.content_root / Path(path)).open() as stream:
-        try:
-            return yaml.safe_load(stream)
-        except yaml.YAMLError:
-            log.exception("Error loading YAML file %s", path)
+        data, duplicate_keys = load_yaml_detecting_duplicates(stream.read())
+    _log_duplicate_keys(path, duplicate_keys)
+    return data
