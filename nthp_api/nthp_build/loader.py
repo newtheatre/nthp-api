@@ -214,9 +214,17 @@ def print_validation_error(validation_error: ValidationError, path: Path) -> Non
 def run_document_loader(loader: Loader):
     doc_paths = find_documents(loader.path)
     docs_that_failed_validation = []
+    docs_that_failed_to_parse = []
     with database.db.atomic():
         for doc_path in doc_paths:
-            document = load_document(doc_path.path)
+            try:
+                document = load_document(doc_path.path)
+            except yaml.YAMLError:
+                log.exception(f"Failed to parse frontmatter YAML: {doc_path.path}")
+                docs_that_failed_to_parse.append(doc_path)
+                continue
+            if not document.metadata and document.content.strip():
+                log.warning(f"No frontmatter found in {doc_path.path}")
             try:
                 data = loader.schema_type(**{"id": doc_path.id, **document.metadata})  # type: ignore[call-arg]
             except ValidationError as error:
@@ -224,6 +232,11 @@ def run_document_loader(loader: Loader):
                 docs_that_failed_validation.append(doc_path)
                 continue
             loader.func(path=doc_path, document=document, data=data)  # type: ignore[call-arg]
+    if docs_that_failed_to_parse:
+        log.error(
+            f"{len(docs_that_failed_to_parse)} documents failed to parse"
+            f" for {loader.path}"
+        )
     if docs_that_failed_validation:
         log.error(
             f"{len(docs_that_failed_validation)} documents failed validation"
@@ -244,8 +257,8 @@ def run_data_loader(loader: Loader):
                 data = loader.schema_type(**document_data)  # type: ignore[call-arg]
             else:
                 data = loader.schema_type(document_data)  # type: ignore[call-arg,misc]
-        except ValidationError:
-            print_validation_error(ValidationError(), loader.path)
+        except ValidationError as error:
+            print_validation_error(error, loader.path)
             files_that_failed_validation.append(loader.path)
             return
         loader.func(
