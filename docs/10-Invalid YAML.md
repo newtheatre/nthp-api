@@ -1,6 +1,6 @@
 ---
 type: task
-status: open
+status: done
 ---
 
 # Catch invalid YAML
