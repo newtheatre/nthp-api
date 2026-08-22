@@ -1,4 +1,5 @@
 import json
+import logging
 
 import peewee
 
@@ -12,6 +13,14 @@ from nthp_api.nthp_build import (
     schema,
 )
 from nthp_api.nthp_build.config import settings
+
+log = logging.getLogger(__name__)
+
+MULTIPLE_WRITER_SEPARATORS = (" and ", ", ", " & ")
+NON_PERSON_PLAYWRIGHTS = {
+    schema.PlaywrightType.VARIOUS.value,
+    schema.PlaywrightType.UNKNOWN.value,
+}
 
 
 def get_show_query() -> peewee.Query:
@@ -96,6 +105,41 @@ def get_show_playwright(  # noqa: PLR0911
             student_written=show.student_written,
         )
     return None
+
+
+def get_student_playwright_credit(show: models.Show) -> models.PersonRef | None:
+    """
+    The crew credit a student writer takes, as `_plugins/show.rb` awards it.
+
+    In order of precedence the adaptor, translator or playwright is credited, under
+    the student name `playwright_alias` gives where the writing was published under
+    another name. Shows written by several people are skipped, as the names cannot
+    be split apart reliably, and `playwright_false` suppresses the credit outright.
+    """
+    if not show.student_written or show.playwright is None or show.playwright_false:
+        return None
+    if show.playwright.lower() in NON_PERSON_PLAYWRIGHTS:
+        return None
+    if show.adaptor is not None:
+        writer, role = show.adaptor, "Adaptor"
+    elif show.translator is not None:
+        writer, role = show.translator, "Translator"
+    else:
+        writer, role = show.playwright, "Playwright"
+    if any(separator in writer for separator in MULTIPLE_WRITER_SEPARATORS):
+        return None
+    return models.PersonRef(role=role, name=show.playwright_alias or writer)
+
+
+def get_crew_with_student_playwright(show: models.Show) -> list[models.PersonRef]:
+    """The crew list with the student writer credited at the top of it."""
+    credit = get_student_playwright_credit(show)
+    if credit is None:
+        return show.crew
+    if any(person_ref.role == credit.role for person_ref in show.crew):
+        log.warning(f"{show.title} credits its student {credit.role.lower()} by hand")
+        return show.crew
+    return [credit, *show.crew]
 
 
 def get_show_roles(person_refs: list[models.PersonRef]) -> list[schema.ShowRole]:

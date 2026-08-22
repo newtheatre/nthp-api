@@ -39,6 +39,11 @@ log = logging.getLogger(__name__)
 
 
 def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show):
+    # The student writer's crew credit is generated, so add it before anything is
+    # stored: the show's crew list and the person's roles both take it from here.
+    data = data.model_copy(
+        update={"crew": shows.get_crew_with_student_playwright(data)}
+    )
     year = years.get_year_from_source_year_id(
         years.get_source_year_id_from_show_path(path)
     )

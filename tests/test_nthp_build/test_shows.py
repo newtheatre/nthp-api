@@ -391,3 +391,88 @@ class TestCompanySort:
 
 def test_show_index_is_in_the_spec():
     assert "/shows/index.json" in spec.SPEC["paths"]
+
+
+class TestStudentPlaywrightCredit:
+    @staticmethod
+    def make_show(**kwargs) -> models.Show:
+        return models.Show(
+            **{"id": "a_show", "title": "A Show", "season": "In House", **kwargs}
+        )
+
+    def test_mixy_credits_the_alias(self):
+        """content/_shows/22_23/mixy.md, written under a stage name."""
+        show = self.make_show(
+            title="Mixy",
+            playwright="Sunenna Kaur",
+            playwright_alias="Sunenna Sohal",
+            student_written=True,
+            crew=[models.PersonRef(role="Director", name="Sunenna Sohal")],
+        )
+        assert shows.get_crew_with_student_playwright(show) == [
+            models.PersonRef(role="Playwright", name="Sunenna Sohal"),
+            models.PersonRef(role="Director", name="Sunenna Sohal"),
+        ]
+
+    def test_the_great_gatsby_credits_the_adaptor(self):
+        """content/_shows/16_17/the_great_gatsby.md, a student adaptation."""
+        show = self.make_show(
+            title="The Great Gatsby",
+            playwright="F. Scott Fitzgerald",
+            adaptor="L. J. Bateman",
+            playwright_alias="Laura Jayne Bateman",
+            student_written=True,
+            crew=[models.PersonRef(role="Director", name="Laura Jayne Bateman")],
+        )
+        assert shows.get_crew_with_student_playwright(show)[0] == models.PersonRef(
+            role="Adaptor", name="Laura Jayne Bateman"
+        )
+
+    def test_translator_credited_where_there_is_no_adaptor(self):
+        show = self.make_show(
+            playwright="Anton Chekhov",
+            translator="Fred Bloggs",
+            student_written=True,
+        )
+        assert shows.get_crew_with_student_playwright(show) == [
+            models.PersonRef(role="Translator", name="Fred Bloggs")
+        ]
+
+    def test_playwright_credited_without_an_alias(self):
+        show = self.make_show(playwright="Fred Bloggs", student_written=True)
+        assert shows.get_crew_with_student_playwright(show) == [
+            models.PersonRef(role="Playwright", name="Fred Bloggs")
+        ]
+
+    def test_playwright_false_suppresses_the_credit(self):
+        show = self.make_show(
+            playwright="Fred Bloggs", student_written=True, playwright_false=True
+        )
+        assert shows.get_crew_with_student_playwright(show) == []
+
+    @pytest.mark.parametrize(
+        "playwright",
+        ["Fred Bloggs and Alice Froggs", "Fred Bloggs, Alice Froggs", "Fred & Alice"],
+    )
+    def test_multiple_writers_get_no_credit(self, playwright: str):
+        show = self.make_show(playwright=playwright, student_written=True)
+        assert shows.get_crew_with_student_playwright(show) == []
+
+    def test_not_student_written_gets_no_credit(self):
+        show = self.make_show(playwright="William Shakespeare")
+        assert shows.get_crew_with_student_playwright(show) == []
+
+    @pytest.mark.parametrize("playwright", ["various", "Unknown"])
+    def test_non_person_playwrights_get_no_credit(self, playwright: str):
+        """content/_shows/20_21/speaking_solo.md and the like."""
+        show = self.make_show(playwright=playwright, student_written=True)
+        assert shows.get_crew_with_student_playwright(show) == []
+
+    def test_hand_written_credit_left_alone(self, caplog: pytest.LogCaptureFixture):
+        show = self.make_show(
+            playwright="Fred Bloggs",
+            student_written=True,
+            crew=[models.PersonRef(role="Playwright", name="Fred Bloggs")],
+        )
+        assert shows.get_crew_with_student_playwright(show) == show.crew
+        assert "by hand" in caplog.text

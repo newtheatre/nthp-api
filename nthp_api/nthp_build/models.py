@@ -1,6 +1,6 @@
 """The models for ingesting data"""
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import (
     BaseModel,
@@ -33,7 +33,7 @@ class Link(NthpModel):
     comment: PermissiveStr | None = None
 
 
-class Award(str, Enum):
+class Award(StrEnum):
     """An award made to a person on leaving the theatre."""
 
     FELLOWSHIP = "Fellowship"
@@ -151,6 +151,8 @@ class Show(NthpModel):
         return value
 
     improvised: bool = False
+    playwright_alias: str | None = None
+    playwright_false: bool = False
     adaptor: str | None = None
     translator: str | None = None
     canonical: list[ShowCanonical] = []
