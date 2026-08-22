@@ -24,6 +24,7 @@ from nthp_api.nthp_build import (
     shows,
     trivia,
     validate,
+    validation_messages,
     venues,
     years,
 )
@@ -267,18 +268,16 @@ LOADERS: list[Loader] = [
 ]
 
 
-def loc_to_path(loc: str | tuple) -> str:
-    if isinstance(loc, tuple):
-        return ".".join(map(str, loc))
-    return loc
-
-
-def print_validation_error(validation_error: ValidationError, path: Path) -> None:
+def print_validation_error(
+    validation_error: ValidationError,
+    path: Path,
+    model: type[models.NthpModel] | None = None,
+) -> None:
     log.error(f"Validation error in {path}")
     for error in validation_error.errors():
-        loc = loc_to_path(error["loc"])
-        log.warning(f"{loc} : {error['msg']}")
-        log.info(f"     {error['input']}")
+        log.warning(validation_messages.describe_error(error, model))
+        if error["type"] != "extra_forbidden":
+            log.info(f"     {error['input']}")
 
 
 def run_document_loader(loader: Loader):
@@ -301,7 +300,7 @@ def run_document_loader(loader: Loader):
             try:
                 data = loader.schema_type(**{"id": doc_path.id, **document.metadata})  # type: ignore[call-arg]
             except ValidationError as error:
-                print_validation_error(error, doc_path.path)
+                print_validation_error(error, doc_path.path, loader.schema_type)
                 docs_that_failed_validation.append(doc_path)
                 continue
             loader.func(path=doc_path, document=document, data=data)  # type: ignore[call-arg]
@@ -362,6 +361,16 @@ def run_loader(loader: Loader):
         raise TypeError(f"Unhandled loader type: {loader.func}")
     tock = time.perf_counter()
     log.debug(f"Took {tock - tick:.4f} seconds")
+
+
+def run_data_loaders():
+    """The `_data` definitions alone, which the per-document checks consult."""
+    for loader in LOADERS:
+        if loader.type is DataLoaderFunc:
+            try:
+                run_loader(loader)
+            except OSError:
+                log.warning(f"No {loader.path} to load definitions from")
 
 
 def run_loaders():

@@ -307,3 +307,37 @@ def test_data_loaders_run_before_documents() -> None:
         if loader.type is DocumentLoaderFunc
     ]
     assert max(data_loader_indexes) < min(document_loader_indexes)
+
+
+def test_print_validation_error_suggests_the_key_the_editor_meant(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    try:
+        models.Show(id="x", title="Show", start_date="1975-08-01")  # type: ignore[call-arg]
+    except ValidationError as error:
+        with caplog.at_level(logging.WARNING):
+            print_validation_error(error, Path("some/path.md"), models.Show)
+    else:
+        raise AssertionError("Expected a ValidationError")
+
+    assert any(
+        record.getMessage()
+        == "start_date: unknown key `start_date`; did you mean `date_start`?"
+        for record in caplog.records
+    )
+
+
+def test_print_validation_error_suggests_keys_inside_nested_lists(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    try:
+        models.Show(id="x", title="Show", cast=[{"nmae": "A Person"}])  # type: ignore[call-arg]
+    except ValidationError as error:
+        with caplog.at_level(logging.WARNING):
+            print_validation_error(error, Path("some/path.md"), models.Show)
+    else:
+        raise AssertionError("Expected a ValidationError")
+
+    assert any(
+        "did you mean `name`?" in record.getMessage() for record in caplog.records
+    )
