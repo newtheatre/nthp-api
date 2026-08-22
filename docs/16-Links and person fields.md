@@ -1,6 +1,6 @@
 ---
 type: task
-status: todo
+status: done
 ---
 
 # Links and person fields
@@ -24,3 +24,11 @@ Web doc 30 §6; 03 summary items 1–4. Largest gap: `Link` is ingested everywhe
 - Load `_data/link-types.yaml` and `_data/careers.yaml` from content.
 - `hrefSnapshot` (archive.is URL) generated on every `Link`, as the Ruby site did.
 - Key events (`history/index.json`) gain `image?: {href, alt}` (03: silently ignored).
+
+## Notes
+
+- `award` values in content are wider than the two the year pages use: `Fellowship`, `Commendation`, `Merit`, `Union Prize`. The enum takes all four; `YearDetail.fellows`/`commendations` take the first two.
+- `careers.yaml` is not loaded: the Ruby site only uses it for the collection form's checkboxes, never to canonicalise a record, so careers are output as authored.
+- Link types are matched case-insensitively and output under the name `link-types.yaml` gives; types with no definition keep the authored name. The `default` type carries nothing but an icon, so it is no fallback.
+- `playwright_false` appears nowhere in the content; its behaviour is covered by tests only.
+- Nick Gill holds a Fellowship but his record fails validation on an invalid `submitted` date, so he is missing from 2015-16's fellows. A content fix, see [10](10-Invalid%20YAML.md).
