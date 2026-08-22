@@ -57,7 +57,41 @@ class TestGetImageInfo:
         assert info.has_dimensions is False
         assert smugmug.get_cached_image_info(IMAGE_KEY) is None
 
+    @pytest.mark.asyncio
+    async def test_no_api_key_without_cache_returns_empty(self, smug_db, monkeypatch):
+        """No API key should behave like smugmug_fetch=False, not raise."""
+        monkeypatch.setattr(smugmug.settings, "smugmug_api_key", None)
+
+        async def fake_get_image_info(client, image_key):
+            raise AssertionError("Should not call the API without a key")
+
+        monkeypatch.setattr(
+            smugmug.nthp_api.smugmugger.image, "get_image_info", fake_get_image_info
+        )
+
+        info = await smugmug.get_image_info(None, IMAGE_KEY)
+        assert info.has_dimensions is False
+        assert smugmug.get_cached_image_info(IMAGE_KEY) is None
+
     def test_image_cache_is_namespaced_from_albums(self, smug_db):
         smugmug.upsert_cached_image_info(IMAGE_KEY, IMAGE_INFO)
         assert smugmug.get_cached_album_images(IMAGE_KEY) is None
         assert smugmug.get_cached_image_info(IMAGE_KEY) == IMAGE_INFO
+
+
+class TestGetAlbumImages:
+    @pytest.mark.asyncio
+    async def test_no_api_key_without_cache_returns_empty(self, smug_db, monkeypatch):
+        """No API key should behave like smugmug_fetch=False, not raise."""
+        monkeypatch.setattr(smugmug.settings, "smugmug_api_key", None)
+
+        async def fake_get_album(client, album_id):
+            raise AssertionError("Should not call the API without a key")
+
+        monkeypatch.setattr(
+            smugmug.nthp_api.smugmugger.album, "get_album", fake_get_album
+        )
+
+        images = await smugmug.get_album_images(None, "dvVPZh")
+        assert len(images) == 0
+        assert smugmug.get_cached_album_images("dvVPZh") is None

@@ -51,7 +51,7 @@ async def get_album_images(
 ) -> SmugMugImageCollection:
     if cached_result := get_cached_album_images(album_id):
         return cached_result
-    if not settings.smugmug_fetch:
+    if not settings.smugmug_fetch or not settings.smugmug_api_key:
         return SmugMugImageCollection()
     log.info("Fetching album images for %s", album_id)
     album = await nthp_api.smugmugger.album.get_album(client, album_id)
@@ -89,9 +89,9 @@ async def get_image_info(client: SmugMugClient, image_key: str) -> SmugMugImageI
     """
     if (cached_result := get_cached_image_info(image_key)) is not None:
         return cached_result
-    if not settings.smugmug_fetch:
+    if not settings.smugmug_fetch or not settings.smugmug_api_key:
         return SmugMugImageInfo()
-    log.info("Fetching image info for %s", image_key)
+    log.debug("Fetching image info for %s", image_key)
     try:
         image_info = await nthp_api.smugmugger.image.get_image_info(client, image_key)
     except SmugMugNotFound:

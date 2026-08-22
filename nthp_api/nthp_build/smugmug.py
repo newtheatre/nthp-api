@@ -4,8 +4,15 @@ import logging
 from nthp_api import smugmugger
 from nthp_api.nthp_build import database
 from nthp_api.nthp_build.assets import AssetSource, AssetType
+from nthp_api.smugmugger.config import settings as smugmugger_settings
 
 log = logging.getLogger(__name__)
+
+
+def fetch_enabled() -> bool:
+    return bool(
+        smugmugger_settings.smugmug_fetch and smugmugger_settings.smugmug_api_key
+    )
 
 
 def get_albums_to_fetch():
@@ -60,7 +67,8 @@ async def update_images(client: smugmugger.SmugMugClient) -> int:
     for asset in image_assets:
         image_info = results[asset.asset_id]
         if image_info is None or not image_info.has_dimensions:
-            log.warning(f"No dimensions for image {asset.asset_id}")
+            if fetch_enabled():
+                log.warning(f"No dimensions for image {asset.asset_id}")
             continue
         asset.asset_smugmug_data = image_info.model_dump_json()
         asset.save()
@@ -69,6 +77,12 @@ async def update_images(client: smugmugger.SmugMugClient) -> int:
 
 
 async def async_main():
+    if not fetch_enabled() and smugmugger_settings.smugmug_fetch:
+        log.warning(
+            "No SmugMug API key configured; skipping image fetch — image "
+            "dimensions and album data will be omitted"
+        )
+
     async with smugmugger.make_client() as client:
         albums = get_albums_to_fetch()
 
