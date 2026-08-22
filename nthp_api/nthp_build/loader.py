@@ -276,7 +276,8 @@ def print_validation_error(
     log.error(f"Validation error in {path}")
     for error in validation_error.errors():
         log.warning(validation_messages.describe_error(error, model))
-        log.info(f"     {error['input']!r}")
+        key = error["loc"][-1] if error["loc"] else "document"
+        log.info(f"     {key}: {error['input']!r}")
 
 
 def run_document_loader(loader: Loader):

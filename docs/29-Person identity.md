@@ -42,4 +42,4 @@ Until the content PR lands, the API is wrong for the five names above. Interim o
 
 - Id scheme for namesakes: numeric suffix or year of graduation/first credit?
 - Should `id` be allowed on a credit where `person: false`? Proposal: no, reject.
-- Does the new site need a stable id for the *first* Emma McDonald to remain `emma_mcdonald`? Proposal: yes, never rename existing ids.
+- Does the new site need a stable id for the _first_ Emma McDonald to remain `emma_mcdonald`? Proposal: yes, never rename existing ids.
