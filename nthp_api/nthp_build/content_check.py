@@ -13,9 +13,10 @@ from typing import Any, NamedTuple
 
 import frontmatter
 import yaml
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
+from pydantic_core import ErrorDetails
 
-from nthp_api.nthp_build import links, shows, years
+from nthp_api.nthp_build import links, shows, validation_messages, years
 from nthp_api.nthp_build.content_schema import (
     COMMITTEE,
     HISTORY,
@@ -98,13 +99,27 @@ def expand_paths(paths: list[Path]) -> list[Path]:
     return found
 
 
-def make_validation_problems(error: ValidationError) -> list[Problem]:
+def make_validation_problem(item: ErrorDetails, model: type[BaseModel]) -> Problem:
+    """
+    One pydantic error, worded as the loader words it.
+
+    `describe_error` leads with the location, which has a column of its own here,
+    so it is taken back off the front.
+    """
+    location = validation_messages.describe_location(item["loc"])
+    described = validation_messages.describe_error(item, model)
+    return Problem(
+        location=location,
+        message=described.removeprefix(f"{location}: "),
+        value=repr(item.get("input")),
+    )
+
+
+def make_validation_problems(
+    error: ValidationError, document_type: ContentDocumentType
+) -> list[Problem]:
     return [
-        Problem(
-            location=".".join(str(part) for part in item["loc"]) or "document",
-            message=item["msg"],
-            value=repr(item.get("input")),
-        )
+        make_validation_problem(item, document_type.record_model)
         for item in error.errors()
     ]
 
@@ -202,7 +217,9 @@ def check_file(path: Path) -> FileResult:
         model = build_model(document_type, data)
     except ValidationError as error:
         return FileResult(
-            path, document_type, [*problems, *make_validation_problems(error)]
+            path,
+            document_type,
+            [*problems, *make_validation_problems(error, document_type)],
         )
     return FileResult(
         path, document_type, [*problems, *get_rule_problems(document_type, path, model)]

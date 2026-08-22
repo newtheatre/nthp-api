@@ -47,6 +47,11 @@ class ContentDocumentType:
     def filename(self) -> str:
         return f"{self.name}.json"
 
+    @property
+    def record_model(self) -> type[BaseModel]:
+        """The model one record takes; a data file holds a list of them."""
+        return getattr(self.model, "__element__", None) or self.model
+
 
 SHOW = ContentDocumentType(
     name="show",
