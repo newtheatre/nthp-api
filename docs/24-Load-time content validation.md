@@ -138,6 +138,13 @@ takes a score out of a total and checks the score against it.
 | venue spellings  | 0        |
 | award graduation | 0        |
 
+Since revised: the play and playwright indexes group by id and take the latest
+spelling, so a title or name spelt two ways is no longer a defect. `play-ids`
+now reports only a play id shared by two writers — still 6 on content, all of
+them one writer spelt two ways (`Euripedes`/`Euripides`) or two plays alike
+(`the_threepenny_opera`) — and the spelling variants moved to the lint checks
+`play-titles` (6) and `playwright-names` (1).
+
 ### 4. `nthp lint`
 
 `nthp lint <path>` loads into an in-memory database and reports the lint list
@@ -159,6 +166,8 @@ logging is untouched: plain logging, as before.
 | scalar `course`/`careers` | 50       |
 | venues without a document | 37       |
 | link type definitions     | 17       |
+| play titles               | 6        |
+| playwright names          | 1        |
 | tour dates                | 12       |
 | person name collisions    | 9        |
 | image categories          | 9        |

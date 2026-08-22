@@ -181,22 +181,43 @@ def format_shared_names(names: dict[str, list[str]]) -> str:
     )
 
 
-def check_playwright_ids() -> list[Finding]:
-    """Two spellings of a writer's name collide as one id, dumped twice over."""
+def check_play_ids() -> list[Finding]:
+    """
+    Two plays sharing an id, which the play index then lists twice under it.
+
+    One play spelt two ways is grouped back together by its id; two plays whose
+    titles slugify alike are not, and are told apart by their writers.
+    """
+    writers: dict[str, dict[str, str]] = defaultdict(dict)
+    for row in database.PlaywrightShow.select():
+        writers[row.play_id][row.playwright_id] = row.playwright_name
     return [
-        Finding(playwright_id, hint=format_shared_names(names))
-        for playwright_id, names in sorted(
-            _duplicate_names_by_id("playwright_id", "playwright_name").items()
+        Finding(
+            play_id,
+            hint="written by "
+            + ", ".join(f"{name!r}" for _, name in sorted(names.items())),
         )
+        for play_id, names in sorted(writers.items())
+        if len(names) > 1
     ]
 
 
-def check_play_ids() -> list[Finding]:
-    """Two spellings of a play's title collide as one id, dumped twice over."""
+def check_play_titles() -> list[Finding]:
+    """One play titled several ways; the play index takes the latest spelling."""
     return [
         Finding(play_id, hint=format_shared_names(names))
         for play_id, names in sorted(
             _duplicate_names_by_id("play_id", "play_name").items()
+        )
+    ]
+
+
+def check_playwright_names() -> list[Finding]:
+    """One writer spelt several ways; the playwright index takes the latest."""
+    return [
+        Finding(playwright_id, hint=format_shared_names(names))
+        for playwright_id, names in sorted(
+            _duplicate_names_by_id("playwright_id", "playwright_name").items()
         )
     ]
 
@@ -219,18 +240,10 @@ BUILD_CHECKS: list[Check] = [
         check_award_graduation,
     ),
     Check(
-        "playwright-ids",
-        "Playwright ids shared by two names",
-        "Two spellings of a writer's name make one id, which the playwright index "
-        "then lists twice. Spell the name the same way in every show.",
-        Severity.DEFECT,
-        check_playwright_ids,
-    ),
-    Check(
         "play-ids",
-        "Play ids shared by two titles",
-        "Two spellings of a title make one id, which the play index then lists "
-        "twice. Title the play the same way in every show.",
+        "Play ids shared by two plays",
+        "Two plays by different writers make one id, which the play index then "
+        "lists twice under it. Distinguish the titles.",
         Severity.DEFECT,
         check_play_ids,
     ),
@@ -707,6 +720,22 @@ LINT_CHECKS: list[Check] = [
         "list of one, but a list is the house style.",
         Severity.ADVISORY,
         check_scalar_list_fields,
+    ),
+    Check(
+        "play-titles",
+        "Plays titled several ways",
+        "One play spelt differently across shows; the latest spelling names it in "
+        "the play index. Settle on one title.",
+        Severity.ADVISORY,
+        check_play_titles,
+    ),
+    Check(
+        "playwright-names",
+        "Writers spelt several ways",
+        "One writer spelt differently across shows; the latest spelling names them "
+        "in the playwright index. Settle on one spelling.",
+        Severity.ADVISORY,
+        check_playwright_names,
     ),
     Check(
         "venue-documents",

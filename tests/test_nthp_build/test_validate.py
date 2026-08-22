@@ -108,19 +108,30 @@ class TestDuplicateIds:
         self.make_playwright_show("Mojo", "Jez Butterworth", "2013-14/mojo")
         self.make_playwright_show("Mojo", "Jez Butterworth", "2021-22/mojo")
         assert validate.check_play_ids() == []
-        assert validate.check_playwright_ids() == []
+        assert validate.check_play_titles() == []
+        assert validate.check_playwright_names() == []
 
-    def test_two_play_names_behind_one_id(self, test_db):
+    def test_one_play_titled_two_ways_is_not_a_defect(self, test_db):
         self.make_playwright_show("MOJO", "Jez Butterworth", "2013-14/mojo")
         self.make_playwright_show("Mojo", "Jez Butterworth", "2021-22/mojo")
-        findings = validate.check_play_ids()
+        assert validate.check_play_ids() == []
+        findings = validate.check_play_titles()
         assert len(findings) == 1
         assert findings[0].value == "mojo"
+
+    def test_two_plays_behind_one_id(self, test_db):
+        self.make_playwright_show("The Lesson", "Eugène Ionesco", "a")
+        self.make_playwright_show("The Lesson", "A Student", "b")
+        findings = validate.check_play_ids()
+        assert len(findings) == 1
+        assert findings[0].value == "the_lesson"
+        assert "'A Student'" in findings[0].hint
+        assert "'Eugène Ionesco'" in findings[0].hint
 
     def test_two_playwright_names_behind_one_id(self, test_db):
         self.make_playwright_show("Blood Wedding", "Federico Garcia Lorca", "a")
         self.make_playwright_show("Yerma", "Federico García Lorca", "b")
-        findings = validate.check_playwright_ids()
+        findings = validate.check_playwright_names()
         assert len(findings) == 1
         assert findings[0].value == "federico_garcia_lorca"
 
