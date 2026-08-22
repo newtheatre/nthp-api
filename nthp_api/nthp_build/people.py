@@ -279,9 +279,7 @@ def get_person_sort_key(title: str) -> tuple[str, str]:
     return (names[-1] if names else title, " ".join(names[:-1]))
 
 
-def get_award_holders() -> dict[
-    str, dict[models.Award, list[schema.PersonAwardHolder]]
-]:
+def get_award_holders() -> dict[str, dict[str, list[schema.PersonAwardHolder]]]:
     """
     People who received an award, by the academic year they graduated in.
 
@@ -289,8 +287,8 @@ def get_award_holders() -> dict[
     old site's `_plugins/awards.rb` files them. Anyone whose graduation is unknown
     has nowhere to be filed.
     """
-    holders: dict[str, dict[models.Award, list[schema.PersonAwardHolder]]] = (
-        defaultdict(lambda: defaultdict(list))
+    holders: dict[str, dict[str, list[schema.PersonAwardHolder]]] = defaultdict(
+        lambda: defaultdict(list)
     )
     for person_inst in get_real_people():
         model = models.Person(**json.loads(person_inst.data))

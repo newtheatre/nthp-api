@@ -175,5 +175,8 @@ class TestPerson:
         )
         assert models.Person(title="Fred Bloggs", award=None).award is None
         assert models.Person(title="Fred Bloggs", award="  ").award is None
-        with pytest.raises(ValidationError):
-            models.Person(title="Fred Bloggs", award="Knighthood")
+
+    def test_award_not_held_to_the_known_set(self):
+        assert models.Person(title="Fred Bloggs", award="Knighthood").award == (
+            "Knighthood"
+        )

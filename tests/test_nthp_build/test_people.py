@@ -395,6 +395,12 @@ class TestMakePersonDetail:
         assert len(person.links) == 1
         assert len(person.news) == 1
 
+    def test_award_outside_the_known_set_is_kept(self, test_db):
+        person = people.make_person_detail(
+            models.Person(id="fred_bloggs", title="Fred Bloggs", award="Knighthood")
+        )
+        assert person.award == "Knighthood"
+
     def test_no_trivia_defaults_to_empty(self, test_db):
         person = people.make_person_detail(
             models.Person(id="fred_bloggs", title="Fred Bloggs")

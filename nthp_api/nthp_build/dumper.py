@@ -118,7 +118,7 @@ def dump_shows(state: DumperSharedState):
 def dump_year(
     year: int,
     state: DumperSharedState,
-    award_holders: dict[str, dict[models.Award, list[schema.PersonAwardHolder]]],
+    award_holders: dict[str, dict[str, list[schema.PersonAwardHolder]]],
 ) -> schema.YearDetail:
     year_id = years.get_public_year_id(year)
     path = make_out_path(Path("years"), year_id)

@@ -613,9 +613,11 @@ class PersonDetail(NthpSchema):
         description="Courses the person studied",
         json_schema_extra={"example": ["English"]},
     )
-    award: models.Award | None = Field(
+    award: str | None = Field(
         default=None,
-        description="Award the person received on leaving the theatre",
+        description="Award the person received on leaving the theatre, as authored; "
+        "usually Fellowship, Commendation, Merit or Union Prize, but not held to "
+        "that set",
         json_schema_extra={"example": "Fellowship"},
     )
     careers: list[str] = Field(

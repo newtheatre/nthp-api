@@ -34,7 +34,13 @@ class Link(NthpModel):
 
 
 class Award(StrEnum):
-    """An award made to a person on leaving the theatre."""
+    """
+    The awards the archive is known to hand out on leaving the theatre.
+
+    Not exhaustive: `Person.award` takes any string, as new awards turn up in the
+    content before they turn up here. These members exist so the years can be
+    indexed on the two that get their own list.
+    """
 
     FELLOWSHIP = "Fellowship"
     COMMENDATION = "Commendation"
@@ -203,7 +209,7 @@ class Person(NthpModel):
     headshot: str | None = None
     course: list[PermissiveStr] = []
     graduated: int | None = None
-    award: Award | None = None
+    award: PermissiveStr | None = None
     careers: list[PermissiveStr] = []
     links: list[Link] = []
     news: list[Link] = []
