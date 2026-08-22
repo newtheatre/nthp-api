@@ -118,7 +118,7 @@ def get_venue_list(record: VenueRecord) -> VenueList:
         id=record.id,
         name=record.name,
         show_count=len(record.shows),
-        venue_sort=record.venue_sort,
+        group=record.venue_sort,
         has_record=record.has_record,
         sentinel=record.sentinel,
         built=data.built if data else None,

@@ -7,9 +7,10 @@ from nthp_api.nthp_build import database, dumper, models, schema, search, spec, 
 from nthp_api.nthp_build.parallel import DumperSharedState
 
 SHOW_YEAR = 1999
-SHOW_DECADE = 199
+SHOW_DECADE = 1990
 YEAR_SHOW_COUNT = 12
 PERSON_SHOW_COUNT = 2
+GRADUATION_YEAR = 2000
 
 CREW_ROLE_CANONICAL_NAMES = {
     "Director": "Director",
@@ -41,6 +42,10 @@ def make_show_detail(**overrides) -> schema.ShowDetail:
     fields = {
         "id": "1999-00/macbeth",
         "title": "Macbeth",
+        "year_id": "1999-00",
+        "year": 1999,
+        "devised": False,
+        "playwright_descriptor": "by William Shakespeare",
         "playwright": schema.PlaywrightShow(
             type=schema.PlaywrightType.PLAYWRIGHT,
             name="William Shakespeare",
@@ -50,14 +55,14 @@ def make_show_detail(**overrides) -> schema.ShowDetail:
         "company": "Nottingham New Theatre",
         "season": "In House",
         "season_id": "in-house",
-        "venue": schema.VenueShow(id="new-theatre", name="New Theatre"),
+        "venue": schema.VenueRef(id="new-theatre", name="New Theatre"),
         "date_start": "1999-11-13",
         "cast": [
-            schema.ShowRole(
+            schema.PersonCredit(
                 role="Macbeth",
-                person=schema.PersonList(
+                person=schema.PersonRef(
                     id="fred_bloggs",
-                    name="Fred Bloggs",
+                    title="Fred Bloggs",
                     is_person=True,
                     has_bio=True,
                 ),
@@ -78,21 +83,30 @@ def make_person_detail(**overrides) -> schema.PersonDetail:
     fields = {
         "id": "fred_bloggs",
         "title": "Fred Bloggs",
+        "has_bio": True,
+        "submitted": False,
         "show_roles": [],
         "committee_roles": [],
         "student": False,
     }
-    return schema.PersonDetail(**(fields | overrides))
+    fields |= overrides
+    return schema.PersonDetail(
+        **fields,
+        show_role_count=len(fields["show_roles"]),
+        committee_role_count=len(fields["committee_roles"]),
+    )
 
 
 def make_show_roles(
     show_id: str, year_id: str, roles: list[tuple[str | None, str]]
 ) -> schema.PersonShowRoles:
     return schema.PersonShowRoles(
-        show_id=show_id,
-        show_title="Macbeth",
-        show_year_id=year_id,
-        show_year=int(year_id[:4]),
+        show=schema.ShowRef(
+            id=show_id,
+            title="Macbeth",
+            year_id=year_id,
+            year=int(year_id[:4]),
+        ),
         roles=[
             schema.PersonShowRoleItem(role=role, role_type=role_type)
             for role, role_type in roles
@@ -102,9 +116,7 @@ def make_show_roles(
 
 def make_committee_role(year_id: str, role: str) -> schema.PersonCommitteeRole:
     return schema.PersonCommitteeRole(
-        year_title=year_id,
-        year_decade=int(year_id[:3]),
-        year_id=year_id,
+        year=schema.YearRef.from_start_year(int(year_id[:4])),
         role=role,
     )
 
@@ -130,13 +142,14 @@ class TestShowDocument:
 
     def test_playwright_is_the_descriptor(self):
         document = search.get_show_document(make_show_inst(), make_show_detail())
-        assert document.playwright == "by William Shakespeare"
+        assert document.playwright_descriptor == "by William Shakespeare"
 
     def test_no_playwright(self):
         document = search.get_show_document(
-            make_show_inst(), make_show_detail(playwright=None)
+            make_show_inst(),
+            make_show_detail(playwright=None, playwright_descriptor=None),
         )
-        assert document.playwright is None
+        assert document.playwright_descriptor is None
 
     def test_no_venue(self):
         document = search.get_show_document(
@@ -145,11 +158,11 @@ class TestShowDocument:
         assert document.venue_id is None
         assert document.venue_name is None
 
-    def test_no_people_omits_the_list(self):
+    def test_no_people_gives_an_empty_list(self):
         document = search.get_show_document(
             make_show_inst(), make_show_detail(cast=[], crew=[])
         )
-        assert document.people is None
+        assert document.people == []
 
 
 class TestPersonDocument:
@@ -183,26 +196,27 @@ class TestPersonDocument:
         assert document.plaintext is None
         assert document.image_id is None
 
-    def test_empty_lists_omitted(self):
+    def test_empty_lists_stay_lists(self):
         document = search.get_person_document(
             make_person_detail(), CREW_ROLE_CANONICAL_NAMES, has_bio=False
         )
-        assert document.course is None
-        assert document.careers is None
-        assert document.show_roles is None
-        assert document.committee_roles is None
-        assert document.year_ids is None
+        assert document.course == []
+        assert document.careers == []
+        assert document.show_roles == []
+        assert document.committee_roles == []
+        assert document.year_ids == []
         assert document.show_count == 0
 
     def test_graduation(self):
         document = search.get_person_document(
             make_person_detail(
-                graduated=schema.PersonGraduated.from_year(2000, estimated=True)
+                graduated=schema.PersonGraduated.from_grad_year(2000, estimated=True)
             ),
             CREW_ROLE_CANONICAL_NAMES,
             has_bio=True,
         )
-        assert document.graduation_year == "1999-00"
+        assert document.graduation_year_id == "1999-00"
+        assert document.graduation_year == GRADUATION_YEAR
         assert document.graduation_decade == SHOW_DECADE
         assert document.graduation_estimated is True
 
@@ -210,6 +224,7 @@ class TestPersonDocument:
         document = search.get_person_document(
             make_person_detail(), CREW_ROLE_CANONICAL_NAMES, has_bio=True
         )
+        assert document.graduation_year_id is None
         assert document.graduation_year is None
         assert document.graduation_decade is None
         assert document.graduation_estimated is None
@@ -222,17 +237,17 @@ class TestPersonDocument:
                         "1999-00/macbeth",
                         "1999-00",
                         [
-                            ("Macbeth", database.PersonRoleType.CAST),
-                            ("Co-director", database.PersonRoleType.CREW),
+                            ("Macbeth", schema.ShowRoleType.CAST),
+                            ("Co-director", schema.ShowRoleType.CREW),
                         ],
                     ),
                     make_show_roles(
                         "2000-01/hamlet",
                         "2000-01",
                         [
-                            ("Hamlet", database.PersonRoleType.CAST),
-                            ("Director", database.PersonRoleType.CREW),
-                            ("Stage Manager", database.PersonRoleType.CREW),
+                            ("Hamlet", schema.ShowRoleType.CAST),
+                            ("Director", schema.ShowRoleType.CREW),
+                            ("Stage Manager", schema.ShowRoleType.CREW),
                         ],
                     ),
                 ]
@@ -250,7 +265,7 @@ class TestPersonDocument:
                     make_show_roles(
                         "1999-00/macbeth",
                         "1999-00",
-                        [("Dramaturg", database.PersonRoleType.CREW)],
+                        [("Dramaturg", schema.ShowRoleType.CREW)],
                     )
                 ]
             ),
@@ -267,8 +282,8 @@ class TestPersonDocument:
                         "1999-00/macbeth",
                         "1999-00",
                         [
-                            ("Unknown", database.PersonRoleType.CREW),
-                            (None, database.PersonRoleType.CREW),
+                            ("Unknown", schema.ShowRoleType.CREW),
+                            (None, schema.ShowRoleType.CREW),
                         ],
                     )
                 ],
@@ -277,8 +292,8 @@ class TestPersonDocument:
             CREW_ROLE_CANONICAL_NAMES,
             has_bio=True,
         )
-        assert document.show_roles is None
-        assert document.committee_roles is None
+        assert document.show_roles == []
+        assert document.committee_roles == []
 
     def test_committee_roles_are_distinct_and_canonical(self):
         document = search.get_person_document(
@@ -304,7 +319,7 @@ class TestPersonDocument:
                     make_show_roles(
                         "1999-00/macbeth",
                         "1999-00",
-                        [("Macbeth", database.PersonRoleType.CAST)],
+                        [("Macbeth", schema.ShowRoleType.CAST)],
                     )
                 ],
                 committee_roles=[
@@ -358,14 +373,8 @@ class TestYearDocument:
     def test_fields(self):
         document = search.get_year_document(
             schema.YearDetail(
-                title="1999-00",
-                decade=199,
-                year_id="1999-00",
-                start_year=1999,
-                grad_year=2000,
+                **dict(schema.YearRef.from_start_year(1999)),
                 show_count=YEAR_SHOW_COUNT,
-                shows=[],
-                committee=[],
             )
         )
         assert document.type == schema.SearchDocumentType.YEAR
@@ -378,14 +387,8 @@ class TestYearDocument:
 DOCUMENTS: list[schema.SearchDocument] = [
     search.get_year_document(
         schema.YearDetail(
-            title="1999-00",
-            decade=199,
-            year_id="1999-00",
-            start_year=1999,
-            grad_year=2000,
+            **dict(schema.YearRef.from_start_year(1999)),
             show_count=1,
-            shows=[],
-            committee=[],
         )
     ),
     search.get_show_document(make_show_inst(), make_show_detail()),
@@ -449,10 +452,15 @@ class TestDumpSearchDocuments:
         documents = read_json(dumped / "documents.json")
         assert all("type" in document for document in documents)
 
-    def test_absent_fields_are_omitted_not_nulled(self, dumped: Path):
+    def test_absent_scalars_are_omitted_not_nulled(self, dumped: Path):
         person = read_json(dumped / "documents" / "person.json")[0]
-        assert "graduationYear" not in person
+        assert "graduationYearId" not in person
         assert "plaintext" not in person
+
+    def test_empty_lists_are_written(self, dumped: Path):
+        person = read_json(dumped / "documents" / "person.json")[0]
+        assert person["careers"] == []
+        assert person["yearIds"] == []
 
 
 class TestSiteStats:

@@ -176,7 +176,7 @@ class TestCommitteeRoleDefinitions:
         )
         assert definition.aliases == {"Committee Members"}
         people = roles.get_people_committee_roles_by_role(definition)
-        assert [person.id for person in people] == ["dave"]
+        assert [holding.person.id for holding in people] == ["dave"]
 
     def test_every_alias_folds_into_a_known_canonical_name(self):
         canonical_names = set(roles.COMMITTEE_ROLE_ALIASES)
@@ -195,11 +195,11 @@ class TestCrewRoles:
     def test_aliases_fold_into_the_canonical_role(self, populated_db):
         definition = roles.get_crew_role_definitions()[0]
         people = roles.get_people_crew_roles_by_role(definition)
-        assert [(person.id, person.show_count) for person in people] == [
+        assert [(holding.person.id, holding.show_count) for holding in people] == [
             ("alice", 1),
             ("bob", 2),
         ]
-        assert {person.role for person in people} == {"Playwright"}
+        assert {holding.role for holding in people} == {"Playwright"}
 
     def test_count_is_holdings_not_people(self, populated_db):
         expected_holdings = 3
@@ -228,12 +228,52 @@ class TestCrewRoles:
         assert "Bagpiper" not in caplog.text
 
 
+class TestPersonRefs:
+    """The people a role index lists carry their bio and headshot."""
+
+    @staticmethod
+    def make_real_person(person_id: str, headshot: str | None = None) -> None:
+        database.Person.create(
+            id=person_id,
+            title=person_id.replace("_", " ").title(),
+            headshot=headshot,
+            data="{}",
+        )
+
+    def test_crew_role_holder_with_a_bio(self, populated_db):
+        self.make_real_person("alice", headshot="abc123")
+        definition = roles.get_crew_role_definitions()[0]
+        [alice, _bob] = roles.get_people_crew_roles_by_role(definition)
+        assert alice.person.has_bio is True
+        assert alice.person.headshot == schema.ImageRef(id="abc123")
+
+    def test_crew_role_holder_without_a_bio(self, populated_db):
+        definition = roles.get_crew_role_definitions()[0]
+        [alice, _bob] = roles.get_people_crew_roles_by_role(definition)
+        assert alice.person.has_bio is False
+        assert alice.person.headshot is None
+
+    def test_cast_member_with_a_bio(self, populated_db):
+        self.make_real_person("alice")
+        make_person_role("alice", "Prospero", database.PersonRoleType.CAST)
+        [alice] = roles.get_people_cast()
+        assert alice.person.has_bio is True
+
+    def test_committee_role_holder_with_a_bio(self, populated_db):
+        self.make_real_person("alice", headshot="abc123")
+        definition = roles.RoleDefinition(name="President")
+        holdings = roles.get_people_committee_roles_by_role(definition)
+        alice = next(holding for holding in holdings if holding.person.id == "alice")
+        assert alice.person.has_bio is True
+        assert alice.person.headshot == schema.ImageRef(id="abc123")
+
+
 class TestDumpRoles:
     def test_crew_index_lists_every_definition_with_counts(
         self, populated_db, output_dir: Path
     ):
         index = read_json(dump_roles(output_dir) / "crew" / "index.json")
-        assert [(role["role"], role["count"]) for role in index] == [
+        assert [(role["name"], role["holdingCount"]) for role in index] == [
             ("Playwright", 3),
             ("Director", 0),
             ("Stage Manager", 0),
@@ -260,17 +300,17 @@ class TestDumpRoles:
         assert index == [
             {
                 "id": "committee_member",
-                "role": "Committee Member",
+                "name": "Committee Member",
                 "aliases": ["Committee Members"],
-                "count": 1,
+                "holdingCount": 1,
             },
             {
                 "id": "marketing_coordinator",
-                "role": "Marketing Coordinator",
+                "name": "Marketing Coordinator",
                 "aliases": ["Marketing Co-ordinator"],
-                "count": 1,
+                "holdingCount": 1,
             },
-            {"id": "president", "role": "President", "aliases": [], "count": 2},
+            {"id": "president", "name": "President", "aliases": [], "holdingCount": 2},
         ]
 
     def test_committee_detail_written_for_every_role(
@@ -292,7 +332,7 @@ class TestDumpRoles:
         self, populated_db, output_dir: Path
     ):
         president = read_json(dump_roles(output_dir) / "committee" / "president.json")
-        assert [person["id"] for person in president] == ["alice", "bob"]
+        assert [holding["person"]["id"] for holding in president] == ["alice", "bob"]
 
 
 class TestRoleSpec:
@@ -308,20 +348,15 @@ class TestRoleSpec:
 
     def test_models_present(self):
         assert set(spec.SPEC["components"]["schemas"]["Role"]["properties"]) == {
-            "role",
-            "aliases",
-            "count",
-        }
-        assert set(spec.SPEC["components"]["schemas"]["RoleWithId"]["properties"]) == {
             "id",
-            "role",
+            "name",
             "aliases",
-            "count",
+            "holdingCount",
         }
 
 
 def test_committee_role_list_matches_schema(populated_db):
     definition = roles.RoleDefinition(name="President")
-    assert roles.get_committee_role_list(definition) == schema.RoleWithId(
-        id="president", role="President", aliases=[], count=2
-    )
+    assert roles.get_role_list(
+        definition, database.PersonRoleType.COMMITTEE
+    ) == schema.Role(id="president", name="President", aliases=[], holding_count=2)

@@ -108,8 +108,12 @@ class TestGetPersonCollaborators:
         )
         assert people.get_person_collaborators(person_id) == [
             PersonCollaborator(
-                person_id="john_smith",
-                person_name="John Smith",
+                person=schema.PersonRef(
+                    id="john_smith",
+                    title="John Smith",
+                    is_person=True,
+                    has_bio=False,
+                ),
                 target_ids=["titus_andronicus"],
             )
         ]
@@ -144,13 +148,21 @@ class TestGetPersonCollaborators:
         )
         assert people.get_person_collaborators(person_id) == [
             PersonCollaborator(
-                person_id="alice_froggs",
-                person_name="Alice Froggs",
+                person=schema.PersonRef(
+                    id="alice_froggs",
+                    title="Alice Froggs",
+                    is_person=True,
+                    has_bio=False,
+                ),
                 target_ids=["julius_caesar", "the_tempest", "titus_andronicus"],
             ),
             PersonCollaborator(
-                person_id="john_smith",
-                person_name="John Smith",
+                person=schema.PersonRef(
+                    id="john_smith",
+                    title="John Smith",
+                    is_person=True,
+                    has_bio=False,
+                ),
                 target_ids=["julius_caesar", "titus_andronicus"],
             ),
         ]
@@ -177,13 +189,21 @@ class TestGetPersonCollaborators:
 
         assert people.get_person_collaborators(person_id) == [
             PersonCollaborator(
-                person_id="alice_froggs",
-                person_name="Alice Froggs",
+                person=schema.PersonRef(
+                    id="alice_froggs",
+                    title="Alice Froggs",
+                    is_person=True,
+                    has_bio=False,
+                ),
                 target_ids=["the_tempest", "titus_andronicus"],
             ),
             PersonCollaborator(
-                person_id="john_smith",
-                person_name="John Smith",
+                person=schema.PersonRef(
+                    id="john_smith",
+                    title="John Smith",
+                    is_person=True,
+                    has_bio=False,
+                ),
                 target_ids=["titus_andronicus"],
             ),
         ]
@@ -199,9 +219,7 @@ class TestGetGraduation:
     def test_provided(self, test_db):
         assert people.get_graduation(
             models.Person(id="fred_bloggs", title="Fred Bloggs", graduated=1995)
-        ) == PersonGraduated(
-            year_title="1995", year_decade=199, year_id="1994-95", estimated=False
-        )
+        ) == PersonGraduated.from_grad_year(1995, estimated=False)
 
     def test_estimated(self, test_db):
         people.save_person_roles(
@@ -218,9 +236,7 @@ class TestGetGraduation:
         )
         assert people.get_graduation(
             models.Person(id="fred_bloggs", title="Fred Bloggs")
-        ) == PersonGraduated(
-            year_title="1995", year_decade=199, year_id="1994-95", estimated=True
-        )
+        ) == PersonGraduated.from_grad_year(1995, estimated=True)
 
     def test_estimated_also_uses_committees(self, test_db):
         people.save_person_roles(
@@ -237,9 +253,7 @@ class TestGetGraduation:
         )
         assert people.get_graduation(
             models.Person(id="fred_bloggs", title="Fred Bloggs")
-        ) == PersonGraduated(
-            year_title="2002", year_decade=200, year_id="2001-02", estimated=True
-        )
+        ) == PersonGraduated.from_grad_year(2002, estimated=True)
 
     def test_dont_assume_recent_people_have_left(self, test_db):
         people.save_person_roles(
@@ -248,9 +262,7 @@ class TestGetGraduation:
             target_year=2020,
             person_list=[FRED_PERSON_REF],
         )
-        graduated = PersonGraduated(
-            year_title="2021", year_decade=202, year_id="2020-21", estimated=True
-        )
+        graduated = PersonGraduated.from_grad_year(2021, estimated=True)
         with freezegun.freeze_time("2020-01-01"):
             assert (
                 people.get_graduation(
@@ -291,19 +303,24 @@ class TestGetGraduation:
 class TestPersonDetailHeadshot:
     @pytest.fixture(autouse=True)
     def _clear_image_info_cache(self):
-        assets.get_smugmug_image_info_map.cache_clear()
+        assets.clear_image_info_caches()
         yield
-        assets.get_smugmug_image_info_map.cache_clear()
+        assets.clear_image_info_caches()
 
     @staticmethod
     def make_person(headshot: str | None) -> models.Person:
         return models.Person(id="fred_bloggs", title="Fred Bloggs", headshot=headshot)
 
     def test_no_headshot_is_none(self, test_db):
-        assert people.make_person_detail(self.make_person(None)).headshot is None
+        assert (
+            people.make_person_detail(self.make_person(None), has_bio=True).headshot
+            is None
+        )
 
     def test_headshot_becomes_an_asset(self, test_db):
-        headshot = people.make_person_detail(self.make_person("abc123")).headshot
+        headshot = people.make_person_detail(
+            self.make_person("abc123"), has_bio=True
+        ).headshot
         assert headshot is not None
         assert headshot.id == "abc123"
         assert headshot.type == "image"
@@ -324,7 +341,9 @@ class TestPersonDetailHeadshot:
             width=600, height=800
         ).model_dump_json()
         saved_asset.save()
-        headshot = people.make_person_detail(self.make_person("abc123")).headshot
+        headshot = people.make_person_detail(
+            self.make_person("abc123"), has_bio=True
+        ).headshot
         assert headshot is not None
         assert (headshot.width, headshot.height) == (600, 800)
 
@@ -340,7 +359,8 @@ class TestGetIsStudent:
         with freezegun.freeze_time("2022-01-01"):
             assert (
                 people.get_is_student(
-                    PersonGraduated.from_year(2024, estimated=False), has_credits=True
+                    PersonGraduated.from_grad_year(2024, estimated=False),
+                    has_credits=True,
                 )
                 is True
             )
@@ -349,7 +369,8 @@ class TestGetIsStudent:
         with freezegun.freeze_time("2022-01-01"):
             assert (
                 people.get_is_student(
-                    PersonGraduated.from_year(2022, estimated=False), has_credits=True
+                    PersonGraduated.from_grad_year(2022, estimated=False),
+                    has_credits=True,
                 )
                 is True
             )
@@ -358,7 +379,8 @@ class TestGetIsStudent:
         with freezegun.freeze_time("2022-08-01"):
             assert (
                 people.get_is_student(
-                    PersonGraduated.from_year(2022, estimated=False), has_credits=True
+                    PersonGraduated.from_grad_year(2022, estimated=False),
+                    has_credits=True,
                 )
                 is False
             )
@@ -367,7 +389,8 @@ class TestGetIsStudent:
         with freezegun.freeze_time("2022-01-01"):
             assert (
                 people.get_is_student(
-                    PersonGraduated.from_year(1995, estimated=False), has_credits=True
+                    PersonGraduated.from_grad_year(1995, estimated=False),
+                    has_credits=True,
                 )
                 is False
             )
@@ -386,7 +409,8 @@ class TestMakePersonDetail:
                     models.Link(type="Personal Website", href="https://example.com")
                 ],
                 news=[models.Link(type="Article", href="https://example.com/news")],
-            )
+            ),
+            has_bio=True,
         )
         assert person.course == ["English"]
         assert person.careers == ["Director"]
@@ -397,30 +421,35 @@ class TestMakePersonDetail:
 
     def test_award_outside_the_known_set_is_kept(self, test_db):
         person = people.make_person_detail(
-            models.Person(id="fred_bloggs", title="Fred Bloggs", award="Knighthood")
+            models.Person(id="fred_bloggs", title="Fred Bloggs", award="Knighthood"),
+            has_bio=True,
         )
         assert person.award == "Knighthood"
 
     def test_no_trivia_defaults_to_empty(self, test_db):
         person = people.make_person_detail(
-            models.Person(id="fred_bloggs", title="Fred Bloggs")
+            models.Person(id="fred_bloggs", title="Fred Bloggs"), has_bio=True
         )
         assert person.trivia == []
 
     def test_trivia_is_embedded(self, test_db):
         trivia = [
-            schema.PersonTrivia(
+            schema.Trivia(
                 quote="A quote",
-                submitted="2001-06",
-                target_id="1999-00/show",
-                target_type="show",
-                target_name="A Show",
-                target_image_id=None,
-                target_year="1999",
+                submitted_date="2001-06",
+                target=schema.TriviaTarget(
+                    id="1999-00/show",
+                    type=schema.TriviaTargetType.SHOW,
+                    title="A Show",
+                    year_id="1999-00",
+                    year=1999,
+                ),
             )
         ]
         person = people.make_person_detail(
-            models.Person(id="fred_bloggs", title="Fred Bloggs"), trivia=trivia
+            models.Person(id="fred_bloggs", title="Fred Bloggs"),
+            trivia=trivia,
+            has_bio=True,
         )
         assert person.trivia == trivia
 
@@ -454,8 +483,12 @@ class TestGetAwardHolders:
         )
         holders = people.get_award_holders()
         assert holders["1994-95"][models.Award.FELLOWSHIP] == [
-            schema.PersonAwardHolder(
-                id="fred_bloggs", title="Fred Bloggs", headshot="abc123"
+            schema.PersonRef(
+                id="fred_bloggs",
+                title="Fred Bloggs",
+                is_person=True,
+                has_bio=True,
+                headshot=schema.ImageRef(id="abc123"),
             )
         ]
 

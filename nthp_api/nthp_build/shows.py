@@ -43,12 +43,12 @@ def get_show_query() -> peewee.Query:
     )
 
 
-def get_show_play(show: models.Show) -> schema.PlayShow | None:
+def get_show_play(show: models.Show) -> schema.PlayRef | None:
     """
-    Decide if a show is a play or not and return PlayShow if it is.
+    Decide if a show is a play or not and return a reference to it if it is.
     """
     if get_show_playwright(show) is not None:
-        return schema.PlayShow(
+        return schema.PlayRef(
             id=playwrights.get_play_id(show.title),
             title=show.title,
         )
@@ -143,7 +143,7 @@ def get_crew_with_student_playwright(show: models.Show) -> list[models.PersonRef
     return [credit, *show.crew]
 
 
-def get_show_roles(person_refs: list[models.PersonRef]) -> list[schema.ShowRole]:
+def get_show_roles(person_refs: list[models.PersonRef]) -> list[schema.PersonCredit]:
     query = database.Person.select(database.Person.id, database.Person.headshot).where(
         database.Person.id.in_(
             [
@@ -159,14 +159,16 @@ def get_show_roles(person_refs: list[models.PersonRef]) -> list[schema.ShowRole]
         person_id = people.get_person_id(person_ref.name) if person_ref.name else None
         has_bio = person_id in person_id_to_headshot
         show_roles.append(
-            schema.ShowRole(
+            schema.PersonCredit(
                 role=person_ref.role,
                 person=(
-                    schema.PersonList(
+                    schema.PersonRef(
                         id=person_id,
-                        name=person_ref.name,
+                        title=person_ref.name,
                         is_person=person_ref.person,
-                        headshot=person_id_to_headshot.get(person_id),
+                        headshot=assets.get_image_ref(
+                            person_id_to_headshot.get(person_id)
+                        ),
                         has_bio=has_bio,
                     )
                     if person_id
@@ -180,9 +182,9 @@ def get_show_roles(person_refs: list[models.PersonRef]) -> list[schema.ShowRole]
 
 def get_show_venue(
     show_inst: database.Show, show_data: models.Show
-) -> schema.VenueShow | None:
+) -> schema.VenueRef | None:
     return (
-        schema.VenueShow(
+        schema.VenueRef(
             id=show_inst.venue_id,
             name=show_data.venue,
         )
@@ -235,11 +237,21 @@ def get_show_tour(show_data: models.Show) -> list[schema.ShowTourDate]:
     ]
 
 
-def get_show_sequence_item(show_inst: database.Show) -> schema.ShowSequenceItem:
-    return schema.ShowSequenceItem(
+def get_show_ref(show_inst: database.Show) -> schema.ShowRef:
+    return schema.ShowRef(
         id=show_inst.id,
         title=show_inst.title,
-        primary_image=show_inst.primary_image,
+        year_id=show_inst.year_id,
+        year=show_inst.year,
+        primary_image=assets.get_image_ref(show_inst.primary_image),
+    )
+
+
+def get_show_dated_ref(show_inst: database.Show) -> schema.ShowDatedRef:
+    return schema.ShowDatedRef(
+        **dict(get_show_ref(show_inst)),
+        date_start=show_inst.date_start,
+        date_end=show_inst.date_end,
     )
 
 
@@ -256,7 +268,7 @@ def get_show_index_item(show_inst: database.Show) -> schema.ShowIndexItem:
         venue=get_show_venue(show_inst, source_data),
         date_start=show_inst.date_start,
         date_end=show_inst.date_end,
-        primary_image=show_inst.primary_image,
+        primary_image=assets.get_image_ref(show_inst.primary_image),
         playwright_descriptor=playwright.descriptor if playwright else None,
     )
 
@@ -264,40 +276,25 @@ def get_show_index_item(show_inst: database.Show) -> schema.ShowIndexItem:
 def get_show_list_item(show_inst: database.Show) -> schema.ShowList:
     source_data = models.Show(**json.loads(show_inst.data))
     return schema.ShowList(
-        id=show_inst.id,
-        title=show_inst.title,
+        **dict(get_show_index_item(show_inst)),
         playwright=get_show_playwright(source_data),
         adaptor=source_data.adaptor,
-        devised=source_data.devised,
-        season=source_data.season,
-        season_id=show_inst.season_id,
-        venue=get_show_venue(show_inst, source_data),
-        date_start=show_inst.date_start,
-        date_end=show_inst.date_end,
-        primary_image=show_inst.primary_image,
+        devised=bool(source_data.devised),
     )
 
 
 def get_show_detail(
     show_inst: database.Show,
-    previous: schema.ShowSequenceItem | None = None,
-    next_show: schema.ShowSequenceItem | None = None,
+    previous: schema.ShowRef | None = None,
+    next_show: schema.ShowRef | None = None,
 ) -> schema.ShowDetail:
     source_data = models.Show(**json.loads(show_inst.data))
     return schema.ShowDetail(
-        id=show_inst.id,
-        title=show_inst.title,
+        **dict(get_show_list_item(show_inst)),
         play=get_show_play(source_data),
-        playwright=get_show_playwright(source_data),
-        adaptor=source_data.adaptor,
         translator=source_data.translator,
         company=source_data.company,
         period=source_data.period,
-        season=source_data.season,
-        season_id=show_inst.season_id,
-        venue=get_show_venue(show_inst, source_data),
-        date_start=show_inst.date_start,
-        date_end=show_inst.date_end,
         tour=get_show_tour(source_data),
         cast=get_show_roles(source_data.cast),
         crew=get_show_roles(source_data.crew),
@@ -311,7 +308,6 @@ def get_show_detail(
             assets.add_smugmug_image_info(schema.Asset(**asset))
             for asset in json.loads(show_inst.assets)
         ],
-        primary_image=show_inst.primary_image,
         links=links.get_links(source_data.links),
         missing_fields=get_show_missing_fields(show_inst, source_data),
         ignore_missing=source_data.ignore_missing,
@@ -320,17 +316,16 @@ def get_show_detail(
         ),
         previous=previous,
         next=next_show,
-        trivia=trivia.make_targeted_trivia(show_inst.id, database.TargetType.SHOW),
+        trivia=trivia.make_target_trivia(show_inst.id, database.TargetType.SHOW),
         content=show_inst.content,
     )
 
 
 def get_show_people_names(show: schema.ShowDetail) -> list[str]:
-    people_names = set()
-    for credit in show.cast:
-        if credit.person and credit.person.name is not None:
-            people_names.add(credit.person.name)
-    for person in show.crew:
-        if person.person and person.person.name is not None:
-            people_names.add(person.person.name)
-    return sorted(people_names)
+    return sorted(
+        {
+            credit.person.title
+            for credit in [*show.cast, *show.crew]
+            if credit.person is not None
+        }
+    )

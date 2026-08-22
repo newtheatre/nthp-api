@@ -3,7 +3,7 @@ from typing import NamedTuple
 
 from slugify import slugify
 
-from nthp_api.nthp_build import database, people, schema
+from nthp_api.nthp_build import assets, database, people, schema
 
 
 def get_play_id(name: str) -> str:
@@ -28,6 +28,18 @@ def save_playwright_show(
 
 
 PlaywrightShowMapping = dict[tuple[str, str], list[database.Show]]
+
+
+def get_show_dated_ref(show: database.Show) -> schema.ShowDatedRef:
+    return schema.ShowDatedRef(
+        id=show.id,
+        title=show.title,
+        year_id=show.year_id,
+        year=show.year,
+        primary_image=assets.get_image_ref(show.primary_image),
+        date_start=show.date_start,
+        date_end=show.date_end,
+    )
 
 
 def get_playwright_shows() -> PlaywrightShowMapping:
@@ -59,16 +71,7 @@ def get_playwright_list(
         schema.PlaywrightListItem(
             id=id,
             name=name,
-            shows=[
-                schema.PlaywrightShowListItem(
-                    id=show.id,
-                    title=show.title,
-                    date_start=show.date_start,
-                    date_end=show.date_end,
-                    primary_image=show.primary_image,
-                )
-                for show in shows
-            ],
+            shows=[get_show_dated_ref(show) for show in shows],
         )
         for (id, name), shows in playwright_shows.items()
     ]
@@ -119,20 +122,11 @@ def get_play_list(
         schema.PlayListItem(
             id=play_ref.play_id,
             title=play_ref.play_name,
-            playwright=schema.Playwright(
+            playwright=schema.PlaywrightRef(
                 id=play_ref.playwright_id,
                 name=play_ref.playwright_name,
             ),
-            shows=[
-                schema.PlaywrightShowListItem(
-                    id=show.id,
-                    title=show.title,
-                    date_start=show.date_start,
-                    date_end=show.date_end,
-                    primary_image=show.primary_image,
-                )
-                for show in shows
-            ],
+            shows=[get_show_dated_ref(show) for show in shows],
         )
         for play_ref, shows in play_shows.items()
     ]

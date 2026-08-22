@@ -8,12 +8,18 @@ from typing import Any, cast
 import peewee
 from slugify import slugify
 
-from nthp_api.nthp_build import assets, database, links, models, schema, years
+from nthp_api.nthp_build import assets, database, links, models, schema
 from nthp_api.nthp_build.config import settings
+from nthp_api.nthp_build.fields import FuzzyDate
 
 log = logging.getLogger(__name__)
 
 SHOW_ROLE_TYPES = [database.PersonRoleType.CAST, database.PersonRoleType.CREW]
+
+SHOW_ROLE_TYPES_TO_SCHEMA = {
+    database.PersonRoleType.CAST: schema.ShowRoleType.CAST,
+    database.PersonRoleType.CREW: schema.ShowRoleType.CREW,
+}
 
 
 def get_person_id(name: str) -> str:
@@ -58,6 +64,44 @@ def get_real_people() -> "peewee.ModelSelect[database.Person]":
     return database.Person.select()
 
 
+def get_headshots_by_person_id(person_ids: Iterable[str]) -> dict[str, str | None]:
+    """Headshot of each person the archive holds a document for, by id."""
+    query = database.Person.select(database.Person.id, database.Person.headshot).where(
+        database.Person.id.in_(list(person_ids))
+    )
+    return {person.id: person.headshot for person in query}
+
+
+def make_person_credits(
+    person_roles: Iterable[models.PersonRole],
+) -> list[schema.PersonCredit]:
+    """Credits as a document shows them, with each person's bio and headshot."""
+    person_roles = list(person_roles)
+    headshots = get_headshots_by_person_id(
+        person_role.person_id
+        for person_role in person_roles
+        if person_role.person_id is not None
+    )
+    return [
+        schema.PersonCredit(
+            role=person_role.role,
+            person=(
+                schema.PersonRef(
+                    id=person_role.person_id,
+                    title=person_role.person_name,
+                    is_person=person_role.is_person,
+                    has_bio=person_role.person_id in headshots,
+                    headshot=assets.get_image_ref(headshots.get(person_role.person_id)),
+                )
+                if person_role.person_id and person_role.person_name
+                else None
+            ),
+            note=person_role.note,
+        )
+        for person_role in person_roles
+    ]
+
+
 def get_person_show_roles(person_id: str) -> list[schema.PersonShowRoles]:
     query = (
         database.PersonRole.select(database.PersonRole, database.Show)
@@ -81,13 +125,18 @@ def get_person_show_roles(person_id: str) -> list[schema.PersonShowRoles]:
 
     return [
         schema.PersonShowRoles(
-            show_id=show_id,
-            show_title=shows[show_id].title,
-            show_year_id=shows[show_id].year_id,
-            show_year=shows[show_id].year,
-            show_primary_image=shows[show_id].primary_image,
+            show=schema.ShowRef(
+                id=show_id,
+                title=shows[show_id].title,
+                year_id=shows[show_id].year_id,
+                year=shows[show_id].year,
+                primary_image=assets.get_image_ref(shows[show_id].primary_image),
+            ),
             roles=[
-                schema.PersonShowRoleItem(role=role.role, role_type=role.target_type)
+                schema.PersonShowRoleItem(
+                    role=role.role,
+                    role_type=SHOW_ROLE_TYPES_TO_SCHEMA[role.target_type],
+                )
                 for role in roles
             ],
         )
@@ -103,9 +152,7 @@ def get_person_committee_roles(person_id: str) -> list[schema.PersonCommitteeRol
 
     return [
         schema.PersonCommitteeRole(
-            year_id=years.get_public_year_id(person_role.target_year),
-            year_title=years.get_year_title(person_role.target_year),
-            year_decade=years.get_year_decade(person_role.target_year),
+            year=schema.YearRef.from_start_year(person_role.target_year),
             role=person_role.role,
         )
         for person_role in query
@@ -187,19 +234,29 @@ def get_person_collaborators(person_id: str) -> list[schema.PersonCollaborator]:
         .order_by(database.PersonRole.person_id)
     )
     # Map collaborators against a list of targets
-    collaborator_map = defaultdict(set)
+    collaborator_map: defaultdict[tuple[str, str], set[str]] = defaultdict(set)
     for collaborator_role in collaborator_roles_query:
+        if collaborator_role.person_id is None or collaborator_role.person_name is None:
+            continue
         collaborator_map[
             (collaborator_role.person_id, collaborator_role.person_name)
         ].add(collaborator_role.target_id)
     # Return a set of collaborators
+    headshots = get_headshots_by_person_id(
+        collaborator_id for collaborator_id, _ in collaborator_map
+    )
     return [
         schema.PersonCollaborator(
-            person_id=person_id,
-            person_name=person_name,
+            person=schema.PersonRef(
+                id=collaborator_id,
+                title=collaborator_name,
+                is_person=True,
+                has_bio=collaborator_id in headshots,
+                headshot=assets.get_image_ref(headshots.get(collaborator_id)),
+            ),
             target_ids=sorted(target_ids),
         )
-        for (person_id, person_name), target_ids in collaborator_map.items()
+        for (collaborator_id, collaborator_name), target_ids in collaborator_map.items()
     ]
 
 
@@ -227,7 +284,7 @@ def get_graduation(model: models.Person) -> schema.PersonGraduated | None:
     estimate based on their credits.
     """
     if model.graduated:
-        return schema.PersonGraduated.from_year(model.graduated, estimated=False)
+        return schema.PersonGraduated.from_grad_year(model.graduated, estimated=False)
 
     years_active_query = database.PersonRole.select(
         database.PersonRole.target_year.distinct()
@@ -242,7 +299,7 @@ def get_graduation(model: models.Person) -> schema.PersonGraduated | None:
             how_many_years_ago_was_that == settings.graduation_recency_limit
             and datetime.date.today().month >= settings.graduation_month
         ):
-            return schema.PersonGraduated.from_year(
+            return schema.PersonGraduated.from_grad_year(
                 last_year_active + 1,  # Add one as active in 1999-00 is grad in 2000
                 estimated=True,
             )
@@ -267,9 +324,8 @@ def get_is_student(
     if graduation is None:
         return True
     today = datetime.date.today()
-    graduation_year = int(graduation.year_title)
-    return graduation_year > today.year or (
-        graduation_year == today.year and today.month < settings.graduation_month
+    return graduation.grad_year > today.year or (
+        graduation.grad_year == today.year and today.month < settings.graduation_month
     )
 
 
@@ -279,7 +335,7 @@ def get_person_sort_key(title: str) -> tuple[str, str]:
     return (names[-1] if names else title, " ".join(names[:-1]))
 
 
-def get_award_holders() -> dict[str, dict[str, list[schema.PersonAwardHolder]]]:
+def get_award_holders() -> dict[str, dict[str, list[schema.PersonRef]]]:
     """
     People who received an award, by the academic year they graduated in.
 
@@ -287,7 +343,7 @@ def get_award_holders() -> dict[str, dict[str, list[schema.PersonAwardHolder]]]:
     old site's `_plugins/awards.rb` files them. Anyone whose graduation is unknown
     has nowhere to be filed.
     """
-    holders: dict[str, dict[str, list[schema.PersonAwardHolder]]] = defaultdict(
+    holders: dict[str, dict[str, list[schema.PersonRef]]] = defaultdict(
         lambda: defaultdict(list)
     )
     for person_inst in get_real_people():
@@ -301,11 +357,13 @@ def get_award_holders() -> dict[str, dict[str, list[schema.PersonAwardHolder]]]:
                 f"so it appears on no year"
             )
             continue
-        holders[graduation.year_id][model.award].append(
-            schema.PersonAwardHolder(
+        holders[graduation.id][model.award].append(
+            schema.PersonRef(
                 id=person_inst.id,
                 title=model.title,
-                headshot=person_inst.headshot,
+                is_person=True,
+                has_bio=True,
+                headshot=assets.get_image_ref(person_inst.headshot),
             )
         )
     return {
@@ -325,25 +383,46 @@ def make_virtual_person_model(ref) -> models.Person:
     )
 
 
+def get_submission(
+    submitted: FuzzyDate | bool | None,
+) -> tuple[bool, FuzzyDate | None]:
+    """
+    Whether the person submitted the record, and when, from the authored value.
+
+    Records are authored with either a submission date or a bare boolean, so a date
+    means submitted and a boolean carries no date.
+    """
+    if isinstance(submitted, FuzzyDate):
+        return True, submitted
+    return bool(submitted), None
+
+
 def make_person_detail(
     model: models.Person,
     content: str | None = None,
-    trivia: list[schema.PersonTrivia] | None = None,
+    trivia: list[schema.Trivia] | None = None,
+    *,
+    has_bio: bool,
 ) -> schema.PersonDetail:
     assert model.id is not None, "Person model should have id by now"
     graduation = get_graduation(model)
     show_roles = get_person_show_roles(model.id)
     committee_roles = get_person_committee_roles(model.id)
+    submitted, submitted_date = get_submission(model.submitted)
     return schema.PersonDetail(
         id=model.id,
         title=model.title,
-        submitted=model.submitted,
+        has_bio=has_bio,
+        submitted=submitted,
+        submitted_date=submitted_date,
         headshot=(
             assets.asset_from_headshot(model.headshot) if model.headshot else None
         ),
         graduated=graduation,
         show_roles=show_roles,
         committee_roles=committee_roles,
+        show_role_count=len(show_roles),
+        committee_role_count=len(committee_roles),
         course=model.course,
         award=model.award,
         careers=model.careers,

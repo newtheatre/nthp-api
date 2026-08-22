@@ -59,10 +59,15 @@ def make_out_path(directory: Path, file: str) -> Path:
 
 
 def write_file(path: Path, obj: pydantic.BaseModel) -> None:
+    """
+    Write a document, with one serialisation for every path.
+
+    Null scalars are omitted rather than sent as null; lists are always emitted, as
+    no schema field is both a list and nullable, so an empty list stays an empty
+    list rather than vanishing. Nothing turns on whether a field was set explicitly.
+    """
     with path.open("w") as f:
-        f.write(
-            obj.model_dump_json(by_alias=True, exclude_none=True, exclude_unset=True)
-        )
+        f.write(obj.model_dump_json(by_alias=True, exclude_none=True))
 
 
 def dump_specs(state: DumperSharedState):
@@ -72,8 +77,8 @@ def dump_specs(state: DumperSharedState):
 def dump_show(
     inst: database.Show,
     state: DumperSharedState,
-    previous: schema.ShowSequenceItem | None = None,
-    next_show: schema.ShowSequenceItem | None = None,
+    previous: schema.ShowRef | None = None,
+    next_show: schema.ShowRef | None = None,
 ) -> schema.ShowDetail:
     path = make_out_path(Path("shows"), inst.id)
     show = shows.get_show_detail(inst, previous=previous, next_show=next_show)
@@ -95,7 +100,7 @@ def dump_show_index(show_insts: list[database.Show]):
 def dump_shows(state: DumperSharedState):
     """Dump every show, in canonical order so each knows its neighbours."""
     show_insts = list(shows.get_show_query())
-    sequence_items = [shows.get_show_sequence_item(inst) for inst in show_insts]
+    sequence_items = [shows.get_show_ref(inst) for inst in show_insts]
     last_index = len(show_insts) - 1
     for index, show_inst in enumerate(show_insts):
         dump_show(
@@ -110,7 +115,7 @@ def dump_shows(state: DumperSharedState):
 def dump_year(
     year: int,
     state: DumperSharedState,
-    award_holders: dict[str, dict[str, list[schema.PersonAwardHolder]]],
+    award_holders: dict[str, dict[str, list[schema.PersonRef]]],
 ) -> schema.YearDetail:
     year_id = years.get_public_year_id(year)
     path = make_out_path(Path("years"), year_id)
@@ -120,17 +125,13 @@ def dump_year(
         database.PersonRole.target_id == year_id,
     )
     year_detail = schema.YearDetail(
-        title=years.get_year_title(year),
-        decade=years.get_year_decade(year),
-        year_id=year_id,
-        start_year=year,
-        grad_year=year + 1,
+        **dict(schema.YearRef.from_start_year(year)),
         show_count=len(year_shows),
         shows=[shows.get_show_list_item(show_inst) for show_inst in year_shows],
-        committee=[
-            schema.PersonRoleList(**json.loads(person_inst.data))
+        committee=people.make_person_credits(
+            models.PersonRole(**json.loads(person_inst.data))
             for person_inst in year_committee
-        ],
+        ),
         fellows=award_holders.get(year_id, {}).get(models.Award.FELLOWSHIP, []),
         commendations=award_holders.get(year_id, {}).get(models.Award.COMMENDATION, []),
     )
@@ -207,7 +208,10 @@ def dump_real_person(
     path = make_out_path(Path("people"), inst.id)
     source_data = models.Person(**json.loads(inst.data))
     person_detail = people.make_person_detail(
-        source_data, inst.content, trivia=trivia.make_person_trivia(inst.id)
+        source_data,
+        inst.content,
+        trivia=trivia.make_person_trivia(inst.id),
+        has_bio=True,
     )
     search.add_document(
         state,
@@ -235,6 +239,7 @@ def dump_virtual_person(
     person_detail = people.make_person_detail(
         people.make_virtual_person_model(ref),
         trivia=trivia.make_person_trivia(ref.person_id),
+        has_bio=False,
     )
     search.add_document(
         state,
@@ -262,11 +267,13 @@ def make_person_index_item(
     committee_role_counts: dict[str, int],
 ) -> schema.PersonIndexItem:
     assert model.id is not None, "Person model should have id by now"
+    submitted, submitted_date = people.get_submission(model.submitted)
     return schema.PersonIndexItem(
         id=model.id,
         title=model.title,
-        submitted=model.submitted,
-        headshot=model.headshot,
+        submitted=submitted,
+        submitted_date=submitted_date,
+        headshot=assets.get_image_ref(model.headshot),
         graduated=people.get_graduation(model),
         show_role_count=show_role_counts.get(model.id, 0),
         committee_role_count=committee_role_counts.get(model.id, 0),
@@ -323,8 +330,11 @@ def dump_people_by_committee_role(definition: roles.RoleDefinition):
 def dump_committee_roles(definitions: list[roles.RoleDefinition]):
     write_file(
         path=make_out_path(Path("roles/committee"), "index"),
-        obj=schema.RoleWithIdCollection(
-            [roles.get_committee_role_list(definition) for definition in definitions]
+        obj=schema.RoleCollection(
+            [
+                roles.get_role_list(definition, database.PersonRoleType.COMMITTEE)
+                for definition in definitions
+            ]
         ),
     )
 
@@ -436,7 +446,7 @@ def dump_site_stats(state: DumperSharedState) -> None:
             person_with_headshot_count=database.Person.select()
             .where(database.Person.headshot.is_null(False))
             .count(),
-            shows_with_image_count=database.Show.select()
+            show_with_image_count=database.Show.select()
             .where(database.Show.primary_image.is_null(False))
             .count(),
             venue_count=len(venues.get_venue_records()),

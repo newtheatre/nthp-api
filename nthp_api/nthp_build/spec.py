@@ -31,7 +31,6 @@ PYDANTIC_JSON_SCHEMA = models_json_schema(
         schema.PlaywrightCollection,
         schema.PosterCollection,
         schema.RoleCollection,
-        schema.RoleWithIdCollection,
         schema.SearchDocumentCollection,
         schema.SearchDocumentPersonCollection,
         schema.SearchDocumentShowCollection,
@@ -261,7 +260,7 @@ SPEC = {
             summary="Get list of committee roles",
             description="Every committee role held, near-duplicate titles merged into "
             "one role with the others listed as aliases.",
-            model=schema.RoleWithIdCollection,
+            model=schema.RoleCollection,
         ),
         "/roles/committee/{name}.json": make_detail_get_operation(
             operation_id="getPeopleByCommitteeRole",

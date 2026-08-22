@@ -52,11 +52,17 @@ class TestPeopleIndex:
             "PersonDetail", "headshot"
         )["anyOf"]
 
+    def test_index_headshot_is_an_image_ref(self):
+        assert {"$ref": "#/components/schemas/ImageRef"} in get_property(
+            "PersonIndexItem", "headshot"
+        )["anyOf"]
+
     def test_model_present(self):
         assert set(SCHEMAS["PersonIndexItem"]["properties"]) == {
             "id",
             "title",
             "submitted",
+            "submittedDate",
             "headshot",
             "graduated",
             "showRoleCount",
@@ -73,28 +79,30 @@ class TestFuzzyDateFields:
             ("ShowDetail", "dateEnd"),
             ("ShowList", "dateStart"),
             ("ShowList", "dateEnd"),
-            ("PlaywrightShowListItem", "dateStart"),
-            ("PlaywrightShowListItem", "dateEnd"),
-            ("TargetedTrivia", "submitted"),
-            ("PersonTrivia", "submitted"),
+            ("ShowDatedRef", "dateStart"),
+            ("ShowDatedRef", "dateEnd"),
+            ("Trivia", "submittedDate"),
         ],
     )
     def test_optional_fuzzy_date(self, model, field):
         assert get_property(model, field)["anyOf"] == [FUZZY_DATE_SCHEMA, NULL_SCHEMA]
 
-    def test_person_submitted_admits_boolean(self):
-        assert get_property("PersonDetail", "submitted")["anyOf"] == [
+    def test_person_submitted_is_a_boolean(self):
+        assert get_property("PersonDetail", "submitted")["type"] == "boolean"
+        assert get_property("PersonDetail", "submittedDate")["anyOf"] == [
             FUZZY_DATE_SCHEMA,
-            BOOLEAN_SCHEMA,
             NULL_SCHEMA,
         ]
 
     def test_trivia_submitted_example_shows_reduced_precision(self):
-        assert get_property("TargetedTrivia", "submitted")["example"] == "2022-01"
+        assert get_property("Trivia", "submittedDate")["example"] == "2022-01"
 
-    def test_no_date_formats_remain(self):
-        """Only the build time, a real timestamp, keeps a date format."""
-        assert find_formats(SCHEMAS) == {".SiteStats.properties.buildTime": "date-time"}
+    def test_only_machine_timestamps_carry_a_date_format(self):
+        """Content dates are fuzzy strings; only real timestamps keep a format."""
+        assert find_formats(SCHEMAS) == {
+            ".SiteStats.properties.buildTime": "date-time",
+            ".Asset.properties.uploadedAt.anyOf[0]": "date-time",
+        }
 
 
 class TestFieldTitles:

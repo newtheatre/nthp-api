@@ -24,9 +24,9 @@ def get_show_document(
         venue_id=show.venue.id if show.venue else None,
         venue_name=show.venue.name if show.venue else None,
         date_start=show.date_start,
-        playwright=show.playwright.descriptor if show.playwright else None,
+        playwright_descriptor=show.playwright_descriptor,
         company=show.company,
-        people=shows.get_show_people_names(show) or None,
+        people=shows.get_show_people_names(show),
         plaintext=show_inst.plaintext,
     )
 
@@ -44,7 +44,7 @@ def get_person_show_role_names(
     role_names = set()
     for show_roles in person.show_roles:
         for show_role in show_roles.roles:
-            if show_role.role_type == database.PersonRoleType.CAST:
+            if show_role.role_type == schema.ShowRoleType.CAST:
                 role_names.add(roles.CAST_ROLE_NAME)
             elif (
                 show_role.role is not None
@@ -70,8 +70,8 @@ def get_person_committee_role_names(person: schema.PersonDetail) -> list[str]:
 def get_person_year_ids(person: schema.PersonDetail) -> list[str]:
     """Academic years the person is credited in, on a show or a committee."""
     return sorted(
-        {show_roles.show_year_id for show_roles in person.show_roles}
-        | {role.year_id for role in person.committee_roles}
+        {show_roles.show.year_id for show_roles in person.show_roles}
+        | {role.year.id for role in person.committee_roles}
     )
 
 
@@ -89,17 +89,17 @@ def get_person_document(
         id=person.id,
         image_id=person.headshot.id if person.headshot else None,
         has_bio=has_bio,
-        graduation_year=graduated.year_id if graduated else None,
-        graduation_decade=graduated.year_decade if graduated else None,
+        graduation_year_id=graduated.id if graduated else None,
+        graduation_year=graduated.grad_year if graduated else None,
+        graduation_decade=graduated.decade if graduated else None,
         graduation_estimated=graduated.estimated if graduated else None,
-        course=person.course or None,
-        careers=person.careers or None,
+        course=person.course,
+        careers=person.careers,
         award=person.award,
-        show_roles=get_person_show_role_names(person, crew_role_canonical_names)
-        or None,
-        committee_roles=get_person_committee_role_names(person) or None,
-        show_count=len(person.show_roles),
-        year_ids=get_person_year_ids(person) or None,
+        show_roles=get_person_show_role_names(person, crew_role_canonical_names),
+        committee_roles=get_person_committee_role_names(person),
+        show_count=person.show_role_count,
+        year_ids=get_person_year_ids(person),
         plaintext=plaintext,
     )
 
@@ -119,7 +119,7 @@ def get_year_document(year: schema.YearDetail) -> schema.SearchDocumentYear:
     return schema.SearchDocumentYear(
         type=schema.SearchDocumentType.YEAR,
         title=year.title,
-        id=year.year_id,
+        id=year.id,
         decade=year.decade,
         show_count=year.show_count,
     )

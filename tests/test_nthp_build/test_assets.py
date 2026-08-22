@@ -93,7 +93,7 @@ class TestSaveShowAssets:
 
 
 class TestSmugMugAssetToAsset:
-    def test_dimensions_and_date_are_carried_over(self):
+    def test_dimensions_and_upload_date_are_carried_over(self):
         asset = assets.smugmug_asset_to_asset(
             SmugMugImage(
                 Uri="/api/v2/album/W38sb3/image/Dg7GGwL-0",
@@ -112,15 +112,17 @@ class TestSmugMugAssetToAsset:
         )
         assert asset.width == 1200  # noqa: PLR2004
         assert asset.height == 1600  # noqa: PLR2004
-        assert asset.date == "2013-06-04T12:00:00+00:00"
+        assert asset.uploaded_at == datetime.datetime(
+            2013, 6, 4, 12, 0, tzinfo=datetime.UTC
+        )
 
 
 class TestAddSmugMugImageInfo:
     @pytest.fixture(autouse=True)
     def _clear_image_info_cache(self):
-        assets.get_smugmug_image_info_map.cache_clear()
+        assets.clear_image_info_caches()
         yield
-        assets.get_smugmug_image_info_map.cache_clear()
+        assets.clear_image_info_caches()
 
     @staticmethod
     def save_poster(image_info: SmugMugImageInfo | None) -> schema.Asset:
@@ -144,15 +146,48 @@ class TestAddSmugMugImageInfo:
         enriched_asset = assets.add_smugmug_image_info(asset)
         assert enriched_asset.width == 1200  # noqa: PLR2004
         assert enriched_asset.height == 1600  # noqa: PLR2004
-        assert enriched_asset.date == "2013-06-04T12:00:00+00:00"
+        assert enriched_asset.uploaded_at == datetime.datetime(
+            2013, 6, 4, 12, 0, tzinfo=datetime.UTC
+        )
 
     def test_unknown_image_keeps_nulls(self, test_db):
         asset = self.save_poster(None)
         enriched_asset = assets.add_smugmug_image_info(asset)
         assert enriched_asset.width is None
         assert enriched_asset.height is None
-        assert enriched_asset.date is None
+        assert enriched_asset.uploaded_at is None
 
     def test_album_is_left_alone(self, test_db):
         album = schema.Asset(type="album", source="smugmug", id="def456")
         assert assets.add_smugmug_image_info(album) == album
+
+
+class TestGetImageRef:
+    @pytest.fixture(autouse=True)
+    def _clear_image_info_cache(self):
+        assets.clear_image_info_caches()
+        yield
+        assets.clear_image_info_caches()
+
+    def test_no_image_is_none(self, test_db):
+        assert assets.get_image_ref(None) is None
+
+    def test_dimensions_come_from_the_smug_step(self, test_db):
+        saved_asset = assets.save_asset(
+            target_id="1999-00/the_tempest",
+            target_type=assets.AssetTarget.SHOW,
+            source=assets.AssetSource.SMUGMUG,
+            type=assets.AssetType.IMAGE,
+            id="abc123",
+            category=assets.AssetCategory.POSTER,
+        )
+        saved_asset.asset_smugmug_data = SmugMugImageInfo(
+            width=600, height=800
+        ).model_dump_json()
+        saved_asset.save()
+        assert assets.get_image_ref("abc123") == schema.ImageRef(
+            id="abc123", width=600, height=800
+        )
+
+    def test_unknown_image_keeps_the_key(self, test_db):
+        assert assets.get_image_ref("abc123") == schema.ImageRef(id="abc123")

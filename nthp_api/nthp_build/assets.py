@@ -1,4 +1,3 @@
-import datetime
 import functools
 import json
 import logging
@@ -221,10 +220,6 @@ def pick_show_primary_image(assets: list[models.Asset]) -> str | None:
     return None
 
 
-def format_asset_date(date: datetime.datetime | None) -> str | None:
-    return date.isoformat() if date is not None else None
-
-
 def smugmug_asset_to_asset(smugmug_asset: SmugMugImage) -> schema.Asset:
     """Convert a SmugMug asset to a schema asset"""
     asset_type = AssetType.VIDEO if smugmug_asset.IsVideo else AssetType.IMAGE
@@ -238,7 +233,7 @@ def smugmug_asset_to_asset(smugmug_asset: SmugMugImage) -> schema.Asset:
         ),
         width=smugmug_asset.OriginalWidth,
         height=smugmug_asset.OriginalHeight,
-        date=format_asset_date(smugmug_asset.Date),
+        uploaded_at=smugmug_asset.Date,
     )
 
 
@@ -273,9 +268,34 @@ def add_smugmug_image_info(asset: schema.Asset) -> schema.Asset:
         update={
             "width": image_info.width,
             "height": image_info.height,
-            "date": format_asset_date(image_info.date),
+            "uploaded_at": image_info.date,
         }
     )
+
+
+def get_image_ref(image_id: str | None) -> schema.ImageRef | None:
+    """A bare SmugMug image key as a reference, with the dimensions smug fetched."""
+    if image_id is None:
+        return None
+    return _get_image_ref(image_id)
+
+
+@functools.cache
+def _get_image_ref(image_id: str) -> schema.ImageRef:
+    """Cached, so an image referenced many times is looked up, and logged, once."""
+    image_info = get_smugmug_image_info_map().get(image_id)
+    if image_info is None:
+        log.warning(f"No SmugMug dimensions for image {image_id}")
+        return schema.ImageRef(id=image_id)
+    return schema.ImageRef(
+        id=image_id, width=image_info.width, height=image_info.height
+    )
+
+
+def clear_image_info_caches() -> None:
+    """Drop what the SmugMug lookups cached, for tests that swap the database."""
+    get_smugmug_image_info_map.cache_clear()
+    _get_image_ref.cache_clear()
 
 
 def asset_from_headshot(image_id: str) -> schema.Asset:

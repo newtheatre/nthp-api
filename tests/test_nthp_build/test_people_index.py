@@ -94,7 +94,9 @@ class TestRoleCounts:
 
     @pytest.mark.parametrize("person_id", [FRED, ALICE])
     def test_counts_match_detail_page(self, populated_db, person_id):
-        detail = people.make_person_detail(models.Person(id=person_id, title="Whoever"))
+        detail = people.make_person_detail(
+            models.Person(id=person_id, title="Whoever"), has_bio=False
+        )
         assert people.get_show_role_counts().get(person_id, 0) == len(detail.show_roles)
         assert people.get_committee_role_counts().get(person_id, 0) == len(
             detail.committee_roles
@@ -108,12 +110,15 @@ class TestDumpPeopleIndex:
         assert entry == {
             "id": FRED,
             "title": "Fred Bloggs",
-            "submitted": "2016-05",
-            "headshot": "abc123",
+            "submitted": True,
+            "submittedDate": "2016-05",
+            "headshot": {"id": "abc123"},
             "graduated": {
-                "yearTitle": "2016",
-                "yearDecade": 201,
-                "yearId": "2015-16",
+                "id": "2015-16",
+                "title": "2015-16",
+                "startYear": 2015,
+                "gradYear": 2016,
+                "decade": 2010,
                 "estimated": False,
             },
             "showRoleCount": 1,

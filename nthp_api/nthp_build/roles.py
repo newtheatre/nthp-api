@@ -5,7 +5,7 @@ from typing import NamedTuple
 import peewee
 from slugify import slugify
 
-from nthp_api.nthp_build import database, models, schema, years
+from nthp_api.nthp_build import assets, database, models, schema
 
 log = logging.getLogger(__name__)
 
@@ -159,16 +159,23 @@ def get_role_holding_count(definition: RoleDefinition, target_type: str) -> int:
 
 def get_role_list(definition: RoleDefinition, target_type: str) -> schema.Role:
     return schema.Role(
-        role=definition.name,
+        id=get_role_id(definition.name),
+        name=definition.name,
         aliases=sorted(definition.aliases),
-        count=get_role_holding_count(definition, target_type),
+        holding_count=get_role_holding_count(definition, target_type),
     )
 
 
-def get_committee_role_list(definition: RoleDefinition) -> schema.RoleWithId:
-    return schema.RoleWithId(
-        id=get_role_id(definition.name),
-        **get_role_list(definition, database.PersonRoleType.COMMITTEE).model_dump(),
+def get_person_ref(row: database.PersonRole) -> schema.PersonRef:
+    """The person a role row credits, with the bio the outer join found for them."""
+    person = getattr(row, "person", None)
+    headshot = person.headshot if person is not None and person.id is not None else None
+    return schema.PersonRef(
+        id=row.person_id,
+        title=row.person_name,
+        is_person=True,
+        has_bio=person is not None and person.id is not None,
+        headshot=assets.get_image_ref(headshot),
     )
 
 
@@ -195,17 +202,13 @@ def get_people_committee_roles_by_role(
     return sorted(
         [
             schema.PersonCommitteeRoleList(
-                id=r.person_id,
-                title=r.person_name,
-                headshot=r.person.headshot if getattr(r, "person", None) else None,  # type: ignore[attr-defined]
-                year_title=years.get_year_title(r.target_year),
-                year_decade=years.get_year_decade(r.target_year),
-                year_id=years.get_public_year_id(r.target_year),
+                person=get_person_ref(r),
+                year=schema.YearRef.from_start_year(r.target_year),
                 role=r.role,
             )
             for r in query
         ],
-        key=lambda person_committee_role_list: person_committee_role_list.year_title,
+        key=lambda person_committee_role_list: person_committee_role_list.year.id,
     )
 
 
@@ -220,6 +223,7 @@ def get_people_crew_roles_by_role(
         database.PersonRole.select(
             database.PersonRole.person_id,
             database.PersonRole.person_name,
+            database.Person.id,
             database.Person.headshot,
             peewee.fn.count(database.PersonRole.person_id).alias("show_count"),
         )
@@ -236,21 +240,20 @@ def get_people_crew_roles_by_role(
         .group_by(
             database.PersonRole.person_id,
             database.PersonRole.person_name,
+            database.Person.id,
             database.Person.headshot,
         )
     )
     return sorted(
         [
             schema.PersonShowRoleList(
-                id=r.person_id,
-                title=r.person_name,
-                headshot=r.person.headshot if getattr(r, "person", None) else None,  # type: ignore[attr-defined]
+                person=get_person_ref(r),
                 role=definition.name,
                 show_count=r.show_count,  # type: ignore[attr-defined]
             )
             for r in query
         ],
-        key=lambda person_show_role_list: person_show_role_list.id,
+        key=lambda person_show_role_list: person_show_role_list.person.id,
     )
 
 
@@ -263,6 +266,7 @@ def get_people_cast() -> list[schema.PersonShowRoleList]:
         database.PersonRole.select(
             database.PersonRole.person_id,
             database.PersonRole.person_name,
+            database.Person.id,
             database.Person.headshot,
             peewee.fn.count(database.PersonRole.person_id).alias("show_count"),
         )
@@ -278,19 +282,18 @@ def get_people_cast() -> list[schema.PersonShowRoleList]:
         .group_by(
             database.PersonRole.person_id,
             database.PersonRole.person_name,
+            database.Person.id,
             database.Person.headshot,
         )
     )
     return sorted(
         [
             schema.PersonShowRoleList(
-                id=r.person_id,
-                title=r.person_name,
-                headshot=r.person.headshot if getattr(r, "person", None) else None,  # type: ignore[attr-defined]
+                person=get_person_ref(r),
                 role=CAST_ROLE_NAME,
                 show_count=r.show_count,  # type: ignore[attr-defined]
             )
             for r in query
         ],
-        key=lambda person_show_role_list: person_show_role_list.id,
+        key=lambda person_show_role_list: person_show_role_list.person.id,
     )

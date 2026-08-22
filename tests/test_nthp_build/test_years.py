@@ -61,7 +61,14 @@ def test_get_year_title(input: int, expected: str):
 
 @pytest.mark.parametrize(
     "input,expected",
-    [(1940, 194), (1949, 194), (1950, 195), (1999, 199), (2000, 200), (2001, 200)],
+    [
+        (1940, 1940),
+        (1949, 1940),
+        (1950, 1950),
+        (1999, 1990),
+        (2000, 2000),
+        (2001, 2000),
+    ],
 )
 def test_get_year_decade(input: int, expected: int):
     assert years.get_year_decade(input) == expected

@@ -7,6 +7,7 @@ from nthp_api.nthp_build.documents import DocumentPath
 SOURCE_YEAR_ID_PATTERN = re.compile(r"^\d{2}_\d{2}$")
 YEAR_FULL_LENGTH = 4
 CENTURY = 100
+DECADE = 10
 
 
 def check_source_year_id_is_valid(source_year_id: str) -> bool:
@@ -49,5 +50,6 @@ def get_year_title(year: int) -> str:
 
 
 def get_year_decade(year: int) -> int:
+    """The calendar year the year's decade begins in, e.g. 2010 for 2013."""
     assert len(str(year)) == YEAR_FULL_LENGTH
-    return int(str(year)[:3])
+    return year - year % DECADE

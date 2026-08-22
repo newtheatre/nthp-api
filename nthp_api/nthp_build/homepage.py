@@ -5,7 +5,7 @@ import datetime
 import logging
 from collections import defaultdict
 
-from nthp_api.nthp_build import database, schema, shows
+from nthp_api.nthp_build import assets, database, schema, shows
 from nthp_api.nthp_build.fields import FuzzyDate
 
 log = logging.getLogger(__name__)
@@ -75,7 +75,7 @@ def get_on_this_day_show(
         title=show_inst.title,
         year_id=show_inst.year_id,
         year=show_inst.year,
-        primary_image=show_inst.primary_image,
+        primary_image=assets.get_image_ref(show_inst.primary_image),
         date_start=date_start,
         date_end=date_end,
     )
@@ -99,10 +99,11 @@ def get_poster_items() -> list[schema.PosterItem]:
     """Every show with a primary image, in the archive's canonical show order."""
     return [
         schema.PosterItem(
-            show_id=show_inst.id,
-            show_title=show_inst.title,
+            id=show_inst.id,
+            title=show_inst.title,
             year_id=show_inst.year_id,
-            image_id=show_inst.primary_image,
+            year=show_inst.year,
+            primary_image=assets.get_image_ref(show_inst.primary_image),
         )
         for show_inst in shows.get_show_query().where(
             database.Show.primary_image.is_null(False)

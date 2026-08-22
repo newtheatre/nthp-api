@@ -244,7 +244,7 @@ class TestShowIndex:
                 "seasonId": "studio",
                 "venue": {"id": "new-theatre", "name": "New Theatre"},
                 "dateStart": "2001-02-03",
-                "primaryImage": "XYZ",
+                "primaryImage": {"id": "XYZ"},
                 "playwrightDescriptor": "by William Shakespeare",
             }
         ]
@@ -271,7 +271,9 @@ class TestShowSequence:
         assert read_json(show_dir / "1999-00" / "one.json")["next"] == {
             "id": "1999-00/two",
             "title": "Two",
-            "primaryImage": "XYZ",
+            "yearId": "1999-00",
+            "year": 1999,
+            "primaryImage": {"id": "XYZ"},
         }
 
 
@@ -501,7 +503,9 @@ class TestShowTrivia:
         show_detail = shows.get_show_detail(database.Show.get_by_id("1999-00/show"))
         assert len(show_detail.trivia) == 1
         assert show_detail.trivia[0].quote == "A quote"
-        assert show_detail.trivia[0].person_id == "fred_bloggs"
+        assert show_detail.trivia[0].person is not None
+        assert show_detail.trivia[0].person.id == "fred_bloggs"
+        assert show_detail.trivia[0].person.title == "Fred Bloggs"
 
     def test_trivia_targeted_at_another_show_is_not_embedded(self, test_db):
         make_show("show")

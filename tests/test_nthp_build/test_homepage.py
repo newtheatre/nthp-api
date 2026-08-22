@@ -144,7 +144,7 @@ class TestDumpOnThisDay:
                 "title": "The Gut Girls",
                 "yearId": "2011-12",
                 "year": 2011,
-                "primaryImage": "abc12",
+                "primaryImage": {"id": "abc12"},
                 "dateStart": "2012-02-29",
                 "dateEnd": "2012-03-03",
             }
@@ -163,14 +163,12 @@ class TestPosters:
     def test_only_shows_with_an_image(self, test_db):
         make_show("macbeth", primary_image="abc12")
         make_show("hamlet")
-        assert [item.show_id for item in homepage.get_poster_items()] == [
-            "1999-00/macbeth"
-        ]
+        assert [item.id for item in homepage.get_poster_items()] == ["1999-00/macbeth"]
 
     def test_canonical_show_order(self, test_db):
         make_show("later", year=2001, primary_image="def34")
         make_show("earlier", year=1999, primary_image="abc12")
-        assert [item.show_id for item in homepage.get_poster_items()] == [
+        assert [item.id for item in homepage.get_poster_items()] == [
             "1999-00/earlier",
             "2001-02/later",
         ]
@@ -180,10 +178,11 @@ class TestPosters:
         dumper.dump_posters(state=DumperSharedState(search_documents=[]))
         assert read_json(output_dir / "assets" / "posters.json") == [
             {
-                "showId": "1999-00/macbeth",
-                "showTitle": "Macbeth",
+                "id": "1999-00/macbeth",
+                "title": "Macbeth",
                 "yearId": "1999-00",
-                "imageId": "abc12",
+                "year": 1999,
+                "primaryImage": {"id": "abc12"},
             }
         ]
 
@@ -206,7 +205,7 @@ class TestSiteStats:
         return read_json(output_dir / "index.json")
 
     def test_shows_with_image_count(self, stats: dict):
-        assert stats["showsWithImageCount"] == 1
+        assert stats["showWithImageCount"] == 1
 
     def test_person_with_headshot_count(self, stats: dict):
         assert stats["personWithHeadshotCount"] == 1
@@ -243,7 +242,7 @@ class TestSpec:
             "yearCount",
             "firstYearId",
             "latestYearId",
-            "showsWithImageCount",
+            "showWithImageCount",
             "personWithHeadshotCount",
         } <= set(properties)
 

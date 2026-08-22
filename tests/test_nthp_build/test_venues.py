@@ -256,10 +256,10 @@ class TestDumpVenues:
             "youtube": (False, True),
         }
 
-    def test_index_carries_venue_sort(self, populated_db, output_dir: Path):
+    def test_index_carries_the_venue_group(self, populated_db, output_dir: Path):
         index = read_json(dump_venues(output_dir) / "index.json")
         c_soco = next(venue for venue in index if venue["id"] == "c-soco")
-        assert c_soco["venueSort"] == "C venues"
+        assert c_soco["group"] == "C venues"
 
     def test_stub_detail_carries_shows_and_no_details(
         self, populated_db, output_dir: Path
@@ -298,7 +298,7 @@ class TestVenueSpec:
     def test_models_carry_stub_fields(self):
         for model in ("VenueList", "VenueDetail"):
             properties = spec.SPEC["components"]["schemas"][model]["properties"]
-            assert {"hasRecord", "sentinel", "venueSort"} <= set(properties), model
+            assert {"hasRecord", "sentinel", "group"} <= set(properties), model
 
     def test_detail_carries_assets(self):
         assert (
