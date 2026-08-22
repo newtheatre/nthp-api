@@ -165,8 +165,9 @@ def load_person(path: DocumentPath, document: frontmatter.Post, data: models.Per
         if isinstance(document.metadata.get(field), str):
             validate.record_finding(
                 validate.SCALAR_LIST_FIELD_CHECK,
-                f"{field} is a bare value, not a list",
+                field,
                 str(path.content_path),
+                "authored as a bare value, not a list",
             )
     try:
         database.Person.create(

@@ -223,7 +223,7 @@ class TestCrewRoles:
         """Expected and long-tail, so `nthp lint` reports it, not the build."""
         findings = validate.check_crew_role_definitions()
         assert len(findings) == 1
-        assert "Bagpiper" in findings[0].message
+        assert findings[0].value == "Bagpiper"
 
 
 class TestPersonRefs:

@@ -35,24 +35,53 @@ def load(path):
 
 
 @click.option(
-    "--examples",
-    type=int,
-    default=3,
-    show_default=True,
-    help="How many findings to list under each check.",
+    "--check",
+    "check_names",
+    multiple=True,
+    help="Run only these checks, by name; repeatable.",
+)
+@click.option(
+    "--verbose", "-v", is_flag=True, help="List every finding, not just the first few."
+)
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["rich", "plain"]),
+    default=None,
+    help="Output style. Defaults to plain when not writing to a terminal.",
 )
 @click.argument("path", type=click.Path(exists=True))
 @cli.command()
-def lint(path, examples):
-    """Report the expected and the advisory in the content: never fails."""
+def lint(path, check_names, verbose, output_format):
+    """Report the content's rough edges. Never fails."""
     environ["DB_URI"] = ":memory:"
     environ["CONTENT_ROOT"] = str(path)
 
+    from nthp_api.cli import lint_report
     from nthp_api.nthp_build import database, loader, validate
+
+    unknown = [name for name in check_names if name not in validate.CHECKS_BY_NAME]
+    if unknown:
+        raise click.BadParameter(
+            f"unknown check(s) {', '.join(unknown)}; "
+            f"choose from {', '.join(validate.LINT_CHECK_NAMES)}",
+            param_hint="--check",
+        )
 
     database.init_db(create=True)
     loader.run_loaders()
-    print(validate.format_lint_report(validate.run_lint_checks(), examples))  # noqa: T201
+
+    console = lint_report.make_console(plain=output_format == "plain")
+    plain = output_format == "plain" or (
+        output_format is None and not console.is_terminal
+    )
+    console = lint_report.make_console(plain=plain)
+    lint_report.render_report(
+        console,
+        validate.run_lint_checks(check_names or None),
+        verbose=verbose,
+        plain=plain,
+    )
 
 
 @cli.command()

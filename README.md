@@ -34,13 +34,25 @@ Alternatively you can run `nthp build` to run both steps in one go.
 ## Linting the content
 
 `nthp lint <path>` loads the content into an in-memory database and reports what
-the archive tolerates but a maintainer might want to fix: venues referenced
-without a document, credits with no name, near-duplicate person ids, roles and
-link types matching no definition, and so on. It counts every check and lists a
-few examples of each; use `--examples` to list more or fewer.
+the archive tolerates but an editor might want to fix: venues referenced without
+a document, credits with no name, people who may be one person twice, roles and
+link types matching no definition, and so on.
+
+The report is written for whoever edits the content, not for whoever wrote the
+generator. Each check gets a heading with its count, a line saying what the
+check means and how to fix it, and a table of what it found — the file to open,
+the value at fault, and what it costs. A summary table closes the report, with
+each check coloured by severity: amber for what is worth fixing, cyan for the
+merely advisory.
+
+| Option           | What it does                                                          |
+| ---------------- | --------------------------------------------------------------------- |
+| `--check NAME`   | Run one check; repeat the option for several. Names are in the report |
+| `--verbose`      | List every finding, rather than the first few                         |
+| `--format plain` | No colour and no boxes, for a CI log; the default when not a terminal |
 
 Linting never fails: these are expectations, not defects. Defects are reported
-as errors by `nthp load` and `nthp build` instead.
+as errors by `nthp load` and `nthp build` instead, in the plain logging both use.
 
 ## Contributing
 

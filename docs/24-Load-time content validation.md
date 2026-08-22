@@ -140,7 +140,16 @@ takes a score out of a total and checks the score against it.
 
 ### 4. `nthp lint`
 
-`nthp lint <path>` loads into an in-memory database and reports the lint list;
+`nthp lint <path>` loads into an in-memory database and reports the lint list
+through `rich`, in `cli/lint_report.py`: a heading per check with its count, a
+line on what the check means and how to fix it, a table of file, value and cost,
+and a closing summary table coloured by severity (amber worth fixing, cyan
+advisory). `--check NAME` runs one, `--verbose` lists every finding rather than
+the first dozen, and `--format plain` drops colour and boxes, as does any
+non-terminal. A check whose findings repeat the same value — `course` fifty
+times over — collapses to value and count instead of one row per document. Build
+logging is untouched: plain logging, as before.
+
 638 findings, none of them failures:
 
 | Check                     | Findings |

@@ -14,6 +14,8 @@ venue: The Zoo
 crew:
   - role: Director
     name: Fred Bloggs
+  - role: Bagpiper
+    name: Alice Froggs
 ---
 About the show.
 """
@@ -55,23 +57,45 @@ def run_lint(content_root: Path, *args: str):
 
 
 class TestLint:
-    def test_lint_reports_every_check(self, content_root: Path):
+    def test_every_check_gets_a_heading_and_an_explanation(self, content_root: Path):
         result = run_lint(content_root)
         assert result.exit_code == 0
-        assert "venues without a document" in result.output
-        assert "total" in result.output
+        assert "Venues with no document (1)  [venue-documents]" in result.output
+        assert "dumped as stubs" in result.output
 
-    def test_lint_reports_the_content_findings(self, content_root: Path):
+    def test_findings_name_the_document_and_the_value(self, content_root: Path):
         result = run_lint(content_root)
-        assert "_people/freddie_bloggs.md: course is a bare value" in result.output
-        assert "body is only an HTML comment" in result.output
-        assert "venue 'the-zoo' has no document (1 shows)" in result.output
-        assert "outside the known set" in result.output
+        assert "_people/freddie_bloggs.md" in result.output
+        assert "course" in result.output
+        assert "the-zoo" in result.output
+
+    def test_a_check_with_nothing_to_report_says_so(self, content_root: Path):
+        assert "Nothing to report." in run_lint(content_root).output
+
+    def test_summary_table_counts_every_check(self, content_root: Path):
+        result = run_lint(content_root)
+        assert "Summary" in result.output
+        assert "total" in result.output
+        assert "advisory" in result.output
+        assert "worth fixing" in result.output
 
     def test_lint_never_fails(self, content_root: Path):
         assert run_lint(content_root).exit_code == 0
 
-    def test_examples_option_limits_the_listing(self, content_root: Path):
-        result = run_lint(content_root, "--examples", "0")
-        assert "course is a bare value" not in result.output
-        assert "... and 1 more" in result.output
+    def test_check_option_runs_one_check(self, content_root: Path):
+        result = run_lint(content_root, "--check", "venue-documents")
+        assert "[venue-documents]" in result.output
+        assert "[crew-roles]" not in result.output
+
+    def test_an_unknown_check_is_rejected(self, content_root: Path):
+        result = run_lint(content_root, "--check", "nonsense")
+        assert result.exit_code != 0
+        assert "unknown check" in result.output
+
+    def test_plain_format_has_no_colour(self, content_root: Path):
+        result = run_lint(content_root, "--format", "plain")
+        assert "\x1b[" not in result.output
+
+    def test_verbose_lists_every_finding(self, content_root: Path):
+        result = run_lint(content_root, "--check", "crew-roles", "--verbose")
+        assert "more, run with --verbose" not in result.output

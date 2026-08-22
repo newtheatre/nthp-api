@@ -144,7 +144,8 @@ class LoadFinding(NthpDbModel):
 
     check = peewee.CharField(index=True)
     source_path = peewee.CharField()
-    message = peewee.TextField()
+    value = peewee.CharField()
+    hint = peewee.TextField()
 
 
 class Asset(NthpDbModel):

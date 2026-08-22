@@ -68,9 +68,10 @@ class TestVenueSpellings:
         make_show("1999-00/two", venue="The zoo", venue_id="the-zoo")
         findings = validate.check_venue_spellings()
         assert len(findings) == 1
-        assert "'The Zoo'" in findings[0].message
-        assert "'The zoo'" in findings[0].message
-        assert "_shows/1999-00/one.md" in findings[0].message
+        assert findings[0].value == "the-zoo"
+        assert "'The Zoo'" in findings[0].hint
+        assert "'The zoo'" in findings[0].hint
+        assert "_shows/1999-00/one.md" in findings[0].hint
 
 
 class TestAwardGraduation:
@@ -114,14 +115,14 @@ class TestDuplicateIds:
         self.make_playwright_show("Mojo", "Jez Butterworth", "2021-22/mojo")
         findings = validate.check_play_ids()
         assert len(findings) == 1
-        assert "'mojo'" in findings[0].message
+        assert findings[0].value == "mojo"
 
     def test_two_playwright_names_behind_one_id(self, test_db):
         self.make_playwright_show("Blood Wedding", "Federico Garcia Lorca", "a")
         self.make_playwright_show("Yerma", "Federico García Lorca", "b")
         findings = validate.check_playwright_ids()
         assert len(findings) == 1
-        assert "'federico_garcia_lorca'" in findings[0].message
+        assert findings[0].value == "federico_garcia_lorca"
 
 
 class TestPersonNameCollisions:
@@ -135,7 +136,8 @@ class TestPersonNameCollisions:
         make_role(person_name="Freddie Bloggs", target_id="1999-00/other")
         findings = validate.check_person_name_collisions()
         assert len(findings) == 1
-        assert "Freddie Bloggs" in findings[0].message
+        assert findings[0].value == "fred_bloggs"
+        assert "Freddie Bloggs" in findings[0].hint
 
     def test_two_names_with_a_document_are_settled(self, test_db):
         make_person()
@@ -205,14 +207,14 @@ class TestGraduationPlausibility:
         make_role(target_year=1999)
         findings = validate.check_graduation_plausible()
         assert len(findings) == 1
-        assert "before their first credit" in findings[0].message
+        assert "before their first credit" in findings[0].hint
 
     def test_graduated_long_after_the_last_credit(self, test_db):
         make_person(graduated=2020)
         make_role(target_year=1999)
         findings = validate.check_graduation_plausible()
         assert len(findings) == 1
-        assert "after their last credit" in findings[0].message
+        assert "after their last credit" in findings[0].hint
 
     def test_without_credits_there_is_nothing_to_compare(self, test_db):
         make_person(graduated=1990)
@@ -263,7 +265,7 @@ class TestImageCategories:
         self.make_image("banner")
         findings = validate.check_asset_categories()
         assert len(findings) == 1
-        assert "'banner'" in findings[0].message
+        assert findings[0].value == "banner"
 
 
 class TestVenueSort:
@@ -292,7 +294,7 @@ class TestNearDuplicatePersonIds:
         make_person("joseph_bloggs")
         findings = validate.check_near_duplicate_person_ids()
         assert len(findings) == 1
-        assert "'joe_bloggs'" in findings[0].message
+        assert findings[0].value == "joe_bloggs / joseph_bloggs"
 
 
 class TestShowSeasons:
@@ -315,7 +317,7 @@ class TestVenueDocuments:
         make_show(venue="The Zoo", venue_id="the-zoo")
         findings = validate.check_venue_documents()
         assert len(findings) == 1
-        assert "'the-zoo'" in findings[0].message
+        assert findings[0].value == "the-zoo"
 
     def test_a_sentinel_venue_needs_no_document(self, test_db):
         make_show(venue="Unknown", venue_id="unknown")
@@ -349,7 +351,7 @@ class TestRunBuildChecks:
         make_person(award="Fellowship")
         with caplog.at_level(logging.ERROR):
             assert validate.run_build_checks() == 1
-        assert "award graduation" in caplog.text
+        assert "award-graduation" in caplog.text
         assert caplog.records[0].levelname == "ERROR"
 
     def test_a_clean_build_reports_nothing(
@@ -361,16 +363,14 @@ class TestRunBuildChecks:
         assert not caplog.records
 
 
-class TestLintReport:
-    def test_report_counts_and_examples(self, test_db):
-        make_show(season_id=None)
-        report = validate.format_lint_report(validate.run_lint_checks(), examples=1)
-        assert "1  show seasons" in report
-        assert "_shows/1999-00/a_show.md" in report
-        assert "1  total" in report
+class TestLintChecks:
+    def test_every_check_runs(self, test_db):
+        results = validate.run_lint_checks()
+        assert len(results) == len(validate.LINT_CHECKS)
+        assert all(findings == [] for findings in results.values())
 
-    def test_report_truncates_the_examples(self, test_db):
-        for index in range(5):
-            make_show(show_id=f"1999-00/show_{index}", season_id=None)
-        report = validate.format_lint_report(validate.run_lint_checks(), examples=2)
-        assert "... and 3 more" in report
+    def test_a_named_check_runs_alone(self, test_db):
+        make_show(season_id=None)
+        results = validate.run_lint_checks(["show-seasons"])
+        assert [check.name for check in results] == ["show-seasons"]
+        assert len(results[validate.CHECKS_BY_NAME["show-seasons"]]) == 1
