@@ -20,6 +20,7 @@ from nthp_api.nthp_build import (
     roles,
     schema,
     search,
+    seasons,
     shows,
     spec,
     trivia,
@@ -134,6 +135,29 @@ def dump_years(state: DumperSharedState):
     ]
 
     dump_year_index(years_detail)
+
+
+def dump_season(
+    definition: seasons.SeasonDefinition, season_shows: list[database.Show]
+) -> schema.SeasonList:
+    path = make_out_path(Path("seasons"), seasons.get_season_id(definition))
+    write_file(path, seasons.get_season_detail(definition, season_shows))
+    return seasons.get_season_list(definition, season_shows)
+
+
+def dump_season_index(season_lists: list[schema.SeasonList]):
+    path = make_out_path(Path("seasons"), "index")
+    write_file(path, schema.SeasonListCollection(season_lists))
+
+
+def dump_seasons(state: DumperSharedState):
+    season_lists = [
+        dump_season(
+            definition, seasons.get_season_shows(seasons.get_season_id(definition))
+        )
+        for definition in seasons.SEASON_DEFINITIONS
+    ]
+    dump_season_index(season_lists)
 
 
 def dump_venue(
@@ -413,6 +437,7 @@ DUMPERS: list[Dumper] = [
     Dumper("spec", dump_specs),
     Dumper("shows", dump_shows),
     Dumper("years", dump_years),
+    Dumper("seasons", dump_seasons),
     Dumper("venues", dump_venues),
     Dumper("real people", dump_real_people),
     Dumper("virtual people", dump_virtual_people),

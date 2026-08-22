@@ -31,6 +31,8 @@ PYDANTIC_JSON_SCHEMA = models_json_schema(
         schema.PlaywrightCollection,
         schema.RoleCollection,
         schema.SearchDocumentCollection,
+        schema.SeasonDetail,
+        schema.SeasonListCollection,
         schema.ShowDetail,
         schema.SiteStats,
         schema.TargetedTriviaCollection,
@@ -174,6 +176,23 @@ SPEC = {
             description="Shows are identified as `{yearId}/{slug}`, "
             "e.g. `2024-25/macbeth`.",
             model=schema.ShowDetail,
+            key="id",
+        ),
+        "/seasons/index.json": make_basic_get_operation(
+            operation_id="getSeasonList",
+            tags=["seasons"],
+            summary="Get list of seasons",
+            description="Every known season, including those with no shows.",
+            model=schema.SeasonListCollection,
+        ),
+        "/seasons/{id}.json": make_detail_get_operation(
+            operation_id="getSeasonDetail",
+            tags=["seasons"],
+            summary="Get season detail",
+            description="Details of a single season, including show list. Seasons "
+            "renamed over the years are merged into the current name, the old names "
+            "listed as aliases.",
+            model=schema.SeasonDetail,
             key="id",
         ),
         "/venues/index.json": make_basic_get_operation(

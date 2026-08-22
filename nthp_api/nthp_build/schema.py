@@ -109,6 +109,7 @@ class ShowDetail(NthpSchema):
     company: str | None = None
     period: str | None = None
     season: str
+    season_id: str | None = None
     venue: VenueShow | None = None
     date_start: FuzzyDate | None = None
     date_end: FuzzyDate | None = None
@@ -132,10 +133,38 @@ class ShowList(NthpSchema):
     adaptor: str | None = None
     devised: str | bool
     season: str | None = None
+    season_id: str | None = None
     venue: VenueShow | None = None
     date_start: FuzzyDate | None = None
     date_end: FuzzyDate | None = None
     primary_image: str | None = None
+
+
+class SeasonList(NthpSchema):
+    id: str = Field(
+        description="ID of the season, slugified from its canonical name",
+        json_schema_extra={"example": "in-house"},
+    )
+    name: str = Field(
+        description="Canonical name of the season",
+        json_schema_extra={"example": "In House"},
+    )
+    aliases: list[str] = Field(
+        description="Other names the season has been authored under",
+        json_schema_extra={"example": ["UNCUT"]},
+    )
+    show_count: int = Field(
+        description="Number of shows in the season",
+        json_schema_extra={"example": 42},
+    )
+
+
+class SeasonListCollection(BaseCollectionModel[SeasonList]):
+    pass
+
+
+class SeasonDetail(SeasonList):
+    shows: list[ShowList]
 
 
 class PlaywrightShowListItem(NthpSchema):
