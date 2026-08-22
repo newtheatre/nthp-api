@@ -21,6 +21,7 @@ PYDANTIC_JSON_SCHEMA = models_json_schema(
     make_models_json_schema_models(
         schema.AssetCollection,
         schema.HistoryRecordCollection,
+        schema.OnThisDayShowCollection,
         schema.PersonCollaboratorCollection,
         schema.PersonCommitteeRoleListCollection,
         schema.PersonDetail,
@@ -28,6 +29,7 @@ PYDANTIC_JSON_SCHEMA = models_json_schema(
         schema.PersonShowRoleListCollection,
         schema.PlayCollection,
         schema.PlaywrightCollection,
+        schema.PosterCollection,
         schema.RoleCollection,
         schema.RoleWithIdCollection,
         schema.SearchDocumentCollection,
@@ -292,6 +294,27 @@ SPEC = {
             summary="Get people if cast in any show",
             description="People are not duplicated. ",
             model=schema.PersonShowRoleListCollection,
+        ),
+        "/on-this-day/{date}.json": make_detail_get_operation(
+            operation_id="getOnThisDay",
+            tags=["shows"],
+            summary="Get shows running on a day of the year",
+            description="Days are identified as `MM-DD`, e.g. `11-13`; every day of "
+            "the year has a file, the leap day included, and days nothing was running "
+            "on hold an empty list. A show matches where the day falls within its run, "
+            "both ends included; shows dated only to the month or year are left out. "
+            "Shows are ordered by year.",
+            model=schema.OnThisDayShowCollection,
+            key="date",
+        ),
+        "/assets/posters.json": make_basic_get_operation(
+            operation_id="getPosters",
+            tags=["assets"],
+            summary="Get the poster pool",
+            description="Every show with a primary image, in the archive's canonical "
+            "show order. Consumers pick from the pool themselves; the API does not "
+            "shuffle it.",
+            model=schema.PosterCollection,
         ),
         "/assets/album/{id}.json": make_detail_get_operation(
             operation_id="getAlbumAssets",

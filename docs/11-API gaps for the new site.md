@@ -5,6 +5,9 @@ status: todo
 
 # API gaps for the new site — overview
 
+**Status (2026-08-22):** tasks 12–21 are all done; nothing in this overview is
+outstanding. The overview stays open as the map of what the new site needed.
+
 Source: `~/local/nthp-web-new/docs/30-Task-API-Gaps.md` (web doc 30). The new site does no site-side workarounds (nthp-web ADR-17), so everything here gates the site build. This doc reconciles web doc 30 with [03](03-Completeness%20review.md) and [01](01-Project%20plan.md) and splits the work into tasks 12–21.
 
 Paths in web doc 30 are stale: package is `nthp_api/nthp_build/`, not `nthp_build/`.
@@ -31,7 +34,7 @@ Suggested order (web doc §12): 13+12 → 14+15 → 16 → 17 → 18+19+21+14(pr
 - **Year ids** (§10): not in any API doc. Plan Phase 4 "Y2K39 fix" is only half of it — `get_year_from_year_id` still parses `YY_YY` source dirs and must keep the Y2K fix; output side switches to `YYYY-YY`.
 - **Trivia** (§5): 03 rates per-person trivia endpoints as "richer than Ruby"; web doc deletes them. Resolved in favour of embedding (one consumer, 120 items).
 - **`student` / `decade`**: 03 says "derivable client-side"; ADR-17 forbids that. API emits both.
-- **`buildTime`**: web doc §8/§9 proposes it; `SiteStats.build_time` already exists. Only `count` is new.
+- **`buildTime`**: web doc §8/§9 proposes it; `SiteStats.build_time` already exists. Only `searchDocumentCount` is new.
 - **Dropped by web doc but flagged in 03**: `playwright_alias`/`playwright_false` (produce _wrong_ crew lists — included in 16), `company_sort` (14), `redirect_from`, `tour`, key-event images, `href_snapshot`, `city_sort`, `seats.yaml`. See open questions.
 - **Roles source**: `_data/roles.yaml` is crew-only (31 roles, icons). Committee roles have no content-side definition; alias map must live in the API.
 - **Image dimensions** (§7): ~1500 `sizedetails` calls depends on [06 SmugMug reliability](06-SmugMug%20reliability.md) (retries, Actions cache key never updating). 06 becomes a dependency of 20.

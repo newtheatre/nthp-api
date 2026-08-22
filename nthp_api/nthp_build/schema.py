@@ -353,6 +353,48 @@ class ShowIndexCollection(BaseCollectionModel[ShowIndexItem]):
     pass
 
 
+class OnThisDayShow(NthpSchema):
+    """A show that was running on a given day of the year."""
+
+    id: str
+    title: str
+    year_id: str = Field(
+        description="ID of the academic year the show is in, in YYYY-YY form",
+        json_schema_extra={"example": "2024-25"},
+    )
+    year: int = Field(
+        description="Calendar year the academic year starts in",
+        json_schema_extra={"example": 2024},
+    )
+    primary_image: str | None = None
+    date_start: FuzzyDate = Field(
+        description="First day of the run, always to day precision"
+    )
+    date_end: FuzzyDate | None = Field(
+        default=None, description="Last day of the run, where the run spans more days"
+    )
+
+
+class OnThisDayShowCollection(BaseCollectionModel[OnThisDayShow]):
+    pass
+
+
+class PosterItem(NthpSchema):
+    """A show's primary image, for picking posters to display."""
+
+    show_id: str
+    show_title: str
+    year_id: str = Field(
+        description="ID of the academic year the show is in, in YYYY-YY form",
+        json_schema_extra={"example": "2024-25"},
+    )
+    image_id: str = Field(description="ID of the show's primary image")
+
+
+class PosterCollection(BaseCollectionModel[PosterItem]):
+    pass
+
+
 class SeasonList(NthpSchema):
     id: str = Field(
         description="ID of the season, slugified from its canonical name",
@@ -965,6 +1007,36 @@ class SiteStats(NthpSchema):
         title="Person with bio count",
         description="Number of people with bio records.",
         json_schema_extra={"example": 1234},
+    )
+    person_with_headshot_count: int = Field(
+        title="Person with headshot count",
+        description="Number of people with a headshot.",
+        json_schema_extra={"example": 1234},
+    )
+    shows_with_image_count: int = Field(
+        title="Shows with image count",
+        description="Number of shows with a primary image.",
+        json_schema_extra={"example": 1234},
+    )
+    venue_count: int = Field(
+        title="Venue Count",
+        description="Number of venues, documented or merely referenced by a show.",
+        json_schema_extra={"example": 1234},
+    )
+    year_count: int = Field(
+        title="Year Count",
+        description="Number of academic years covered by the archive.",
+        json_schema_extra={"example": 85},
+    )
+    first_year_id: str = Field(
+        title="First Year ID",
+        description="ID of the earliest academic year covered, in YYYY-YY form.",
+        json_schema_extra={"example": "1940-41"},
+    )
+    latest_year_id: str = Field(
+        title="Latest Year ID",
+        description="ID of the most recent academic year covered, in YYYY-YY form.",
+        json_schema_extra={"example": "2024-25"},
     )
     credit_count: int = Field(
         title="Credit Count",

@@ -14,6 +14,7 @@ from nthp_api.nthp_build import (
     assets,
     database,
     history,
+    homepage,
     models,
     parallel,
     people,
@@ -405,6 +406,23 @@ def dump_albums(state: DumperSharedState):
     [dump_album(album) for album in albums_query]
 
 
+def dump_on_this_day(state: DumperSharedState) -> None:
+    """Write a file per day of the year, the leap day included, empty ones and all."""
+    shows_by_day = homepage.get_shows_by_day_of_year()
+    for day_of_year in homepage.get_days_of_year():
+        write_file(
+            make_out_path(
+                Path("on-this-day"), homepage.get_day_of_year_id(day_of_year)
+            ),
+            schema.OnThisDayShowCollection(shows_by_day.get(day_of_year, [])),
+        )
+
+
+def dump_posters(state: DumperSharedState) -> None:
+    path = make_out_path(Path("assets"), "posters")
+    write_file(path, schema.PosterCollection(homepage.get_poster_items()))
+
+
 def dump_site_stats(state: DumperSharedState) -> None:
     path = make_out_path(Path(), "index")
     write_file(
@@ -415,9 +433,19 @@ def dump_site_stats(state: DumperSharedState) -> None:
             show_count=database.Show.select().count(),
             person_count=people.get_people_from_roles().count(),
             person_with_bio_count=database.Person.select().count(),
+            person_with_headshot_count=database.Person.select()
+            .where(database.Person.headshot.is_null(False))
+            .count(),
+            shows_with_image_count=database.Show.select()
+            .where(database.Show.primary_image.is_null(False))
+            .count(),
+            venue_count=len(venues.get_venue_records()),
             credit_count=database.PersonRole.select().count(),
             trivia_count=database.Trivia.select().count(),
             search_document_count=len(state.search_documents),
+            year_count=settings.year_end - settings.year_start,
+            first_year_id=years.get_public_year_id(settings.year_start),
+            latest_year_id=years.get_public_year_id(settings.year_end - 1),
         ),
     )
 
@@ -476,6 +504,8 @@ DUMPERS: list[Dumper] = [
     Dumper("plays", dump_plays),
     Dumper("history records", dump_history_records),
     Dumper("albums", dump_albums),
+    Dumper("on this day", dump_on_this_day),
+    Dumper("posters", dump_posters),
 ]
 
 # Run once the parallel dumpers have filled the shared state: the search corpus is
