@@ -11,6 +11,7 @@ from nthp_api.nthp_build.loader import (
     DocumentLoaderFunc,
     Loader,
     load_history,
+    load_show,
     load_venue,
     print_validation_error,
     run_data_loader,
@@ -142,6 +143,71 @@ def test_print_validation_error_with_real_error(
 
     assert any(
         "Validation error in some/path.md" in record.getMessage()
+        for record in caplog.records
+    )
+
+
+def test_run_document_loader_logs_error_when_show_ends_before_it_starts(
+    tmp_path: Path, _bound_db, caplog: pytest.LogCaptureFixture
+) -> None:
+    shows_dir = tmp_path / "_shows" / "06_07"
+    shows_dir.mkdir(parents=True)
+    (shows_dir / "house_of_bernada_alba.md").write_text(
+        "---\n"
+        "title: The House of Bernada Alba\n"
+        "season: Spring\n"
+        "date_start: 2007-03-20\n"
+        "date_end: 2007-03-13\n"
+        "---\n"
+        "Content.\n"
+    )
+
+    show_loader = Loader(
+        type=DocumentLoaderFunc,
+        path=Path("_shows"),
+        schema_type=models.Show,
+        func=load_show,
+    )
+
+    with caplog.at_level(logging.ERROR):
+        run_document_loader(show_loader)
+
+    assert database.Show.select().count() == 1
+    assert any(
+        "_shows/06_07/house_of_bernada_alba.md" in record.getMessage()
+        and "date_end" in record.getMessage()
+        and "before" in record.getMessage()
+        for record in caplog.records
+    )
+
+
+def test_load_show_does_not_log_when_dates_are_fuzzy_but_not_conflicting(
+    tmp_path: Path, _bound_db, caplog: pytest.LogCaptureFixture
+) -> None:
+    shows_dir = tmp_path / "_shows" / "06_07"
+    shows_dir.mkdir(parents=True)
+    (shows_dir / "some_show.md").write_text(
+        "---\n"
+        "title: Some Show\n"
+        "season: Spring\n"
+        "date_start: 2006-03\n"
+        "date_end: 2006\n"
+        "---\n"
+        "Content.\n"
+    )
+
+    show_loader = Loader(
+        type=DocumentLoaderFunc,
+        path=Path("_shows"),
+        schema_type=models.Show,
+        func=load_show,
+    )
+
+    with caplog.at_level(logging.ERROR):
+        run_document_loader(show_loader)
+
+    assert not any(
+        "before" in record.getMessage() and "date_end" in record.getMessage()
         for record in caplog.records
     )
 

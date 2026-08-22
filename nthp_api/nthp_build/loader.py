@@ -39,6 +39,15 @@ log = logging.getLogger(__name__)
 
 
 def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show):
+    if (
+        data.date_start is not None
+        and data.date_end is not None
+        and data.date_end.latest() < data.date_start.earliest()
+    ):
+        log.error(
+            f"{path.content_path}: date_end ({data.date_end}) is before"
+            f" date_start ({data.date_start})"
+        )
     # The student writer's crew credit is generated, so add it before anything is
     # stored: the show's crew list and the person's roles both take it from here.
     data = data.model_copy(
@@ -66,7 +75,7 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
         primary_image=primary_image,
         assets=schema.AssetCollection(show_assets).model_dump_json(),
         data=data.model_dump_json(),
-        content=markdown_to_html(document.content),
+        content=markdown_to_html(document.content, path.content_path),
         plaintext=markdown_to_plaintext(document.content),
     )
     assets.save_show_assets(show_id, show_assets)
@@ -123,7 +132,7 @@ def load_venue(path: DocumentPath, document: frontmatter.Post, data: models.Venu
         id=path.id,
         name=data.title,
         data=data.model_dump_json(),
-        content=markdown_to_html(document.content),
+        content=markdown_to_html(document.content, path.content_path),
         plaintext=markdown_to_plaintext(document.content),
     )
     assets.save_venue_assets(path, data)
@@ -137,7 +146,7 @@ def load_person(path: DocumentPath, document: frontmatter.Post, data: models.Per
             graduated=data.graduated,
             headshot=data.headshot,
             data=data.model_dump_json(),
-            content=markdown_to_html(document.content),
+            content=markdown_to_html(document.content, path.content_path),
             plaintext=markdown_to_plaintext(document.content),
         )
     except peewee.IntegrityError:
@@ -154,7 +163,7 @@ def load_history(path: DocumentPath, data: models.HistoryRecordCollection):
             year=record.year,
             academic_year=record.academic_year,
             title=record.title,
-            description=markdown_to_html(record.description),
+            description=markdown_to_html(record.description, path.content_path),
             image_href=record.image.href if record.image else None,
             image_alt=record.image.alt if record.image else None,
         )
