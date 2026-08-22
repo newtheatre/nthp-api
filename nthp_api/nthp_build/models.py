@@ -1,5 +1,6 @@
 """The models for ingesting data"""
 
+import re
 from enum import StrEnum
 
 from pydantic import (
@@ -26,6 +27,12 @@ class NthpModel(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
 
+ALLOWED_URL_SCHEMES = frozenset({"http", "https", "mailto"})
+
+RATING_PATTERN = re.compile(r"^(?P<score>\d+(\.\d+)?)\s*(/\s*(?P<outof>\d+))?$")
+DEFAULT_RATING_OUT_OF = 5
+
+
 class Link(NthpModel):
     type: str
     href: str | None = None
@@ -41,6 +48,48 @@ class Link(NthpModel):
     quote: PermissiveStr | None = None
     note: PermissiveStr | None = None
     comment: PermissiveStr | None = None
+
+    @field_validator("href")
+    @classmethod
+    def require_allowed_url_scheme(cls, value: str | None) -> str | None:
+        """
+        Consumers put these straight in an `href`, so a `javascript:` URL from
+        authored content is the same class of problem as a script tag in a body.
+        """
+        if value is None:
+            return None
+        scheme, separator, _rest = value.partition(":")
+        if not separator or "/" in scheme or scheme == "":
+            return value  # Relative URL, no scheme to check
+        if scheme.lower() not in ALLOWED_URL_SCHEMES:
+            raise ValueError(f"Disallowed URL scheme {scheme!r}")
+        return value
+
+    @field_validator("rating", mode="before")
+    @classmethod
+    def require_rating_in_range(cls, value: object) -> object:
+        """
+        Ratings are authored as a score out of a total, e.g. `4/5` or `8/10`.
+
+        A bare score is read as out of five, as the archive's own star ratings are.
+        """
+        if value is None:
+            return None
+        if isinstance(value, int | float):
+            value = str(value)
+        if not isinstance(value, str):
+            raise ValueError(f"Rating {value!r} is not a score")  # noqa: TRY004
+        if not value.strip():
+            return None
+        match = RATING_PATTERN.match(value.strip())
+        if match is None:
+            raise ValueError(f"Rating {value!r} is not a score or a score out of one")
+        out_of = (
+            int(match["outof"]) if match["outof"] is not None else DEFAULT_RATING_OUT_OF
+        )
+        if not 0 <= float(match["score"]) <= out_of:
+            raise ValueError(f"Rating {value!r} is outside 0 to {out_of}")
+        return value
 
 
 class Award(StrEnum):

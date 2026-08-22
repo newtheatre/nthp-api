@@ -2,6 +2,7 @@
 
 import functools
 import logging
+from pathlib import Path
 
 from nthp_api.nthp_build import database, models, schema
 
@@ -9,25 +10,41 @@ log = logging.getLogger(__name__)
 
 SNAPSHOT_BASE = "https://archive.is"
 USERNAME_PLACEHOLDER = "???"
-ALLOWED_URL_SCHEMES = frozenset({"http", "https", "mailto"})
 
 
-def validate_href(href: str | None, context: str) -> str | None:
+def validate_href(href: str | None) -> str | None:
     """
     Drop a URL with a scheme beyond the allow-list.
 
-    Consumers put these straight in an `href`, so a `javascript:` URL from authored
-    content is the same class of problem as a script tag in a body.
+    `models.Link` rejects these at load time, with the path of the document that
+    carries them, so nothing is logged here.
     """
     if href is None:
         return None
     scheme, separator, _rest = href.partition(":")
     if not separator or "/" in scheme or scheme == "":
         return href  # Relative URL, no scheme to check
-    if scheme.lower() in ALLOWED_URL_SCHEMES:
+    if scheme.lower() in models.ALLOWED_URL_SCHEMES:
         return href
-    log.error(f"Link {context} has a disallowed URL scheme {scheme!r}, dropping href")
     return None
+
+
+def check_links(links: list[models.Link], content_path: Path) -> None:
+    """
+    Report links the definitions cannot resolve, as the document is loaded.
+
+    A type that templates a username needs one to make an href at all, so a link
+    without one resolves to whatever bare href it carries, if any.
+    """
+    for link in links:
+        definition = get_link_type_definition(link.type)
+        if definition is None or definition.href is None:
+            continue
+        if link.username is None:
+            log.error(
+                f"{content_path}: link of type {link.type!r} has no username, "
+                f"though the type templates one"
+            )
 
 
 def save_link_type_definitions(
@@ -74,19 +91,14 @@ def get_link_href(
     """
     Resolve the link's URL, filling in a username where the type templates one.
 
-    A type with a template and no username is a content error; the authored href,
-    if any, stands in.
+    A type with a template and no username is a content error, reported at load
+    time by `check_links`; the authored href, if any, stands in.
     """
-    if definition is not None and definition.href is not None:
-        if link.username is not None:
-            return validate_href(
-                definition.href.replace(USERNAME_PLACEHOLDER, link.username),
-                f"of type {link.type!r}",
-            )
-        log.warning(
-            f"Link of type {link.type!r} has no username, though the type templates one"
+    if definition is not None and definition.href is not None and link.username:
+        return validate_href(
+            definition.href.replace(USERNAME_PLACEHOLDER, link.username)
         )
-    return validate_href(link.href, f"of type {link.type!r}")
+    return validate_href(link.href)
 
 
 def get_link_href_snapshot(link: models.Link) -> str | None:

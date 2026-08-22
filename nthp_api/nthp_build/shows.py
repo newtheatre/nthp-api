@@ -1,5 +1,6 @@
 import json
 import logging
+from pathlib import Path
 
 import peewee
 
@@ -127,20 +128,61 @@ def get_student_playwright_credit(show: models.Show) -> models.PersonRef | None:
         writer, role = show.translator, "Translator"
     else:
         writer, role = show.playwright, "Playwright"
-    if any(separator in writer for separator in MULTIPLE_WRITER_SEPARATORS):
+    if has_multiple_writers(writer):
         return None
     return models.PersonRef(role=role, name=show.playwright_alias or writer)
 
 
-def get_crew_with_student_playwright(show: models.Show) -> list[models.PersonRef]:
+def get_crew_with_student_playwright(
+    show: models.Show, content_path: Path
+) -> list[models.PersonRef]:
     """The crew list with the student writer credited at the top of it."""
     credit = get_student_playwright_credit(show)
     if credit is None:
         return show.crew
     if any(person_ref.role == credit.role for person_ref in show.crew):
-        log.warning(f"{show.title} credits its student {credit.role.lower()} by hand")
+        log.warning(
+            f"{content_path}: credits its student {credit.role.lower()} by hand"
+        )
         return show.crew
     return [credit, *show.crew]
+
+
+def has_multiple_writers(name: str) -> bool:
+    return any(separator in name for separator in MULTIPLE_WRITER_SEPARATORS)
+
+
+def get_show_defects(show: models.Show) -> list[str]:
+    """
+    Authoring that the output silently drops, as reported at load time.
+
+    Each defect costs the show a credit, a person page or an index entry, so each
+    is worth fixing in the content repo.
+    """
+    defects = []
+    if (show.devised or show.improvised) and show.playwright is not None:
+        defects.append(
+            f"playwright {show.playwright!r} is dropped, as the show is "
+            f"{'devised' if show.devised else 'improvised'}"
+        )
+    if (
+        show.student_written
+        and show.playwright is not None
+        and has_multiple_writers(show.playwright)
+    ):
+        defects.append(
+            f"student writer {show.playwright!r} names several people, so none of "
+            f"them takes a crew credit or a person page"
+        )
+    if (
+        show.playwright_alias is not None
+        and get_student_playwright_credit(show) is None
+    ):
+        defects.append(
+            f"playwright_alias {show.playwright_alias!r} is inert, as the show "
+            f"generates no student writing credit"
+        )
+    return defects
 
 
 def get_show_roles(person_refs: list[models.PersonRef]) -> list[schema.PersonCredit]:

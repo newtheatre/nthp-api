@@ -38,7 +38,8 @@ from nthp_api.nthp_build.fields import FuzzyDate
 log = logging.getLogger(__name__)
 
 
-def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show):
+def check_show(path: DocumentPath, data: models.Show, year: int) -> None:
+    """Report authoring that costs the show part of its output."""
     if (
         data.date_start is not None
         and data.date_end is not None
@@ -48,13 +49,27 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
             f"{path.content_path}: date_end ({data.date_end}) is before"
             f" date_start ({data.date_start})"
         )
+    if data.date_start is not None and not years.check_date_in_year(
+        data.date_start, year
+    ):
+        log.error(
+            f"{path.content_path}: date_start ({data.date_start}) is outside the "
+            f"academic year {years.get_public_year_id(year)} it is filed under"
+        )
+    for defect in shows.get_show_defects(data):
+        log.error(f"{path.content_path}: {defect}")
+    links.check_links(data.links, path.content_path)
+
+
+def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show):
+    year = years.get_year_from_source_year_id(
+        years.get_source_year_id_from_show_path(path)
+    )
+    check_show(path, data, year)
     # The student writer's crew credit is generated, so add it before anything is
     # stored: the show's crew list and the person's roles both take it from here.
     data = data.model_copy(
-        update={"crew": shows.get_crew_with_student_playwright(data)}
-    )
-    year = years.get_year_from_source_year_id(
-        years.get_source_year_id_from_show_path(path)
+        update={"crew": shows.get_crew_with_student_playwright(data, path.content_path)}
     )
     show_id = years.get_public_show_id(year, path.basename)
     primary_image = assets.pick_show_primary_image(data.assets) if data.assets else None
@@ -128,6 +143,7 @@ def load_committee(
 
 
 def load_venue(path: DocumentPath, document: frontmatter.Post, data: models.Venue):
+    links.check_links(data.links, path.content_path)
     database.Venue.create(
         id=path.id,
         name=data.title,
@@ -139,6 +155,7 @@ def load_venue(path: DocumentPath, document: frontmatter.Post, data: models.Venu
 
 
 def load_person(path: DocumentPath, document: frontmatter.Post, data: models.Person):
+    links.check_links([*data.links, *data.news], path.content_path)
     try:
         database.Person.create(
             id=data.id,
@@ -203,6 +220,25 @@ class Loader(NamedTuple):
 
 
 LOADERS: list[Loader] = [
+    # The `_data` definitions load first, so document checks can consult them.
+    Loader(
+        type=DataLoaderFunc,
+        path=Path("_data/roles.yaml"),
+        schema_type=models.CrewRoleDefinitionCollection,
+        func=load_crew_role_definitions,
+    ),
+    Loader(
+        type=DataLoaderFunc,
+        path=Path("_data/link-types.yaml"),
+        schema_type=models.LinkTypeDefinitionCollection,
+        func=load_link_type_definitions,
+    ),
+    Loader(
+        type=DataLoaderFunc,
+        path=Path("_data/history.yaml"),
+        schema_type=models.HistoryRecordCollection,
+        func=load_history,
+    ),
     Loader(
         type=DocumentLoaderFunc,
         path=Path("_shows"),
@@ -226,24 +262,6 @@ LOADERS: list[Loader] = [
         path=Path("_people"),
         schema_type=models.Person,
         func=load_person,
-    ),
-    Loader(
-        type=DataLoaderFunc,
-        path=Path("_data/roles.yaml"),
-        schema_type=models.CrewRoleDefinitionCollection,
-        func=load_crew_role_definitions,
-    ),
-    Loader(
-        type=DataLoaderFunc,
-        path=Path("_data/link-types.yaml"),
-        schema_type=models.LinkTypeDefinitionCollection,
-        func=load_link_type_definitions,
-    ),
-    Loader(
-        type=DataLoaderFunc,
-        path=Path("_data/history.yaml"),
-        schema_type=models.HistoryRecordCollection,
-        func=load_history,
     ),
 ]
 

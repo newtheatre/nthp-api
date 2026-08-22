@@ -4,6 +4,7 @@ import pytest
 
 from nthp_api.nthp_build import years
 from nthp_api.nthp_build.documents import DocumentPath
+from nthp_api.nthp_build.fields import FuzzyDate
 
 
 @pytest.mark.parametrize(
@@ -72,3 +73,23 @@ def test_get_year_title(input: int, expected: str):
 )
 def test_get_year_decade(input: int, expected: int):
     assert years.get_year_decade(input) == expected
+
+
+class TestCheckDateInYear:
+    @pytest.mark.parametrize(
+        "date",
+        [
+            FuzzyDate(2006, 9, 1),
+            FuzzyDate(2007, 8, 31),
+            FuzzyDate(2006),
+            FuzzyDate(2007),
+        ],
+    )
+    def test_dates_within_the_year(self, date: FuzzyDate):
+        assert years.check_date_in_year(date, 2006)
+
+    @pytest.mark.parametrize(
+        "date", [FuzzyDate(2006, 8, 31), FuzzyDate(2007, 9, 1), FuzzyDate(2005)]
+    )
+    def test_dates_outside_the_year(self, date: FuzzyDate):
+        assert not years.check_date_in_year(date, 2006)

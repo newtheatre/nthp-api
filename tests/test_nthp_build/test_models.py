@@ -224,3 +224,17 @@ class TestAliasKeys:
 
     def test_tour_notes_alias_drops_the_authored_key(self):
         assert models.TourDate(venue="A Venue", notes="One night").note == "One night"
+
+
+class TestLinkRating:
+    @pytest.mark.parametrize("rating", ["4/5", "8/10", "4.5/5", "5", "10/10"])
+    def test_ratings_in_range(self, rating: str):
+        assert models.Link(type="review", rating=rating).rating == rating
+
+    @pytest.mark.parametrize("rating", ["6/5", "11/10", "6", "four stars", "-1/5"])
+    def test_ratings_out_of_range(self, rating: str):
+        with pytest.raises(ValidationError):
+            models.Link(type="review", rating=rating)
+
+    def test_blank_rating_is_none(self):
+        assert models.Link(type="review", rating=" ").rating is None

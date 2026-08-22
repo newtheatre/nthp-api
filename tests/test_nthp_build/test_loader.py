@@ -233,3 +233,77 @@ def test_history_record_image_loaded_and_output(tmp_path: Path, _bound_db) -> No
         href="https://example.com/image.jpg", alt="Old auditorium"
     )
     assert records[1].image is None
+
+
+def test_run_document_loader_logs_error_when_date_is_outside_the_folder_year(
+    tmp_path: Path, _bound_db, caplog: pytest.LogCaptureFixture
+) -> None:
+    shows_dir = tmp_path / "_shows" / "06_07"
+    shows_dir.mkdir(parents=True)
+    (shows_dir / "a_show.md").write_text(
+        "---\ntitle: A Show\nseason: Spring\ndate_start: 2009-03-20\n---\nContent.\n"
+    )
+
+    with caplog.at_level(logging.ERROR):
+        run_document_loader(
+            Loader(
+                type=DocumentLoaderFunc,
+                path=Path("_shows"),
+                schema_type=models.Show,
+                func=load_show,
+            )
+        )
+
+    assert database.Show.select().count() == 1
+    assert any(
+        "_shows/06_07/a_show.md" in record.getMessage()
+        and "outside the academic year 2006-07" in record.getMessage()
+        for record in caplog.records
+    )
+
+
+def test_run_document_loader_logs_show_defects(
+    tmp_path: Path, _bound_db, caplog: pytest.LogCaptureFixture
+) -> None:
+    shows_dir = tmp_path / "_shows" / "06_07"
+    shows_dir.mkdir(parents=True)
+    (shows_dir / "a_show.md").write_text(
+        "---\n"
+        "title: A Show\n"
+        "season: Spring\n"
+        "playwright: Fred Bloggs\n"
+        "devised: true\n"
+        "---\n"
+        "Content.\n"
+    )
+
+    with caplog.at_level(logging.ERROR):
+        run_document_loader(
+            Loader(
+                type=DocumentLoaderFunc,
+                path=Path("_shows"),
+                schema_type=models.Show,
+                func=load_show,
+            )
+        )
+
+    assert any(
+        "_shows/06_07/a_show.md" in record.getMessage()
+        and "is dropped" in record.getMessage()
+        for record in caplog.records
+    )
+
+
+def test_data_loaders_run_before_documents() -> None:
+    """Document checks consult the `_data` definitions, so those load first."""
+    from nthp_api.nthp_build.loader import LOADERS
+
+    data_loader_indexes = [
+        index for index, loader in enumerate(LOADERS) if loader.type is DataLoaderFunc
+    ]
+    document_loader_indexes = [
+        index
+        for index, loader in enumerate(LOADERS)
+        if loader.type is DocumentLoaderFunc
+    ]
+    assert max(data_loader_indexes) < min(document_loader_indexes)

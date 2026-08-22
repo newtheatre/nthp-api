@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from nthp_api.nthp_build import database, links, models
 from nthp_api.nthp_build.config import settings
@@ -74,14 +75,11 @@ class TestGetLink:
         assert link.href == "https://twitter.com/nnt_official"
         assert link.username == "nnt_official"
 
-    def test_templated_type_without_username_falls_back_to_href(
-        self, caplog: pytest.LogCaptureFixture
-    ):
+    def test_templated_type_without_username_falls_back_to_href(self):
         link = links.get_link(
             models.Link(type="Twitter", href="https://twitter.com/nnt_official")
         )
         assert link.href == "https://twitter.com/nnt_official"
-        assert "no username" in caplog.text
 
     def test_keeps_authored_href(self):
         link = links.get_link(
@@ -148,19 +146,16 @@ class TestGetLink:
 
 @pytest.mark.usefixtures("_link_type_definitions")
 class TestHrefSchemeValidation:
-    def test_drops_javascript_href(self, caplog: pytest.LogCaptureFixture):
-        link = links.get_link(
-            models.Link(type="Personal Website", href="javascript:alert(1)")
-        )
-        assert link.href is None
-        assert "disallowed URL scheme" in caplog.text
-        assert caplog.records[0].levelname == "ERROR"
+    @pytest.mark.parametrize(
+        "href", ["javascript:alert(1)", "data:text/html,<script>", "file:///etc/passwd"]
+    )
+    def test_rejects_disallowed_scheme(self, href: str):
+        with pytest.raises(ValidationError, match="Disallowed URL scheme"):
+            models.Link(type="Personal Website", href=href)
 
-    def test_drops_data_href(self):
-        link = links.get_link(
-            models.Link(type="Personal Website", href="data:text/html,<script>")
-        )
-        assert link.href is None
+    def test_drops_a_disallowed_scheme_that_reaches_the_dump(self):
+        """Belt and braces: the model has already refused the document."""
+        assert links.validate_href("javascript:alert(1)") is None
 
     def test_keeps_mailto_href(self):
         link = links.get_link(
@@ -171,3 +166,35 @@ class TestHrefSchemeValidation:
     def test_keeps_relative_href(self):
         link = links.get_link(models.Link(type="Personal Website", href="/a/page"))
         assert link.href == "/a/page"
+
+
+class TestCheckLinks:
+    @pytest.mark.usefixtures("_link_type_definitions")
+    def test_templated_type_without_username_is_an_error(
+        self, caplog: pytest.LogCaptureFixture
+    ):
+        links.check_links(
+            [models.Link(type="Twitter", href="https://twitter.com/nnt")],
+            Path("_people/fred_bloggs.md"),
+        )
+        assert "_people/fred_bloggs.md" in caplog.text
+        assert "no username" in caplog.text
+        assert caplog.records[0].levelname == "ERROR"
+
+    @pytest.mark.usefixtures("_link_type_definitions")
+    def test_templated_type_with_username_is_fine(
+        self, caplog: pytest.LogCaptureFixture
+    ):
+        links.check_links(
+            [models.Link(type="Twitter", username="nnt")],
+            Path("_people/fred_bloggs.md"),
+        )
+        assert not caplog.records
+
+    @pytest.mark.usefixtures("_link_type_definitions")
+    def test_untemplated_type_is_fine(self, caplog: pytest.LogCaptureFixture):
+        links.check_links(
+            [models.Link(type="Personal Website", href="https://example.com")],
+            Path("_people/fred_bloggs.md"),
+        )
+        assert not caplog.records

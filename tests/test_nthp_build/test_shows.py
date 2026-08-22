@@ -411,7 +411,9 @@ class TestStudentPlaywrightCredit:
             student_written=True,
             crew=[models.PersonRef(role="Director", name="Sunenna Sohal")],
         )
-        assert shows.get_crew_with_student_playwright(show) == [
+        assert shows.get_crew_with_student_playwright(
+            show, Path("_shows/00_01/a_show.md")
+        ) == [
             models.PersonRef(role="Playwright", name="Sunenna Sohal"),
             models.PersonRef(role="Director", name="Sunenna Sohal"),
         ]
@@ -426,9 +428,9 @@ class TestStudentPlaywrightCredit:
             student_written=True,
             crew=[models.PersonRef(role="Director", name="Laura Jayne Bateman")],
         )
-        assert shows.get_crew_with_student_playwright(show)[0] == models.PersonRef(
-            role="Adaptor", name="Laura Jayne Bateman"
-        )
+        assert shows.get_crew_with_student_playwright(
+            show, Path("_shows/00_01/a_show.md")
+        )[0] == models.PersonRef(role="Adaptor", name="Laura Jayne Bateman")
 
     def test_translator_credited_where_there_is_no_adaptor(self):
         show = self.make_show(
@@ -436,21 +438,24 @@ class TestStudentPlaywrightCredit:
             translator="Fred Bloggs",
             student_written=True,
         )
-        assert shows.get_crew_with_student_playwright(show) == [
-            models.PersonRef(role="Translator", name="Fred Bloggs")
-        ]
+        assert shows.get_crew_with_student_playwright(
+            show, Path("_shows/00_01/a_show.md")
+        ) == [models.PersonRef(role="Translator", name="Fred Bloggs")]
 
     def test_playwright_credited_without_an_alias(self):
         show = self.make_show(playwright="Fred Bloggs", student_written=True)
-        assert shows.get_crew_with_student_playwright(show) == [
-            models.PersonRef(role="Playwright", name="Fred Bloggs")
-        ]
+        assert shows.get_crew_with_student_playwright(
+            show, Path("_shows/00_01/a_show.md")
+        ) == [models.PersonRef(role="Playwright", name="Fred Bloggs")]
 
     def test_playwright_false_suppresses_the_credit(self):
         show = self.make_show(
             playwright="Fred Bloggs", student_written=True, playwright_false=True
         )
-        assert shows.get_crew_with_student_playwright(show) == []
+        assert (
+            shows.get_crew_with_student_playwright(show, Path("_shows/00_01/a_show.md"))
+            == []
+        )
 
     @pytest.mark.parametrize(
         "playwright",
@@ -458,17 +463,26 @@ class TestStudentPlaywrightCredit:
     )
     def test_multiple_writers_get_no_credit(self, playwright: str):
         show = self.make_show(playwright=playwright, student_written=True)
-        assert shows.get_crew_with_student_playwright(show) == []
+        assert (
+            shows.get_crew_with_student_playwright(show, Path("_shows/00_01/a_show.md"))
+            == []
+        )
 
     def test_not_student_written_gets_no_credit(self):
         show = self.make_show(playwright="William Shakespeare")
-        assert shows.get_crew_with_student_playwright(show) == []
+        assert (
+            shows.get_crew_with_student_playwright(show, Path("_shows/00_01/a_show.md"))
+            == []
+        )
 
     @pytest.mark.parametrize("playwright", ["various", "Unknown"])
     def test_non_person_playwrights_get_no_credit(self, playwright: str):
         """content/_shows/20_21/speaking_solo.md and the like."""
         show = self.make_show(playwright=playwright, student_written=True)
-        assert shows.get_crew_with_student_playwright(show) == []
+        assert (
+            shows.get_crew_with_student_playwright(show, Path("_shows/00_01/a_show.md"))
+            == []
+        )
 
     def test_hand_written_credit_left_alone(self, caplog: pytest.LogCaptureFixture):
         show = self.make_show(
@@ -476,7 +490,10 @@ class TestStudentPlaywrightCredit:
             student_written=True,
             crew=[models.PersonRef(role="Playwright", name="Fred Bloggs")],
         )
-        assert shows.get_crew_with_student_playwright(show) == show.crew
+        assert (
+            shows.get_crew_with_student_playwright(show, Path("_shows/00_01/a_show.md"))
+            == show.crew
+        )
         assert "by hand" in caplog.text
 
 
@@ -524,3 +541,54 @@ class TestShowTrivia:
         )
         show_detail = shows.get_show_detail(database.Show.get_by_id("1999-00/show"))
         assert show_detail.trivia == []
+
+
+class TestShowDefects:
+    @staticmethod
+    def make_show(**kwargs) -> models.Show:
+        return models.Show(
+            **{"id": "a_show", "title": "A Show", "season": "In House", **kwargs}
+        )
+
+    def test_a_sound_show_has_no_defects(self):
+        assert shows.get_show_defects(self.make_show(playwright="Fred Bloggs")) == []
+
+    def test_devised_alongside_playwright(self):
+        defects = shows.get_show_defects(
+            self.make_show(playwright="Fred Bloggs", devised=True)
+        )
+        assert len(defects) == 1
+        assert "devised" in defects[0]
+
+    def test_improvised_alongside_playwright(self):
+        defects = shows.get_show_defects(
+            self.make_show(playwright="Fred Bloggs", improvised=True)
+        )
+        assert len(defects) == 1
+        assert "improvised" in defects[0]
+
+    def test_student_written_by_several_people(self):
+        defects = shows.get_show_defects(
+            self.make_show(
+                playwright="Fred Bloggs and Alice Froggs", student_written=True
+            )
+        )
+        assert any("names several people" in defect for defect in defects)
+
+    def test_inert_playwright_alias(self):
+        defects = shows.get_show_defects(
+            self.make_show(playwright="Fred Bloggs", playwright_alias="Freddie Bloggs")
+        )
+        assert any("inert" in defect for defect in defects)
+
+    def test_alias_that_takes_effect_is_no_defect(self):
+        assert (
+            shows.get_show_defects(
+                self.make_show(
+                    playwright="Fred Bloggs",
+                    playwright_alias="Freddie Bloggs",
+                    student_written=True,
+                )
+            )
+            == []
+        )

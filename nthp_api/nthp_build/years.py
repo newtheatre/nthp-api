@@ -1,8 +1,9 @@
 import re
 from pathlib import Path
 
-from nthp_api.nthp_build.config import settings
+from nthp_api.nthp_build.config import ACADEMIC_YEAR_START_MONTH, settings
 from nthp_api.nthp_build.documents import DocumentPath
+from nthp_api.nthp_build.fields import FuzzyDate
 
 SOURCE_YEAR_ID_PATTERN = re.compile(r"^\d{2}_\d{2}$")
 YEAR_FULL_LENGTH = 4
@@ -53,3 +54,19 @@ def get_year_decade(year: int) -> int:
     """The calendar year the year's decade begins in, e.g. 2010 for 2013."""
     assert len(str(year)) == YEAR_FULL_LENGTH
     return year - year % DECADE
+
+
+def check_date_in_year(date: FuzzyDate, year: int) -> bool:
+    """
+    Whether a date falls in the academic year, which runs September to August.
+
+    A date known only to the year could be either half of the academic year, so
+    both calendar years pass.
+    """
+    if date.month is None:
+        return date.year in (year, year + 1)
+    if date.year == year:
+        return date.month >= ACADEMIC_YEAR_START_MONTH
+    if date.year == year + 1:
+        return date.month < ACADEMIC_YEAR_START_MONTH
+    return False
