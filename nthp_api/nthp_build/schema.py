@@ -427,9 +427,17 @@ class YearListCollection(BaseCollectionModel[YearList]):
 
 
 class PersonAwardHolder(NthpSchema):
-    id: str
-    title: str
-    headshot: str | None = None
+    id: str = Field(
+        description="ID of the person", json_schema_extra={"example": "fred_bloggs"}
+    )
+    title: str = Field(
+        description="Name of the person", json_schema_extra={"example": "Fred Bloggs"}
+    )
+    headshot: str | None = Field(
+        default=None,
+        description="Image ID of the person's headshot",
+        json_schema_extra={"example": "qABC123"},
+    )
 
 
 class YearDetail(YearList):
@@ -664,6 +672,17 @@ class PersonTriviaCollection(BaseCollectionModel[PersonTrivia]):
     pass
 
 
+class HistoryRecordImage(NthpSchema):
+    href: str = Field(
+        description="URL of the image",
+        json_schema_extra={"example": "https://photos.newtheatre.org.uk/i-abc123.jpg"},
+    )
+    alt: str = Field(
+        description="Short caption describing the image",
+        json_schema_extra={"example": "The old auditorium"},
+    )
+
+
 class HistoryRecord(NthpSchema):
     year: str = Field(
         description="Short description of the year of the record, "
@@ -681,6 +700,9 @@ class HistoryRecord(NthpSchema):
     description: str = Field(
         description="Description of the record, in HTML",
         json_schema_extra={"example": "<p>Theatre built in 1940</p>"},
+    )
+    image: HistoryRecordImage | None = Field(
+        default=None, description="Image illustrating the record, where there is one"
     )
 
 

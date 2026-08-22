@@ -155,6 +155,8 @@ def load_history(path: DocumentPath, data: models.HistoryRecordCollection):
             academic_year=record.academic_year,
             title=record.title,
             description=markdown_to_html(record.description),
+            image_href=record.image.href if record.image else None,
+            image_alt=record.image.alt if record.image else None,
         )
 
 

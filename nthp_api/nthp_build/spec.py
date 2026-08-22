@@ -167,7 +167,9 @@ SPEC = {
             operation_id="getYearDetail",
             tags=["years"],
             summary="Get year detail",
-            description="Academic years are identified as `YYYY-YY`, e.g. `2024-25`.",
+            description="Academic years are identified as `YYYY-YY`, e.g. `2024-25`. "
+            "Fellows and commendations are the people awarded them who graduated in "
+            "the year.",
             model=schema.YearDetail,
             key="id",
         ),
@@ -236,6 +238,9 @@ SPEC = {
             operation_id="getPersonDetail",
             tags=["people"],
             summary="Get person detail",
+            description="Everything known about a person, including their links and "
+            "news. `student` is worked out from the graduation year and the date the "
+            "API was built, so it goes stale between builds.",
             model=schema.PersonDetail,  # type: ignore
             key="id",
         ),

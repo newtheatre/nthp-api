@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from nthp_api.nthp_build import database, models
+from nthp_api.nthp_build import database, history, models, schema
 from nthp_api.nthp_build.config import settings
 from nthp_api.nthp_build.loader import (
     DataLoaderFunc,
@@ -144,3 +144,26 @@ def test_print_validation_error_with_real_error(
         "Validation error in some/path.md" in record.getMessage()
         for record in caplog.records
     )
+
+
+def test_history_record_image_loaded_and_output(tmp_path: Path, _bound_db) -> None:
+    (tmp_path / "history.yaml").write_text(
+        "- year: 1927\n  title: Formation of Dramsoc\n  description: A description\n"
+        "  image:\n    href: https://example.com/image.jpg\n    alt: Old auditorium\n"
+        "- year: 1940\n  title: Formation of TEC\n  description: Another description\n"
+    )
+
+    run_data_loader(
+        Loader(
+            type=DataLoaderFunc,
+            path=Path("history.yaml"),
+            schema_type=models.HistoryRecordCollection,
+            func=load_history,
+        )
+    )
+
+    records = history.get_history_records()
+    assert records[0].image == schema.HistoryRecordImage(
+        href="https://example.com/image.jpg", alt="Old auditorium"
+    )
+    assert records[1].image is None

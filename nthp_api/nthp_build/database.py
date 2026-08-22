@@ -128,6 +128,8 @@ class HistoryRecord(NthpDbModel):
     academic_year = peewee.CharField(null=True, index=True)
     title = peewee.CharField()
     description = peewee.TextField()
+    image_href = peewee.CharField(null=True)
+    image_alt = peewee.CharField(null=True)
 
 
 class Asset(NthpDbModel):

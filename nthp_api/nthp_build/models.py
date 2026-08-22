@@ -235,11 +235,17 @@ class Person(NthpModel):
         return value
 
 
+class HistoryRecordImage(NthpModel):
+    href: str
+    alt: str
+
+
 class HistoryRecord(NthpModel):
     year: PermissiveStr
     academic_year: str | None = None
     title: str
     description: str
+    image: HistoryRecordImage | None = None
 
     @field_validator("academic_year")
     @classmethod
