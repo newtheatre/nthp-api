@@ -276,8 +276,7 @@ def print_validation_error(
     log.error(f"Validation error in {path}")
     for error in validation_error.errors():
         log.warning(validation_messages.describe_error(error, model))
-        if error["type"] != "extra_forbidden":
-            log.info(f"     {error['input']}")
+        log.info(f"     {error['input']!r}")
 
 
 def run_document_loader(loader: Loader):
