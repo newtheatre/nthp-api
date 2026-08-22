@@ -1,6 +1,6 @@
 ---
 type: task
-status: todo
+status: done
 ---
 
 # Response shape consistency
@@ -53,3 +53,23 @@ Confirmed fine: every path has a model, bare arrays throughout, `SearchDocument`
 ## Do
 
 Apply in one pass (every item is breaking anyway), update web doc 30's TS types to match, tests and spec. Encode rules 8 and 9 as tests over the schema module so they hold.
+
+## Done (2026-08-22)
+
+All 24 findings applied and all 9 rules enforced, in one pass. Shared refs live in `schema.py` and are reused everywhere: `ImageRef`, `PersonRef`, `VenueRef`, `YearRef`, `ShowRef` (plus `ShowDatedRef` for date-ordered lists), `PlayRef`, `PlaywrightRef`. `Asset` extends `ImageRef`, so a detail image is a list image with more on it. Rules 8 and 9 are tests over `schema.py` (`tests/test_nthp_build/test_schema.py`).
+
+Rule 8 is enforced structurally rather than per call site: no schema field is both a list and nullable, every nullable field has a default, and `dumper.write_file` serialises with `exclude_none=True` and nothing else. `exclude_unset` is gone; nothing relied on it, so fields left at their defaults (`tour`, `links`, `assets`, `aliases`, …) now always appear.
+
+Handled differently from the table above:
+
+- **11, rule 1** — `PersonGraduated` is a `YearRef` with `estimated` on it, so its fields are `id`, `title`, `startYear`, `gradYear`, `decade`, not `yearId`/`yearTitle`. Reusing the ref keeps rule 1 (own id is `id`) and rule 2 (one ref shape per entity). `PersonCommitteeRole` and `PersonCommitteeRoleList` nest `year: YearRef` for the same reason.
+- **18** — the trivia date is `submittedDate`, matching `PersonDetail.submittedDate`; `submitted` means a boolean everywhere. The target is a `ShowRef` plus `type`, so its image is `primaryImage`, named by role as rule 4 wants, rather than `image`.
+- **3, 12** — `Role` gained `id` and `count` became `holdingCount`; `role` also became `name`, as a role is a named thing like a season and `Role.role` read as a reference to itself.
+- **6, 16** — cast, crew and committee share one `PersonCredit {role, person: PersonRef, note}`; the editorial `comment` is gone from output. `PersonList` became `PersonRef` and its `name` became `title` (rule 3), required (22).
+- **9** — `PosterItem` is a `ShowRef` whose `primaryImage` is required, rather than flattened `showId`/`showTitle`/`imageId`; `OnThisDayShow` and the show sequence items are `ShowRef`s too.
+- **rule 9** — `PersonDetail` gained `hasBio`, `showRoleCount` and `committeeRoleCount` so `PersonIndexItem ⊂ PersonDetail` holds. The subset test allows the detail model to carry a subclass of the list model's type, which is what rule 4 asks for on `headshot`.
+- **Search documents** keep flat `{entity}Id` fields and a bare `imageId`, documented on `SearchDocumentBase`. Their optional lists became always-emitted empty lists: rule 8 beats the few bytes.
+- **`HistoryRecordImage {href, alt}`** stays as it is. Those are external URLs with captions, not asset-store images, so rule 4 does not apply.
+- **`decade`** is the start year of the decade (`2010`), in `YearRef`, both search documents and `PersonGraduated`.
+
+Found and fixed on the way: the crew, cast and committee role indexes reported `hasBio: false` for everyone, as the joined `Person.id` was not selected. Covered by tests.
