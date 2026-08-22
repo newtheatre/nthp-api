@@ -9,6 +9,25 @@ log = logging.getLogger(__name__)
 
 SNAPSHOT_BASE = "https://archive.is"
 USERNAME_PLACEHOLDER = "???"
+ALLOWED_URL_SCHEMES = frozenset({"http", "https", "mailto"})
+
+
+def validate_href(href: str | None, context: str) -> str | None:
+    """
+    Drop a URL with a scheme beyond the allow-list.
+
+    Consumers put these straight in an `href`, so a `javascript:` URL from authored
+    content is the same class of problem as a script tag in a body.
+    """
+    if href is None:
+        return None
+    scheme, separator, _rest = href.partition(":")
+    if not separator or "/" in scheme or scheme == "":
+        return href  # Relative URL, no scheme to check
+    if scheme.lower() in ALLOWED_URL_SCHEMES:
+        return href
+    log.error(f"Link {context} has a disallowed URL scheme {scheme!r}, dropping href")
+    return None
 
 
 def save_link_type_definitions(
@@ -60,11 +79,14 @@ def get_link_href(
     """
     if definition is not None and definition.href is not None:
         if link.username is not None:
-            return definition.href.replace(USERNAME_PLACEHOLDER, link.username)
+            return validate_href(
+                definition.href.replace(USERNAME_PLACEHOLDER, link.username),
+                f"of type {link.type!r}",
+            )
         log.warning(
             f"Link of type {link.type!r} has no username, though the type templates one"
         )
-    return link.href
+    return validate_href(link.href, f"of type {link.type!r}")
 
 
 def get_link_href_snapshot(link: models.Link) -> str | None:

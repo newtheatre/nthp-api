@@ -144,3 +144,30 @@ class TestGetLink:
             )
             == 2  # noqa: PLR2004
         )
+
+
+@pytest.mark.usefixtures("_link_type_definitions")
+class TestHrefSchemeValidation:
+    def test_drops_javascript_href(self, caplog: pytest.LogCaptureFixture):
+        link = links.get_link(
+            models.Link(type="Personal Website", href="javascript:alert(1)")
+        )
+        assert link.href is None
+        assert "disallowed URL scheme" in caplog.text
+        assert caplog.records[0].levelname == "ERROR"
+
+    def test_drops_data_href(self):
+        link = links.get_link(
+            models.Link(type="Personal Website", href="data:text/html,<script>")
+        )
+        assert link.href is None
+
+    def test_keeps_mailto_href(self):
+        link = links.get_link(
+            models.Link(type="Personal Website", href="mailto:a@example.com")
+        )
+        assert link.href == "mailto:a@example.com"
+
+    def test_keeps_relative_href(self):
+        link = links.get_link(models.Link(type="Personal Website", href="/a/page"))
+        assert link.href == "/a/page"
