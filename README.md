@@ -31,6 +31,23 @@ This project generates a JSON API from the [history-project](https://github.com/
 
 Alternatively you can run `nthp build` to run both steps in one go.
 
+## The content schema
+
+The ingest models are the authority on what a content file may contain, and the
+dump publishes them: `dist/content-schema/{show,person,venue,committee,history,roles,link-types}.json`
+as draft 2020-12 JSON Schema, alongside `index.html`, the same tables written
+for people to read. Both sit beside `openapi.json` and are versioned with it.
+
+| Command                                        | What it does                                          |
+| ---------------------------------------------- | ----------------------------------------------------- |
+| `nthp schema [type] [--format json\|markdown]` | Print a schema, or all of them                        |
+| `nthp validate <path>…`                        | Check files or directories; nonzero exit on a problem |
+| `nthp new show\|person\|venue [--id ID]`       | Print a skeleton with every field described           |
+
+`nthp validate` runs the same models and the same per-document checks as
+`nthp load`, so what it accepts is what a build accepts. Anything needing the
+whole repository to see belongs to `nthp lint` below.
+
 ## Linting the content
 
 `nthp lint <path>` loads the content into an in-memory database and reports what
