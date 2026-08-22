@@ -170,9 +170,11 @@ SPEC = {
             operation_id="getYearDetail",
             tags=["years"],
             summary="Get year detail",
-            description="Academic years are identified as `YYYY-YY`, e.g. `2024-25`. "
+            description="Academic years are identified as `YYYY-YY`, e.g. `2024-25`, "
+            "and `decade` is the calendar year the decade begins in, e.g. `2020`. "
             "Fellows and commendations are the people awarded them who graduated in "
-            "the year.",
+            "the year. The committee is a list of credits, the same shape as a "
+            "show's cast and crew.",
             model=schema.YearDetail,
             key="id",
         ),
@@ -243,7 +245,9 @@ SPEC = {
             summary="Get person detail",
             description="Everything known about a person, including their links and "
             "news. `student` is worked out from the graduation year and the date the "
-            "API was built, so it goes stale between builds.",
+            "API was built, so it goes stale between builds, as is the `estimated` "
+            "graduation year. `submitted` says whether the person submitted the "
+            "record; `submittedDate` gives the date where one was authored.",
             model=schema.PersonDetail,  # type: ignore
             key="id",
         ),
@@ -251,6 +255,8 @@ SPEC = {
             operation_id="getPersonCollaborators",
             tags=["people"],
             summary="Get person collaborators",
+            description="Everyone the person shares a show or a committee with, and "
+            "the ids of what they shared.",
             model=schema.PersonCollaboratorCollection,
             key="id",
         ),
@@ -259,33 +265,35 @@ SPEC = {
             tags=["roles"],
             summary="Get list of committee roles",
             description="Every committee role held, near-duplicate titles merged into "
-            "one role with the others listed as aliases.",
+            "one role with the others listed as aliases. Link to a role by its `id`, "
+            "never by a slug derived from its name.",
             model=schema.RoleCollection,
         ),
-        "/roles/committee/{name}.json": make_detail_get_operation(
+        "/roles/committee/{id}.json": make_detail_get_operation(
             operation_id="getPeopleByCommitteeRole",
             tags=["roles"],
             summary="Get people by committee role",
             description="People are duplicated if they have held the position "
             "multiple times.",
             model=schema.PersonCommitteeRoleListCollection,
-            key="name",
+            key="id",
         ),
         "/roles/crew/index.json": make_basic_get_operation(
             operation_id="getCrewRoles",
             tags=["roles"],
             summary="Get list of crew roles",
             description="Crew roles as defined by the content repo's "
-            "`_data/roles.yaml`, in the order defined there.",
+            "`_data/roles.yaml`, in the order defined there. Link to a role by its "
+            "`id`, never by a slug derived from its name.",
             model=schema.RoleCollection,
         ),
-        "/roles/crew/{name}.json": make_detail_get_operation(
+        "/roles/crew/{id}.json": make_detail_get_operation(
             operation_id="getPeopleByCrewRole",
             tags=["roles"],
             summary="Get people by crew role",
             description="People are not duplicated.",
             model=schema.PersonShowRoleListCollection,
-            key="name",
+            key="id",
         ),
         "/roles/cast.json": make_basic_get_operation(
             operation_id="getPeopleCast",
@@ -311,7 +319,8 @@ SPEC = {
             tags=["assets"],
             summary="Get the poster pool",
             description="Every show with a primary image, in the archive's canonical "
-            "show order. Consumers pick from the pool themselves; the API does not "
+            "show order; each item is a show reference whose `primaryImage` is always "
+            "present. Consumers pick from the pool themselves; the API does not "
             "shuffle it.",
             model=schema.PosterCollection,
         ),
@@ -349,7 +358,9 @@ SPEC = {
             description="The whole search corpus, sorted by type then id. Documents "
             "are a union discriminated on `type`, each carrying the fields worth "
             "searching or filtering on for what it describes. The API ships fields, "
-            "not an index; the consumer builds its own.",
+            "not an index; the consumer builds its own. Search documents are the one "
+            "place references are flattened to `{entity}Id` fields, and the record's "
+            "image to `imageId`, to keep the corpus small.",
             model=schema.SearchDocumentCollection,
         ),
         "/search/documents/show.json": make_basic_get_operation(

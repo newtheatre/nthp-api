@@ -105,6 +105,26 @@ class TestFuzzyDateFields:
         }
 
 
+class TestPathParameters:
+    @pytest.mark.parametrize(
+        "path",
+        [
+            "/years/{id}.json",
+            "/shows/{id}.json",
+            "/seasons/{id}.json",
+            "/venues/{id}.json",
+            "/people/{id}.json",
+            "/collaborators/{id}.json",
+            "/roles/committee/{id}.json",
+            "/roles/crew/{id}.json",
+            "/assets/album/{id}.json",
+        ],
+    )
+    def test_records_are_addressed_by_id(self, path: str):
+        [parameter] = spec.SPEC["paths"][path]["get"]["parameters"]
+        assert parameter["name"] == "id"
+
+
 class TestFieldTitles:
     def test_titles_from_field_names_not_aliases(self):
         assert get_property("ShowDetail", "dateStart")["title"] == "Date Start"
