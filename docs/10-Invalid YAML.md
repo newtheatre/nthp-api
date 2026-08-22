@@ -11,27 +11,27 @@ lost content, so validation cannot catch it. A sweep of the content repo
 (2026-08-19, 1,844 documents) found **21 duplicate keys across 19 files**,
 including entire `crew`, `trivia`, `assets` and `prod_shots` blocks:
 
-| File                                             | Key          | Lines       |
-| ------------------------------------------------ | ------------ | ----------- |
-| `_shows/06_07/a_streetcar_named_desire.md`       | `crew`       | 15, 37      |
-| `_shows/09_10/only_one_wing.md`                  | `playwright` | 3, 7        |
-| `_shows/16_17/dead.md`                           | `trivia`     | 12, 157     |
-| `_shows/17_18/quiz_show.md`                      | `prod_shots` | 99, 110     |
-| `_shows/17_18/the_effect.md`                     | `trivia`     | 11, 100     |
-| `_shows/18_19/the_seagull.md`                    | `trivia`     | 13, 96      |
-| `_shows/19_20/corona_cancelled_fringe.md`        | `prod_shots` | 201, 204    |
-| `_shows/19_20/corona_cancelled_inhouse.md`       | `prod_shots` | 356, 359, 362 |
-| `_shows/19_20/edward_the_second.md`              | `adaptor`    | 4, 5        |
-| `_shows/20_21/autumn_showers.md`                 | `name`       | 36, 37      |
-| `_shows/21_22/alice.md`                          | `assets`     | 14, 35      |
-| `_shows/59_60/coriolanus.md`                     | `role`, `name` | 133–136   |
-| `_shows/73_74/tango.md`                          | `name`       | 11, 12      |
-| `_shows/75_76/journeys_end.md`                   | `trivia`     | 11, 66      |
-| `_people/angharad_davies.md`                     | `graduated`  | 5, 8        |
-| `_people/beth_angella.md`                        | `graduated`  | 4, 8        |
-| `_people/david_taylor.md`                        | `graduated`  | 3, 5        |
-| `_people/ellie_cawthorne.md`                     | `headshot`   | 3, 8        |
-| `_people/lucien_jack.md`                         | `graduated`  | 6, 9        |
+| File                                       | Key            | Lines         |
+| ------------------------------------------ | -------------- | ------------- |
+| `_shows/06_07/a_streetcar_named_desire.md` | `crew`         | 15, 37        |
+| `_shows/09_10/only_one_wing.md`            | `playwright`   | 3, 7          |
+| `_shows/16_17/dead.md`                     | `trivia`       | 12, 157       |
+| `_shows/17_18/quiz_show.md`                | `prod_shots`   | 99, 110       |
+| `_shows/17_18/the_effect.md`               | `trivia`       | 11, 100       |
+| `_shows/18_19/the_seagull.md`              | `trivia`       | 13, 96        |
+| `_shows/19_20/corona_cancelled_fringe.md`  | `prod_shots`   | 201, 204      |
+| `_shows/19_20/corona_cancelled_inhouse.md` | `prod_shots`   | 356, 359, 362 |
+| `_shows/19_20/edward_the_second.md`        | `adaptor`      | 4, 5          |
+| `_shows/20_21/autumn_showers.md`           | `name`         | 36, 37        |
+| `_shows/21_22/alice.md`                    | `assets`       | 14, 35        |
+| `_shows/59_60/coriolanus.md`               | `role`, `name` | 133–136       |
+| `_shows/73_74/tango.md`                    | `name`         | 11, 12        |
+| `_shows/75_76/journeys_end.md`             | `trivia`       | 11, 66        |
+| `_people/angharad_davies.md`               | `graduated`    | 5, 8          |
+| `_people/beth_angella.md`                  | `graduated`    | 4, 8          |
+| `_people/david_taylor.md`                  | `graduated`    | 3, 5          |
+| `_people/ellie_cawthorne.md`               | `headshot`     | 3, 8          |
+| `_people/lucien_jack.md`                   | `graduated`    | 6, 9          |
 
 Not in production yet: **warn, never fail**. Follows the existing pattern in
 `loader.py` — log per file, count, summarise, carry on. Parsing semantics

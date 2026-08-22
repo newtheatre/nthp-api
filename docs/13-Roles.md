@@ -20,4 +20,3 @@ Web doc 30 §2, 03 §Role definitions. `roles.py` hardcodes 11 crew + 2 committe
 - Crew: delete `CREW_ROLE_DEFINITIONS`; load `_data/roles.yaml` from the content repo at load time (icons ignored — presentation). Strip the trailing whitespace roles.yaml values carry. Note roles.yaml maps Author/Writer/Adaptor/Translator → Playwright; interacts with `playwright_alias` (16).
 - `count` on `Role` = number of holdings.
 - `nthp lint` style warning for roles matching no definition.
-

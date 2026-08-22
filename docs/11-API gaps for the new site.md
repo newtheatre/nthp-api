@@ -11,18 +11,18 @@ Paths in web doc 30 are stale: package is `nthp_api/nthp_build/`, not `nthp_buil
 
 ## Task map
 
-| Task | Covers | Web doc § |
-|---|---|---|
-| [12 Seasons](12-Seasons.md) | seasons index/detail, `seasonId` on shows | 1 |
-| [13 Roles](13-Roles.md) | committee roles index + all roles, crew roles from `roles.yaml` | 2 |
-| [14 Shows index and sequence](14-Shows%20index%20and%20sequence.md) | `/shows/index.json`, prev/next, `missingFields`, `ignoreMissing`, `company_sort` | 3, 11 |
-| [15 Venue stubs](15-Venue%20stubs.md) | record for every referenced venue, sentinels, `venue_sort`, venue assets | 4 |
-| [16 Links and person fields](16-Links%20and%20person%20fields.md) | `Link` schema everywhere, course/award/careers/news, `student`, `playwright_alias`/`_false`, year fellows/commendations | 6 |
-| [17 Search corpus](17-Search%20corpus.md) | faceted `SearchDocument`, per-type files, person plaintext | 8 |
-| [18 Homepage data](18-Homepage%20data.md) | `SiteStats` extras, on-this-day, poster pool | 9 |
-| [19 Year identifiers](19-Year%20identifiers.md) | `YYYY-YY` ids everywhere, `startYear` | 10 |
-| [20 Image dimensions](20-Image%20dimensions.md) | width/height/date on every asset | 7 |
-| [21 Trivia embedding](21-Trivia%20embedding.md) | embed trivia on show/person detail | 5 |
+| Task                                                                | Covers                                                                                                                  | Web doc § |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | --------- |
+| [12 Seasons](12-Seasons.md)                                         | seasons index/detail, `seasonId` on shows                                                                               | 1         |
+| [13 Roles](13-Roles.md)                                             | committee roles index + all roles, crew roles from `roles.yaml`                                                         | 2         |
+| [14 Shows index and sequence](14-Shows%20index%20and%20sequence.md) | `/shows/index.json`, prev/next, `missingFields`, `ignoreMissing`, `company_sort`                                        | 3, 11     |
+| [15 Venue stubs](15-Venue%20stubs.md)                               | record for every referenced venue, sentinels, `venue_sort`, venue assets                                                | 4         |
+| [16 Links and person fields](16-Links%20and%20person%20fields.md)   | `Link` schema everywhere, course/award/careers/news, `student`, `playwright_alias`/`_false`, year fellows/commendations | 6         |
+| [17 Search corpus](17-Search%20corpus.md)                           | faceted `SearchDocument`, per-type files, person plaintext                                                              | 8         |
+| [18 Homepage data](18-Homepage%20data.md)                           | `SiteStats` extras, on-this-day, poster pool                                                                            | 9         |
+| [19 Year identifiers](19-Year%20identifiers.md)                     | `YYYY-YY` ids everywhere, `startYear`                                                                                   | 10        |
+| [20 Image dimensions](20-Image%20dimensions.md)                     | width/height/date on every asset                                                                                        | 7         |
+| [21 Trivia embedding](21-Trivia%20embedding.md)                     | embed trivia on show/person detail                                                                                      | 5         |
 
 Suggested order (web doc §12): 13+12 → 14+15 → 16 → 17 → 18+19+21+14(prev/next) → 20. 19 is a breaking id change touching every dumper; doing it early (before 14/17/18 add new `yearId` fields) avoids a second pass — **recommended: do 19 first**, contrary to web doc ordering.
 
@@ -32,7 +32,7 @@ Suggested order (web doc §12): 13+12 → 14+15 → 16 → 17 → 18+19+21+14(pr
 - **Trivia** (§5): 03 rates per-person trivia endpoints as "richer than Ruby"; web doc deletes them. Resolved in favour of embedding (one consumer, 120 items).
 - **`student` / `decade`**: 03 says "derivable client-side"; ADR-17 forbids that. API emits both.
 - **`buildTime`**: web doc §8/§9 proposes it; `SiteStats.build_time` already exists. Only `count` is new.
-- **Dropped by web doc but flagged in 03**: `playwright_alias`/`playwright_false` (produce *wrong* crew lists — included in 16), `company_sort` (14), `redirect_from`, `tour`, key-event images, `href_snapshot`, `city_sort`, `seats.yaml`. See open questions.
+- **Dropped by web doc but flagged in 03**: `playwright_alias`/`playwright_false` (produce _wrong_ crew lists — included in 16), `company_sort` (14), `redirect_from`, `tour`, key-event images, `href_snapshot`, `city_sort`, `seats.yaml`. See open questions.
 - **Roles source**: `_data/roles.yaml` is crew-only (31 roles, icons). Committee roles have no content-side definition; alias map must live in the API.
 - **Image dimensions** (§7): ~1500 `sizedetails` calls depends on [06 SmugMug reliability](06-SmugMug%20reliability.md) (retries, Actions cache key never updating). 06 becomes a dependency of 20.
 - **Caching**: S3 already emits `ETag` (MD5 for single-part PUT) and `Last-Modified`; nothing to build unless the deploy changes to multipart or a non-S3 host.
