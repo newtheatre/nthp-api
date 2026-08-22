@@ -202,9 +202,17 @@ class TestCrewRoles:
     def test_roles_without_definition_are_logged(
         self, populated_db, caplog: pytest.LogCaptureFixture
     ):
-        with caplog.at_level(logging.WARNING):
+        with caplog.at_level(logging.DEBUG):
             roles.log_crew_roles_without_definition()
         assert "Bagpiper" in caplog.text
+
+    def test_roles_without_definition_summary_is_logged_at_info(
+        self, populated_db, caplog: pytest.LogCaptureFixture
+    ):
+        with caplog.at_level(logging.INFO):
+            roles.log_crew_roles_without_definition()
+        assert "1 crew roles match no definition in roles.yaml" in caplog.text
+        assert "Bagpiper" not in caplog.text
 
 
 class TestDumpRoles:
