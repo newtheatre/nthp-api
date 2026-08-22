@@ -287,30 +287,39 @@ def dump_collaborators(state: DumperSharedState):
         dump_collaborators_for_person(ref, state)
 
 
-def dump_people_by_committee_role(role_name: str):
-    path = make_out_path(Path("roles/committee"), roles.get_role_id(role_name))
+def dump_people_by_committee_role(definition: roles.RoleDefinition):
+    path = make_out_path(Path("roles/committee"), roles.get_role_id(definition.name))
     collection = schema.PersonCommitteeRoleListCollection(
-        roles.get_people_committee_roles_by_role(role_name)
+        roles.get_people_committee_roles_by_role(definition)
     )
     write_file(path, collection)
 
 
-def dump_crew_roles():
+def dump_committee_roles(definitions: list[roles.RoleDefinition]):
+    write_file(
+        path=make_out_path(Path("roles/committee"), "index"),
+        obj=schema.RoleWithIdCollection(
+            [roles.get_committee_role_list(definition) for definition in definitions]
+        ),
+    )
+
+
+def dump_crew_roles(definitions: list[roles.RoleDefinition]):
     write_file(
         path=make_out_path(Path("roles/crew"), "index"),
         obj=schema.RoleCollection(
             [
-                schema.Role(role=role.name, aliases=sorted(role.aliases))
-                for role in roles.CREW_ROLE_DEFINITIONS
+                roles.get_role_list(definition, database.PersonRoleType.CREW)
+                for definition in definitions
             ]
         ),
     )
 
 
-def dump_people_by_crew_role(role_name: str):
-    path = make_out_path(Path("roles/crew"), roles.get_role_id(role_name))
+def dump_people_by_crew_role(definition: roles.RoleDefinition):
+    path = make_out_path(Path("roles/crew"), roles.get_role_id(definition.name))
     collection = schema.PersonShowRoleListCollection(
-        roles.get_people_crew_roles_by_role(role_name)
+        roles.get_people_crew_roles_by_role(definition)
     )
     write_file(path, collection)
 
@@ -322,9 +331,17 @@ def dump_people_if_cast():
 
 
 def dump_roles(state: DumperSharedState):
-    [dump_people_by_committee_role(role) for role in roles.COMMITTEE_ROLES]
-    dump_crew_roles()
-    [dump_people_by_crew_role(role) for role in roles.CREW_ROLES]
+    committee_definitions = roles.get_committee_role_definitions()
+    dump_committee_roles(committee_definitions)
+    for definition in committee_definitions:
+        dump_people_by_committee_role(definition)
+
+    crew_definitions = roles.get_crew_role_definitions()
+    roles.log_crew_roles_without_definition()
+    dump_crew_roles(crew_definitions)
+    for definition in crew_definitions:
+        dump_people_by_crew_role(definition)
+
     dump_people_if_cast()
 
 

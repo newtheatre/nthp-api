@@ -196,3 +196,28 @@ class HistoryRecord(NthpModel):
 
 class HistoryRecordCollection(BaseCollectionModel[HistoryRecord]):
     pass
+
+
+class CrewRoleDefinition(NthpModel):
+    """
+    A crew role as defined by the content repo's `_data/roles.yaml`.
+
+    Icons and the `show` flag are presentation concerns and are ignored.
+    """
+
+    role: str
+    aliases: list[str] = []
+
+    @field_validator("role", "aliases", mode="before")
+    @classmethod
+    def strip_whitespace(cls, value: object) -> object:
+        """Names in roles.yaml carry trailing whitespace."""
+        if isinstance(value, str):
+            return value.strip()
+        if isinstance(value, list):
+            return [item.strip() if isinstance(item, str) else item for item in value]
+        return value
+
+
+class CrewRoleDefinitionCollection(BaseCollectionModel[CrewRoleDefinition]):
+    pass

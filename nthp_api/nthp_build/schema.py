@@ -299,9 +299,18 @@ class PersonShowRoleListCollection(BaseCollectionModel[PersonShowRoleList]):
 class Role(NthpSchema):
     role: str
     aliases: list[str]
+    count: int = Field(description="Number of times the role has been held.")
 
 
 class RoleCollection(BaseCollectionModel[Role]):
+    pass
+
+
+class RoleWithId(Role):
+    id: str
+
+
+class RoleWithIdCollection(BaseCollectionModel[RoleWithId]):
     pass
 
 

@@ -104,6 +104,14 @@ class Trivia(NthpDbModel):
     data = peewee.TextField()
 
 
+class CrewRoleDefinition(NthpDbModel):
+    """Crew roles as defined by the content repo, in the order they are defined."""
+
+    name = peewee.CharField(primary_key=True)
+    sort = peewee.IntegerField(index=True)
+    aliases = peewee.TextField()
+
+
 class HistoryRecord(NthpDbModel):
     year = peewee.CharField()
     academic_year = peewee.CharField(null=True, index=True)
@@ -127,7 +135,17 @@ class Asset(NthpDbModel):
     asset_smugmug_data = peewee.CharField(null=True)
 
 
-MODELS = [Show, PlaywrightShow, Venue, PersonRole, Person, Trivia, HistoryRecord, Asset]
+MODELS = [
+    Show,
+    PlaywrightShow,
+    Venue,
+    PersonRole,
+    Person,
+    Trivia,
+    CrewRoleDefinition,
+    HistoryRecord,
+    Asset,
+]
 
 
 def init_db(create: bool = False):

@@ -17,6 +17,7 @@ from nthp_api.nthp_build import (
     parallel,
     people,
     playwrights,
+    roles,
     schema,
     seasons,
     shows,
@@ -148,6 +149,12 @@ def load_history(path: DocumentPath, data: models.HistoryRecordCollection):
         )
 
 
+def load_crew_role_definitions(
+    path: DocumentPath, data: models.CrewRoleDefinitionCollection
+):
+    roles.save_crew_role_definitions(data)
+
+
 class DocumentLoaderFunc(Protocol):
     def __call__(
         self, path: DocumentPath, document: frontmatter.Post, data: Any
@@ -193,6 +200,12 @@ LOADERS: list[Loader] = [
         path=Path("_people"),
         schema_type=models.Person,
         func=load_person,
+    ),
+    Loader(
+        type=DataLoaderFunc,
+        path=Path("_data/roles.yaml"),
+        schema_type=models.CrewRoleDefinitionCollection,
+        func=load_crew_role_definitions,
     ),
     Loader(
         type=DataLoaderFunc,

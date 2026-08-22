@@ -30,6 +30,7 @@ PYDANTIC_JSON_SCHEMA = models_json_schema(
         schema.PlayCollection,
         schema.PlaywrightCollection,
         schema.RoleCollection,
+        schema.RoleWithIdCollection,
         schema.SearchDocumentCollection,
         schema.SeasonDetail,
         schema.SeasonListCollection,
@@ -232,6 +233,14 @@ SPEC = {
             model=schema.PersonCollaboratorCollection,
             key="id",
         ),
+        "/roles/committee/index.json": make_basic_get_operation(
+            operation_id="getCommitteeRoles",
+            tags=["roles"],
+            summary="Get list of committee roles",
+            description="Every committee role held, near-duplicate titles merged into "
+            "one role with the others listed as aliases.",
+            model=schema.RoleWithIdCollection,
+        ),
         "/roles/committee/{name}.json": make_detail_get_operation(
             operation_id="getPeopleByCommitteeRole",
             tags=["roles"],
@@ -245,12 +254,14 @@ SPEC = {
             operation_id="getCrewRoles",
             tags=["roles"],
             summary="Get list of crew roles",
+            description="Crew roles as defined by the content repo's "
+            "`_data/roles.yaml`, in the order defined there.",
             model=schema.RoleCollection,
         ),
         "/roles/crew/{name}.json": make_detail_get_operation(
             operation_id="getPeopleByCrewRole",
             tags=["roles"],
-            summary="Get people by committee role",
+            summary="Get people by crew role",
             description="People are not duplicated.",
             model=schema.PersonShowRoleListCollection,
             key="name",
