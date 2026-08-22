@@ -1,7 +1,7 @@
 import datetime
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings
 
 ACADEMIC_YEAR_START_MONTH = 9
@@ -22,7 +22,12 @@ def get_current_year_end(today: datetime.date | None = None) -> int:
 
 class Settings(BaseSettings):
     db_uri: str = "nthp.db"
-    branch: str = "master"
+    # GitHub Actions sets these three itself, on every run of a workflow.
+    branch: str = Field(
+        default="master", validation_alias=AliasChoices("BRANCH", "GITHUB_REF_NAME")
+    )
+    build_number: str | None = Field(default=None, validation_alias="GITHUB_RUN_NUMBER")
+    commit: str | None = Field(default=None, validation_alias="GITHUB_SHA")
     content_root: Path
 
     year_start: int = 1940

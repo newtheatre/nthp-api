@@ -7,6 +7,7 @@ from nthp_api.nthp_build import database, dumper, homepage, models, schema, spec
 from nthp_api.nthp_build.config import settings
 from nthp_api.nthp_build.fields import FuzzyDate
 from nthp_api.nthp_build.parallel import DumperSharedState
+from nthp_api.nthp_build.version import get_version
 
 DAYS_IN_LEAP_YEAR = 366
 
@@ -207,6 +208,37 @@ class TestSiteStats:
     def test_shows_with_image_count(self, stats: dict):
         assert stats["showWithImageCount"] == 1
 
+    def test_carries_the_api_version(self, stats):
+        assert stats["apiVersion"] == get_version()
+
+    def test_build_number_comes_from_the_ci_run(
+        self, test_db, output_dir: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        monkeypatch.setattr(settings, "build_number", "42")
+        dumper.dump_site_stats(state=DumperSharedState(search_documents=[]))
+        stats = read_json(output_dir / "index.json")
+        assert stats["buildNumber"] == "42"
+
+    def test_branch_comes_from_the_ci_run(
+        self, test_db, output_dir: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        monkeypatch.setattr(settings, "branch", "a-branch")
+        dumper.dump_site_stats(state=DumperSharedState(search_documents=[]))
+        stats = read_json(output_dir / "index.json")
+        assert stats["branch"] == "a-branch"
+
+    def test_commit_comes_from_the_ci_run(
+        self, test_db, output_dir: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        monkeypatch.setattr(settings, "commit", "abc123")
+        dumper.dump_site_stats(state=DumperSharedState(search_documents=[]))
+        stats = read_json(output_dir / "index.json")
+        assert stats["commit"] == "abc123"
+
+    def test_build_details_omitted_outside_ci(self, stats):
+        assert "buildNumber" not in stats
+        assert "commit" not in stats
+
     def test_person_with_headshot_count(self, stats: dict):
         assert stats["personWithHeadshotCount"] == 1
 
@@ -243,6 +275,7 @@ class TestSpec:
             "firstYearId",
             "latestYearId",
             "showWithImageCount",
+            "apiVersion",
             "personWithHeadshotCount",
         } <= set(properties)
 

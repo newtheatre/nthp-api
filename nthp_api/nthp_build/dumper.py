@@ -36,6 +36,7 @@ from nthp_api.nthp_build.parallel import (
     DumperSharedState,
     make_dumper_state,
 )
+from nthp_api.nthp_build.version import get_version
 
 log = logging.getLogger(__name__)
 OUTPUT_DIR = Path("dist")
@@ -440,6 +441,9 @@ def dump_site_stats(state: DumperSharedState) -> None:
         schema.SiteStats(
             build_time=datetime.datetime.now(datetime.UTC),
             branch=settings.branch,
+            api_version=get_version(),
+            build_number=settings.build_number,
+            commit=settings.commit,
             show_count=database.Show.select().count(),
             person_count=people.get_people_from_roles().count(),
             person_with_bio_count=database.Person.select().count(),

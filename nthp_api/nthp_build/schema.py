@@ -1239,8 +1239,27 @@ class SiteStats(NthpSchema):
         json_schema_extra={"example": "2022-01-01T12:34:45.678901Z"},
     )
     branch: str = Field(
-        description="Branch API was built from.",
+        description="Branch of the repository the API was built from.",
         json_schema_extra={"example": "master"},
+    )
+    api_version: str = Field(
+        title="API Version",
+        description="Version of nthp-api that built the API.",
+        json_schema_extra={"example": "0.3.0"},
+    )
+    commit: str | None = Field(
+        default=None,
+        title="Commit",
+        description="Commit of the repository the API was built from, where it was "
+        "built by CI.",
+        json_schema_extra={"example": "1f0a9c2e0c0a4a1b8d3f6e5c4b3a29180706f5e4"},
+    )
+    build_number: str | None = Field(
+        default=None,
+        title="Build Number",
+        description="Number of the GitHub Actions run that built the API, where it "
+        "was built by one.",
+        json_schema_extra={"example": "42"},
     )
     show_count: int = Field(
         title="Show Count",

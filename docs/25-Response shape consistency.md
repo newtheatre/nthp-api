@@ -73,3 +73,5 @@ Handled differently from the table above:
 - **`decade`** is the start year of the decade (`2010`), in `YearRef`, both search documents and `PersonGraduated`.
 
 Found and fixed on the way: the crew, cast and committee role indexes reported `hasBio: false` for everyone, as the joined `Person.id` was not selected. Covered by tests.
+
+Added on request while doing this: `SiteStats.apiVersion`, the version of nthp-api that built the API, and `SiteStats.buildNumber` and `SiteStats.commit`, the CI run and the commit it was built from, taken from the `GITHUB_RUN_NUMBER` and `GITHUB_SHA` variables GitHub Actions sets itself, and omitted when there are none. `branch` now reads `GITHUB_REF_NAME` too, `BRANCH` still winning where it is set. No workflow change needed in either repo.
