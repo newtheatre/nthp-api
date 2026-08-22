@@ -66,7 +66,9 @@ def get_stub_name(venue_id: str, shows: list[database.Show]) -> str:
     which names the shows they were authored in.
     """
     spellings = Counter(show.venue_name for show in shows if show.venue_name)
-    return get_most_common(spellings) or venue_id
+    name = get_most_common(spellings)
+    assert name is not None, "A venue id only exists because a show named the venue"
+    return name
 
 
 def get_venue_sort(shows: list[database.Show]) -> str | None:

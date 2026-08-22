@@ -41,24 +41,20 @@ def make_person(person_id: str = "fred_bloggs", **data) -> database.Person:
     )
 
 
-def make_role(
-    person_id: str | None = "fred_bloggs",
-    person_name: str | None = "Fred Bloggs",
-    role: str | None = "Director",
-    target_id: str = "1999-00/a_show",
-    target_type: str = database.PersonRoleType.CREW,
-    target_year: int = 1999,
-) -> database.PersonRole:
-    return database.PersonRole.create(
-        target_id=target_id,
-        target_type=target_type,
-        target_year=target_year,
-        person_id=person_id,
-        person_name=person_name,
-        role=role,
-        is_person=True,
-        data="{}",
-    )
+PERSON_ROLE_DEFAULTS = {
+    "target_id": "1999-00/a_show",
+    "target_type": database.PersonRoleType.CREW,
+    "target_year": 1999,
+    "person_id": "fred_bloggs",
+    "person_name": "Fred Bloggs",
+    "role": "Director",
+    "is_person": True,
+    "data": "{}",
+}
+
+
+def make_role(**fields) -> database.PersonRole:
+    return database.PersonRole.create(**{**PERSON_ROLE_DEFAULTS, **fields})
 
 
 class TestVenueSpellings:

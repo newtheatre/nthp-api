@@ -18,9 +18,10 @@ def get_history_records() -> list[schema.HistoryRecord]:
             ),
             title=record.title,
             description=record.description,
+            # The model requires both an href and an alt, so one implies the other.
             image=(
                 schema.HistoryRecordImage(href=record.image_href, alt=record.image_alt)
-                if record.image_href and record.image_alt
+                if record.image_href
                 else None
             ),
         )

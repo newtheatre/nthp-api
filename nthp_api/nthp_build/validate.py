@@ -14,8 +14,8 @@ import json
 import logging
 import re
 from collections import defaultdict
-from difflib import SequenceMatcher
 from collections.abc import Callable, Iterable
+from difflib import SequenceMatcher
 from typing import NamedTuple
 
 from nthp_api.nthp_build import assets, database, links, models, people, roles
@@ -35,7 +35,9 @@ class Finding(NamedTuple):
     source_path: str | None = None
 
     def __str__(self) -> str:
-        return f"{self.source_path}: {self.message}" if self.source_path else self.message
+        return (
+            f"{self.source_path}: {self.message}" if self.source_path else self.message
+        )
 
 
 class Check(NamedTuple):
@@ -89,9 +91,7 @@ def get_show_models() -> Iterable[tuple[database.Show, models.Show]]:
 
 def check_venue_spellings() -> list[Finding]:
     """A venue id authored under several spellings takes the commonest, arbitrarily."""
-    spellings: dict[str, dict[str, list[str]]] = defaultdict(
-        lambda: defaultdict(list)
-    )
+    spellings: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
     for show in database.Show.select().where(
         database.Show.venue_id.is_null(False),
         database.Show.venue_name.is_null(False),
@@ -134,12 +134,15 @@ def _duplicate_names_by_id(
     return {id: by_name for id, by_name in names.items() if len(by_name) > 1}
 
 
+def format_shared_names(names: dict[str, list[str]]) -> str:
+    return ", ".join(f"{name!r} ({shows[0]})" for name, shows in sorted(names.items()))
+
+
 def check_playwright_ids() -> list[Finding]:
     """Two spellings of a writer's name collide as one id, dumped twice over."""
     return [
         Finding(
-            f"playwright id {playwright_id!r} is shared by "
-            f"{', '.join(f'{name!r} ({shows[0]})' for name, shows in sorted(names.items()))}"
+            f"playwright id {playwright_id!r} is shared by {format_shared_names(names)}"
         )
         for playwright_id, names in sorted(
             _duplicate_names_by_id("playwright_id", "playwright_name").items()
@@ -150,11 +153,10 @@ def check_playwright_ids() -> list[Finding]:
 def check_play_ids() -> list[Finding]:
     """Two spellings of a play's title collide as one id, dumped twice over."""
     return [
-        Finding(
-            f"play id {play_id!r} is shared by "
-            f"{', '.join(f'{name!r} ({shows[0]})' for name, shows in sorted(names.items()))}"
+        Finding(f"play id {play_id!r} is shared by {format_shared_names(names)}")
+        for play_id, names in sorted(
+            _duplicate_names_by_id("play_id", "play_name").items()
         )
-        for play_id, names in sorted(_duplicate_names_by_id("play_id", "play_name").items())
     ]
 
 

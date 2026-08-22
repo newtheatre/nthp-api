@@ -2,13 +2,10 @@
 
 import calendar
 import datetime
-import logging
 from collections import defaultdict
 
 from nthp_api.nthp_build import assets, database, schema, shows
 from nthp_api.nthp_build.fields import FuzzyDate
-
-log = logging.getLogger(__name__)
 
 DayOfYear = tuple[int, int]
 LEAP_YEAR = 2000
@@ -47,7 +44,7 @@ def get_show_run(
         return date_start, None
     date_end = FuzzyDate.parse(show_inst.date_end)
     if date_end.latest() < date_start.earliest():
-        log.warning(f"{show_inst.id} ends before it starts, taking the start date only")
+        # Reported at load time, with the path of the document at fault.
         return date_start, None
     return date_start, date_end
 
