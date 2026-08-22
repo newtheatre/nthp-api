@@ -26,7 +26,9 @@ def make_mock_client():
 
     def _make_mock_client(handler) -> SmugMugClient:
         return SmugMugClient(
-            client=httpx.AsyncClient(transport=httpx.MockTransport(handler)),
+            client=httpx.AsyncClient(
+                transport=httpx.MockTransport(handler), follow_redirects=True
+            ),
             connection_limit=asyncio.Semaphore(1),
         )
 

@@ -42,7 +42,10 @@ class SmugMugClient(NamedTuple):
 @contextlib.asynccontextmanager
 async def make_client() -> AsyncGenerator[SmugMugClient, None]:
     client = SmugMugClient(
-        client=httpx.AsyncClient(timeout=settings.smugmug_timeout_seconds),
+        # A bare image key redirects to its serial-suffixed canonical URI.
+        client=httpx.AsyncClient(
+            timeout=settings.smugmug_timeout_seconds, follow_redirects=True
+        ),
         connection_limit=asyncio.Semaphore(settings.smugmug_connection_limit),
     )
     yield client

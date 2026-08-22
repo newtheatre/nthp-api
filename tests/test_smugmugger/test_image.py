@@ -58,9 +58,7 @@ class TestGetImageInfo:
         info = await image.get_image_info(make_mock_client(handler), IMAGE_KEY)
         assert info.width == 1200  # noqa: PLR2004
         assert info.height == 1600  # noqa: PLR2004
-        assert info.date == datetime.datetime(
-            2013, 6, 4, 12, 0, tzinfo=datetime.UTC
-        )
+        assert info.date == datetime.datetime(2013, 6, 4, 12, 0, tzinfo=datetime.UTC)
         assert requested_urls == [f"/api/v2/image/{IMAGE_KEY}"]
 
     @pytest.mark.asyncio

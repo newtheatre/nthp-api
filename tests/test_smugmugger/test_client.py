@@ -37,6 +37,34 @@ def make_status_response(status_code: HTTPStatus, headers=None) -> httpx.Respons
     )
 
 
+class TestRedirects:
+    @pytest.mark.asyncio
+    async def test_bare_image_key_redirect_is_followed(
+        self, make_mock_client, monkeypatch
+    ):
+        monkeypatch.setattr(settings, "smugmug_api_key", "test-key")
+        requested_paths = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            requested_paths.append(request.url.path)
+            if request.url.path.endswith("-0"):
+                return httpx.Response(
+                    HTTPStatus.OK,
+                    json={
+                        "Code": 200,
+                        "Message": "Ok",
+                        "Response": {"Uri": request.url.path},
+                    },
+                )
+            return httpx.Response(
+                HTTPStatus.MOVED_PERMANENTLY,
+                headers={"Location": f"{request.url.path}-0"},
+            )
+
+        await get(make_mock_client(handler), "image/ghwm82d")
+        assert requested_paths == ["/api/v2/image/ghwm82d", "/api/v2/image/ghwm82d-0"]
+
+
 class TestRetries:
     @pytest.fixture(autouse=True)
     def _no_backoff_delay(self, monkeypatch):

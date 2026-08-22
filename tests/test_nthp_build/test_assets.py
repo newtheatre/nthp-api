@@ -127,7 +127,7 @@ class TestAddSmugMugImageInfo:
         asset = schema.Asset(
             type="image", source="smugmug", id="abc123", category="poster"
         )
-        [saved_asset] = assets.save_show_assets(THE_TEMPEST, [asset])
+        [saved_asset] = assets.save_show_assets("99_00/the_tempest", [asset])
         if image_info is not None:
             saved_asset.asset_smugmug_data = image_info.model_dump_json()
             saved_asset.save()
