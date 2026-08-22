@@ -1,6 +1,6 @@
 ---
 type: task
-status: todo
+status: done
 ---
 
 # Shows index and sequence
@@ -24,3 +24,10 @@ Web doc 30 §3 and §11 (prev/next, missingFields, ignore_missing); 03 `company_
 - Spec, tests.
 
 Depends on 19 for `yearId` form.
+
+## As built
+
+- Canonical order is year, `season_sort` (shows without one falling to the end of the year, as `_plugins/show.rb` `sort_shows` has them), `date_start`, then id.
+- `playwright` is a missing field when the show has no authorship at all, as well as when it is authored `unknown`; the old site's `playwright_type` is `unknown` in both cases.
+- `ignoreMissing` is the authored `ignore_missing` flag; `ignoreMissingInSeasons` comes from the `ignore_missing_in_season_ids` setting, mirroring `_config.yml`. The old site merged the two into one flag.
+- `tour` entries carry `venue`, `date_start`, `date_end` and `note` (`notes` accepted as an alias); the authored `comment` is ingested but not output.

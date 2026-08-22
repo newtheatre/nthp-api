@@ -3,15 +3,25 @@ import json
 import peewee
 
 from nthp_api.nthp_build import database, models, people, playwrights, schema
+from nthp_api.nthp_build.config import settings
 
 
 def get_show_query() -> peewee.Query:
+    """
+    Every show in the archive's canonical order.
+
+    Year first: `season_sort` only orders shows within a year, so sorting on it
+    across the archive would interleave the years. Within a year `season_sort` orders
+    the shows that carry one, the rest falling to the end of the year as the old
+    site's `_plugins/show.rb` `sort_shows` has them. `date_start` then orders shows
+    that share a `season_sort`, and id breaks any remaining tie so the order is
+    stable between builds.
+    """
     return database.Show.select().order_by(
-        # Sort by season_sort then date_start. Means we can opt to ignore season_sort
-        # within a year. However if you start using season_sort it should be added to
-        # all shows.
-        database.Show.season_sort,
+        database.Show.year,
+        database.Show.season_sort.asc(nulls="LAST"),
         database.Show.date_start,
+        database.Show.id,
     )
 
 
@@ -128,6 +138,76 @@ def get_show_venue(
     )
 
 
+def get_show_missing_fields(
+    show_inst: database.Show, show_data: models.Show
+) -> list[schema.ShowMissingField]:
+    """
+    Facts the show record lacks, as the old site's `_plugins/show.rb` records them.
+
+    How many missing facts make a record too thin to show is left to the consumer.
+    """
+    missing_fields = []
+    if not show_inst.date_start:
+        missing_fields.append(schema.ShowMissingField.DATE_START)
+    if not show_inst.primary_image:
+        missing_fields.append(schema.ShowMissingField.POSTER)
+    if not show_inst.content:
+        missing_fields.append(schema.ShowMissingField.EXCERPT)
+    if not show_data.cast:
+        missing_fields.append(schema.ShowMissingField.CAST)
+    elif show_data.cast_incomplete:
+        missing_fields.append(schema.ShowMissingField.CAST_INCOMPLETE)
+    if not show_data.crew:
+        missing_fields.append(schema.ShowMissingField.CREW)
+    elif len(show_data.crew) <= settings.show_low_crew:
+        missing_fields.append(schema.ShowMissingField.CREW_SHORT)
+    playwright = get_show_playwright(show_data)
+    if playwright is None or playwright.type == schema.PlaywrightType.UNKNOWN:
+        # No authorship at all reads as unknown, as it does on the old site.
+        missing_fields.append(schema.ShowMissingField.PLAYWRIGHT)
+    if not show_data.venue:
+        missing_fields.append(schema.ShowMissingField.VENUE)
+    return missing_fields
+
+
+def get_show_tour(show_data: models.Show) -> list[schema.ShowTourDate]:
+    return [
+        schema.ShowTourDate(
+            venue=tour_date.venue,
+            date_start=tour_date.date_start,
+            date_end=tour_date.date_end,
+            note=tour_date.note,
+        )
+        for tour_date in show_data.tour
+    ]
+
+
+def get_show_sequence_item(show_inst: database.Show) -> schema.ShowSequenceItem:
+    return schema.ShowSequenceItem(
+        id=show_inst.id,
+        title=show_inst.title,
+        primary_image=show_inst.primary_image,
+    )
+
+
+def get_show_index_item(show_inst: database.Show) -> schema.ShowIndexItem:
+    source_data = models.Show(**json.loads(show_inst.data))
+    playwright = get_show_playwright(source_data)
+    return schema.ShowIndexItem(
+        id=show_inst.id,
+        title=show_inst.title,
+        year_id=show_inst.year_id,
+        year=show_inst.year,
+        season=source_data.season,
+        season_id=show_inst.season_id,
+        venue=get_show_venue(show_inst, source_data),
+        date_start=show_inst.date_start,
+        date_end=show_inst.date_end,
+        primary_image=show_inst.primary_image,
+        playwright_descriptor=playwright.descriptor if playwright else None,
+    )
+
+
 def get_show_list_item(show_inst: database.Show) -> schema.ShowList:
     source_data = models.Show(**json.loads(show_inst.data))
     return schema.ShowList(
@@ -145,7 +225,11 @@ def get_show_list_item(show_inst: database.Show) -> schema.ShowList:
     )
 
 
-def get_show_detail(show_inst: database.Show) -> schema.ShowDetail:
+def get_show_detail(
+    show_inst: database.Show,
+    previous: schema.ShowSequenceItem | None = None,
+    next_show: schema.ShowSequenceItem | None = None,
+) -> schema.ShowDetail:
     source_data = models.Show(**json.loads(show_inst.data))
     return schema.ShowDetail(
         id=show_inst.id,
@@ -161,6 +245,7 @@ def get_show_detail(show_inst: database.Show) -> schema.ShowDetail:
         venue=get_show_venue(show_inst, source_data),
         date_start=show_inst.date_start,
         date_end=show_inst.date_end,
+        tour=get_show_tour(source_data),
         cast=get_show_roles(source_data.cast),
         crew=get_show_roles(source_data.crew),
         cast_incomplete=source_data.cast_incomplete,
@@ -171,6 +256,13 @@ def get_show_detail(show_inst: database.Show) -> schema.ShowDetail:
         # show would be slow, so instead we use the saved result from when we loaded.
         assets=[schema.Asset(**asset) for asset in json.loads(show_inst.assets)],
         primary_image=show_inst.primary_image,
+        missing_fields=get_show_missing_fields(show_inst, source_data),
+        ignore_missing=source_data.ignore_missing,
+        ignore_missing_in_seasons=(
+            show_inst.season_id in settings.ignore_missing_in_season_ids
+        ),
+        previous=previous,
+        next=next_show,
         content=show_inst.content,
     )
 

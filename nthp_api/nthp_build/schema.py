@@ -99,6 +99,37 @@ class VenueShow(NthpSchema):
     name: str
 
 
+class ShowTourDate(NthpSchema):
+    venue: str | None = None
+    date_start: FuzzyDate | None = None
+    date_end: FuzzyDate | None = None
+    note: str | None = None
+
+
+class ShowMissingField(Enum):
+    """
+    A fact a show record is missing, as the old site's `_plugins/show.rb` records them.
+
+    How many of these make a record too thin to show is left to the consumer.
+    """
+
+    DATE_START = "date_start"
+    POSTER = "poster"
+    EXCERPT = "excerpt"
+    CAST = "cast"
+    CAST_INCOMPLETE = "cast_incomplete"
+    CREW = "crew"
+    CREW_SHORT = "crew_short"
+    PLAYWRIGHT = "playwright"
+    VENUE = "venue"
+
+
+class ShowSequenceItem(NthpSchema):
+    id: str
+    title: str
+    primary_image: str | None = None
+
+
 class ShowDetail(NthpSchema):
     id: str
     title: str
@@ -113,7 +144,7 @@ class ShowDetail(NthpSchema):
     venue: VenueShow | None = None
     date_start: FuzzyDate | None = None
     date_end: FuzzyDate | None = None
-    # tour TODO
+    tour: list[ShowTourDate] = []
     cast: list[ShowRole]
     crew: list[ShowRole]
     cast_incomplete: bool
@@ -122,6 +153,22 @@ class ShowDetail(NthpSchema):
     crew_note: str | None = None
     assets: list[Asset]
     primary_image: str | None = None
+    missing_fields: list[ShowMissingField] = Field(
+        description="Facts the show record is missing, as the old site recorded them"
+    )
+    ignore_missing: bool = Field(
+        description="Whether the record is authored as not expected to be complete"
+    )
+    ignore_missing_in_seasons: bool = Field(
+        description="Whether the show is in a season whose records are not expected "
+        "to be complete"
+    )
+    previous: ShowSequenceItem | None = Field(
+        default=None, description="The show before this one across the whole archive"
+    )
+    next: ShowSequenceItem | None = Field(
+        default=None, description="The show after this one across the whole archive"
+    )
 
     content: str | None = None
 
@@ -138,6 +185,36 @@ class ShowList(NthpSchema):
     date_start: FuzzyDate | None = None
     date_end: FuzzyDate | None = None
     primary_image: str | None = None
+
+
+class ShowIndexItem(NthpSchema):
+    id: str
+    title: str
+    year_id: str = Field(
+        description="ID of the academic year the show is in, in YYYY-YY form",
+        json_schema_extra={"example": "2024-25"},
+    )
+    year: int = Field(
+        description="Calendar year the academic year starts in",
+        json_schema_extra={"example": 2024},
+    )
+    season: str = Field(description="Season as authored on the show")
+    season_id: str | None = Field(
+        default=None, description="ID of the season, aliases merged"
+    )
+    venue: VenueShow | None = None
+    date_start: FuzzyDate | None = None
+    date_end: FuzzyDate | None = None
+    primary_image: str | None = None
+    playwright_descriptor: str | None = Field(
+        default=None,
+        description="How the show's authorship reads, e.g. `by William Shakespeare`",
+        json_schema_extra={"example": "by William Shakespeare"},
+    )
+
+
+class ShowIndexCollection(BaseCollectionModel[ShowIndexItem]):
+    pass
 
 
 class SeasonList(NthpSchema):

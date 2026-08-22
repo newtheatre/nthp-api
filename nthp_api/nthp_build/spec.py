@@ -35,6 +35,7 @@ PYDANTIC_JSON_SCHEMA = models_json_schema(
         schema.SeasonDetail,
         schema.SeasonListCollection,
         schema.ShowDetail,
+        schema.ShowIndexCollection,
         schema.SiteStats,
         schema.TargetedTriviaCollection,
         schema.VenueCollection,
@@ -169,6 +170,15 @@ SPEC = {
             description="Academic years are identified as `YYYY-YY`, e.g. `2024-25`.",
             model=schema.YearDetail,
             key="id",
+        ),
+        "/shows/index.json": make_basic_get_operation(
+            operation_id="getShowIndex",
+            tags=["shows"],
+            summary="Get index of shows",
+            description="Every show in the archive's canonical order: academic year, "
+            "then season order within the year, then date. Lighter than the show "
+            "lists embedded in year and season documents.",
+            model=schema.ShowIndexCollection,
         ),
         "/shows/{id}.json": make_detail_get_operation(
             operation_id="getShowDetail",

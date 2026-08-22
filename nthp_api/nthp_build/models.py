@@ -107,6 +107,21 @@ class Trivia(NthpModel):
     submitted: FuzzyDate | None = None
 
 
+class TourDate(NthpModel):
+    venue: PermissiveStr | None = None
+    date_start: FuzzyDate | None = None
+    date_end: FuzzyDate | None = None
+    note: PermissiveStr | None = None
+    comment: PermissiveStr | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def accept_notes_alias(cls, values: dict) -> dict:
+        if isinstance(values, dict) and "notes" in values:
+            values = {**values, "note": values.pop("notes")}
+        return values
+
+
 class Show(NthpModel):
     id: str
     title: str
@@ -138,7 +153,7 @@ class Show(NthpModel):
     venue_sort: PermissiveStr | None = None
     date_start: FuzzyDate | None = None
     date_end: FuzzyDate | None = None
-    # tour TODO
+    tour: list[TourDate] = []
     trivia: list[Trivia] = []
     cast: list[PersonRef] = []
     crew: list[PersonRef] = []
@@ -146,6 +161,7 @@ class Show(NthpModel):
     cast_note: PermissiveStr | None = None
     crew_incomplete: bool = False
     crew_note: PermissiveStr | None = None
+    ignore_missing: bool = False
     prod_shots: str | None = None
     assets: list[Asset] = []
     links: list[Link] = []

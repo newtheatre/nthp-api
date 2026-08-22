@@ -34,5 +34,13 @@ class Settings(BaseSettings):
     # What month (1-12) do people tend to graduate in?
     graduation_month: int = 6
 
+    # Mirrors the content repo's _config.yml: a show with this many crew or fewer
+    # counts as missing its crew.
+    show_low_crew: int = 5
+    # Seasons whose shows are not expected to be fully documented, by season id.
+    ignore_missing_in_season_ids: set[str] = Field(
+        default_factory=lambda: {"external", "postgrads", "stuff"}
+    )
+
 
 settings = Settings()
