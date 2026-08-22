@@ -4,8 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from nthp_api.nthp_build import database, dumper, models, spec, venues
+from nthp_api.nthp_build import assets, database, dumper, models, spec, venues
 from nthp_api.nthp_build.parallel import DumperSharedState
+from nthp_api.smugmugger import SmugMugImageInfo
 
 NEW_THEATRE_BUILT = 1965
 C_SOCO_SHOW_IDS = ["1999-00/fringe_show", "1999-00/other_fringe_show"]
@@ -210,6 +211,23 @@ class TestVenueAssets:
 
     def test_stub_has_no_assets(self, populated_db):
         assert venues.get_venue_detail(get_record("c-soco")).assets == []
+
+    def test_assets_carry_smugmug_dimensions(self, populated_db):
+        saved_asset = assets.save_asset(
+            target_id="new-theatre",
+            target_type=assets.AssetTarget.VENUE,
+            source=assets.AssetSource.SMUGMUG,
+            type=assets.AssetType.IMAGE,
+            id="nQTq7s8",
+        )
+        saved_asset.asset_smugmug_data = SmugMugImageInfo(
+            width=1024, height=768
+        ).model_dump_json()
+        saved_asset.save()
+        assets.get_smugmug_image_info_map.cache_clear()
+        detail = venues.get_venue_detail(get_record("new-theatre"))
+        assets.get_smugmug_image_info_map.cache_clear()
+        assert (detail.assets[0].width, detail.assets[0].height) == (1024, 768)
 
 
 class TestDumpVenues:

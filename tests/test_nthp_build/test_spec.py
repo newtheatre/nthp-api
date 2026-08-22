@@ -47,6 +47,11 @@ class TestPeopleIndex:
             "$ref"
         ].endswith("PersonIndexCollection")
 
+    def test_detail_headshot_is_an_asset(self):
+        assert {"$ref": "#/components/schemas/Asset"} in get_property(
+            "PersonDetail", "headshot"
+        )["anyOf"]
+
     def test_model_present(self):
         assert set(SCHEMAS["PersonIndexItem"]["properties"]) == {
             "id",

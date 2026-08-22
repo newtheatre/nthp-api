@@ -278,6 +278,19 @@ def add_smugmug_image_info(asset: schema.Asset) -> schema.Asset:
     )
 
 
+def asset_from_headshot(image_id: str) -> schema.Asset:
+    """The headshot image key on a person, as a full asset with dimensions."""
+    return add_smugmug_image_info(
+        schema.Asset(
+            id=image_id,
+            source=AssetSource.SMUGMUG.value,
+            type=AssetType.IMAGE.value,
+            mime_type=get_mime_type(AssetSource.SMUGMUG, AssetType.IMAGE, image_id),
+            category=AssetCategory.HEADSHOT.value,
+        )
+    )
+
+
 def get_asset_collection_from_album(
     album: database.Asset,
 ) -> schema.AssetCollection | None:

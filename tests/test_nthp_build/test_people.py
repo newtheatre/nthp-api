@@ -1,8 +1,9 @@
 import freezegun
 import pytest
 
-from nthp_api.nthp_build import database, models, people
+from nthp_api.nthp_build import assets, database, models, people
 from nthp_api.nthp_build.schema import PersonCollaborator, PersonGraduated
+from nthp_api.smugmugger import SmugMugImageInfo
 
 
 @pytest.mark.parametrize(
@@ -285,3 +286,44 @@ class TestGetGraduation:
                 )
                 == graduated
             )
+
+
+class TestPersonDetailHeadshot:
+    @pytest.fixture(autouse=True)
+    def _clear_image_info_cache(self):
+        assets.get_smugmug_image_info_map.cache_clear()
+        yield
+        assets.get_smugmug_image_info_map.cache_clear()
+
+    @staticmethod
+    def make_person(headshot: str | None) -> models.Person:
+        return models.Person(id="fred_bloggs", title="Fred Bloggs", headshot=headshot)
+
+    def test_no_headshot_is_none(self, test_db):
+        assert people.make_person_detail(self.make_person(None)).headshot is None
+
+    def test_headshot_becomes_an_asset(self, test_db):
+        headshot = people.make_person_detail(self.make_person("abc123")).headshot
+        assert headshot is not None
+        assert headshot.id == "abc123"
+        assert headshot.type == "image"
+        assert headshot.source == "smugmug"
+        assert headshot.category == "headshot"
+        assert headshot.mime_type == "image/jpeg"
+
+    def test_headshot_carries_smugmug_dimensions(self, test_db):
+        saved_asset = assets.save_asset(
+            target_id="fred_bloggs",
+            target_type=assets.AssetTarget.PERSON,
+            source=assets.AssetSource.SMUGMUG,
+            type=assets.AssetType.IMAGE,
+            id="abc123",
+            category=assets.AssetCategory.HEADSHOT,
+        )
+        saved_asset.asset_smugmug_data = SmugMugImageInfo(
+            width=600, height=800
+        ).model_dump_json()
+        saved_asset.save()
+        headshot = people.make_person_detail(self.make_person("abc123")).headshot
+        assert headshot is not None
+        assert (headshot.width, headshot.height) == (600, 800)

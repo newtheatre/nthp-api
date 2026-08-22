@@ -133,7 +133,14 @@ def get_venue_detail(record: VenueRecord) -> VenueDetail:
     data = record.document_data
     return VenueDetail(
         **get_venue_list(record).model_dump(),
-        assets=list(assets.assets_from_venue_model(data)) if data else [],
+        assets=(
+            [
+                assets.add_smugmug_image_info(asset)
+                for asset in assets.assets_from_venue_model(data)
+            ]
+            if data
+            else []
+        ),
         shows=[get_show_list_item(show) for show in record.shows],
         content=record.document.content if record.document else None,
     )

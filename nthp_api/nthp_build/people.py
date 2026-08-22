@@ -6,7 +6,7 @@ from typing import Any, cast
 import peewee
 from slugify import slugify
 
-from nthp_api.nthp_build import database, models, schema, years
+from nthp_api.nthp_build import assets, database, models, schema, years
 from nthp_api.nthp_build.config import settings
 
 SHOW_ROLE_TYPES = [database.PersonRoleType.CAST, database.PersonRoleType.CREW]
@@ -264,7 +264,9 @@ def make_person_detail(
         id=model.id,
         title=model.title,
         submitted=model.submitted,
-        headshot=model.headshot,
+        headshot=(
+            assets.asset_from_headshot(model.headshot) if model.headshot else None
+        ),
         graduated=get_graduation(model),
         show_roles=get_person_show_roles(model.id),
         committee_roles=get_person_committee_roles(model.id),

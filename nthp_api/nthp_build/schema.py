@@ -448,7 +448,7 @@ class PersonDetail(NthpSchema):
     id: str
     title: str
     submitted: FuzzyDate | bool | None = None
-    headshot: str | None = None
+    headshot: Asset | None = None
     graduated: PersonGraduated | None = None
     show_roles: list[PersonShowRoles]
     committee_roles: list[PersonCommitteeRole]
