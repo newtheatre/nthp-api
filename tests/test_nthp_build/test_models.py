@@ -180,3 +180,47 @@ class TestPerson:
         assert models.Person(title="Fred Bloggs", award="Knighthood").award == (
             "Knighthood"
         )
+
+
+class TestUnknownKeys:
+    def test_unknown_key_rejected(self):
+        with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+            make_show(playright="Fred Bloggs")
+        with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+            models.Person(title="Fred Bloggs", Careers=["Director"])
+
+    def test_modelled_keys_accepted(self):
+        show = make_show(published=True, note="Only the year is known")
+        assert show.note == "Only the year is known"
+        person = models.Person(
+            title="Fred Bloggs",
+            gender="male",
+            contact_allowed=True,
+            alias="Freddie Bloggs",
+            aliases=[{"type": "stage", "name": "Freddie B"}],
+        )
+        assert person.gender == "male"
+        assert person.contact_allowed is True
+        assert person.aliases[0].name == "Freddie B"
+        assert models.Venue(title="A Venue", title_short="Venue").title_short == "Venue"
+        assert models.Committee(title="Committee 00-01", committee=[]).title == (
+            "Committee 00-01"
+        )
+        assert models.Link(type="review", author="A Critic").author == "A Critic"
+        assert models.Asset(type="poster", image="abc", comment="From a scan").comment
+
+    def test_definition_presentation_keys_accepted(self):
+        assert models.CrewRoleDefinition(role="Director", icon="fa fa-film", show=False)
+        assert models.LinkTypeDefinition(
+            type="LinkedIn", icon="fa fa-linkedin", data="data-proofer-ignore"
+        )
+
+
+class TestAliasKeys:
+    def test_career_alias_drops_the_authored_key(self):
+        assert models.Person(title="Fred Bloggs", career="Director").careers == [
+            "Director"
+        ]
+
+    def test_tour_notes_alias_drops_the_authored_key(self):
+        assert models.TourDate(venue="A Venue", notes="One night").note == "One night"

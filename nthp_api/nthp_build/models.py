@@ -16,12 +16,22 @@ from nthp_api.nthp_build.fields import FuzzyDate, PermissiveStr
 
 
 class NthpModel(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    """
+    Base for every ingest model.
+
+    Unknown keys are rejected: a key the models do not know is a key the API never
+    emits, and every such key found so far has been a typo or a dead convention.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
 
 class Link(NthpModel):
     type: str
     href: str | None = None
+    # Who wrote the piece linked to. Ingested but not dumped, as no consumer asks
+    # for it yet.
+    author: PermissiveStr | None = None
     snapshot: str | None = None
     username: PermissiveStr | None = None
     title: PermissiveStr | None = None
@@ -83,6 +93,7 @@ class Asset(NthpModel):
     title: PermissiveStr | None = None
     page: int | None = None
     display_image: bool = False
+    comment: PermissiveStr | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -135,7 +146,8 @@ class TourDate(NthpModel):
     @classmethod
     def accept_notes_alias(cls, values: dict) -> dict:
         if isinstance(values, dict) and "notes" in values:
-            values = {**values, "note": values.pop("notes")}
+            values = dict(values)
+            values["note"] = values.pop("notes")
         return values
 
 
@@ -181,6 +193,10 @@ class Show(NthpModel):
     crew_incomplete: bool = False
     crew_note: PermissiveStr | None = None
     ignore_missing: bool = False
+    # A Jekyll front matter flag from the old site; every use sets it true, which was
+    # already the default there, so it changes nothing.
+    published: bool = True
+    note: PermissiveStr | None = None
     prod_shots: str | None = None
     assets: list[Asset] = []
     links: list[Link] = []
@@ -188,11 +204,17 @@ class Show(NthpModel):
 
 
 class Committee(NthpModel):
+    # The loader supplies `id` from the document path; committees do not author one.
+    id: str | None = None
+    title: str | None = None
     committee: list[PersonRef]
 
 
 class Venue(NthpModel):
+    # The loader supplies `id` from the document path; venues do not author one.
+    id: str | None = None
     title: str
+    title_short: PermissiveStr | None = None
     links: list[Link] = []
     built: int | None = None
     images: list[str] = []
@@ -202,9 +224,22 @@ class Venue(NthpModel):
     comment: PermissiveStr | None = None
 
 
+class PersonAlias(NthpModel):
+    """Another name a person is credited or published under."""
+
+    type: PermissiveStr | None = None
+    name: str
+
+
 class Person(NthpModel):
     id: str | None = None
     title: str
+    alias: PermissiveStr | None = None
+    aliases: list[PersonAlias] = []
+    gender: PermissiveStr | None = None
+    # Whether the person agreed to be contacted about the archive. Ingested but never
+    # dumped: it is for the archivists, not the API.
+    contact_allowed: bool = False
     submitted: FuzzyDate | bool | None = None
     headshot: str | None = None
     course: list[PermissiveStr] = []
@@ -220,7 +255,8 @@ class Person(NthpModel):
     def accept_career_alias(cls, values: dict) -> dict:
         """Most records use `careers`, a couple use `career`."""
         if isinstance(values, dict) and "career" in values:
-            values = {**values, "careers": values.pop("career")}
+            values = dict(values)
+            values["careers"] = values.pop("career")
         return values
 
     @field_validator("course", "careers", mode="before")
@@ -274,6 +310,8 @@ class CrewRoleDefinition(NthpModel):
 
     role: str
     aliases: list[str] = []
+    icon: str | None = None
+    show: bool = True
 
     @field_validator("role", "aliases", mode="before")
     @classmethod
@@ -300,6 +338,8 @@ class LinkTypeDefinition(NthpModel):
     type: str
     href: str | None = None
     is_news: bool = False
+    icon: str | None = None
+    data: str | None = None
 
     @field_validator("type", "href", mode="before")
     @classmethod
