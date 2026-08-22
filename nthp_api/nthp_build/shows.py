@@ -5,6 +5,7 @@ import peewee
 from nthp_api.nthp_build import (
     assets,
     database,
+    links,
     models,
     people,
     playwrights,
@@ -266,6 +267,7 @@ def get_show_detail(
             for asset in json.loads(show_inst.assets)
         ],
         primary_image=show_inst.primary_image,
+        links=links.get_links(source_data.links),
         missing_fields=get_show_missing_fields(show_inst, source_data),
         ignore_missing=source_data.ignore_missing,
         ignore_missing_in_seasons=(

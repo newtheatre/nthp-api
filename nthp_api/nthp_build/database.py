@@ -114,6 +114,15 @@ class CrewRoleDefinition(NthpDbModel):
     aliases = peewee.TextField()
 
 
+class LinkTypeDefinition(NthpDbModel):
+    """Link types as defined by the content repo, in the order they are defined."""
+
+    name = peewee.CharField(primary_key=True)
+    sort = peewee.IntegerField(index=True)
+    href_template = peewee.CharField(null=True)
+    is_news = peewee.BooleanField()
+
+
 class HistoryRecord(NthpDbModel):
     year = peewee.CharField()
     academic_year = peewee.CharField(null=True, index=True)
@@ -145,6 +154,7 @@ MODELS = [
     Person,
     Trivia,
     CrewRoleDefinition,
+    LinkTypeDefinition,
     HistoryRecord,
     Asset,
 ]

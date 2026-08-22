@@ -13,6 +13,7 @@ from pydantic_collections import BaseCollectionModel
 from nthp_api.nthp_build import (
     assets,
     database,
+    links,
     models,
     parallel,
     people,
@@ -152,6 +153,12 @@ def load_history(path: DocumentPath, data: models.HistoryRecordCollection):
         )
 
 
+def load_link_type_definitions(
+    path: DocumentPath, data: models.LinkTypeDefinitionCollection
+):
+    links.save_link_type_definitions(data)
+
+
 def load_crew_role_definitions(
     path: DocumentPath, data: models.CrewRoleDefinitionCollection
 ):
@@ -209,6 +216,12 @@ LOADERS: list[Loader] = [
         path=Path("_data/roles.yaml"),
         schema_type=models.CrewRoleDefinitionCollection,
         func=load_crew_role_definitions,
+    ),
+    Loader(
+        type=DataLoaderFunc,
+        path=Path("_data/link-types.yaml"),
+        schema_type=models.LinkTypeDefinitionCollection,
+        func=load_link_type_definitions,
     ),
     Loader(
         type=DataLoaderFunc,

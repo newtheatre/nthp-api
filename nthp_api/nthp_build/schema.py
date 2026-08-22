@@ -37,6 +37,67 @@ class Location(NthpSchema):
         return cls(lat=model.lat, lon=model.lon)
 
 
+class Link(NthpSchema):
+    """A link to a resource beyond the archive: a profile, a review, a news story."""
+
+    type: str = Field(
+        description="Type of resource, canonical name where the content repo's "
+        "`_data/link-types.yaml` defines the type, otherwise as authored",
+        json_schema_extra={"example": "Review"},
+    )
+    is_news: bool = Field(
+        description="Whether the type is a news type, an article or a review",
+        json_schema_extra={"example": True},
+    )
+    href: str | None = Field(
+        default=None,
+        description="URL of the resource, resolved from the username where the type "
+        "templates one",
+        json_schema_extra={"example": "https://twitter.com/nnt_official"},
+    )
+    href_snapshot: str | None = Field(
+        default=None,
+        description="URL of the archive.is snapshot of the resource, where one has "
+        "been taken",
+        json_schema_extra={"example": "https://archive.is/abc12"},
+    )
+    username: str | None = Field(
+        default=None,
+        description="Username on the service, where the type is a service",
+        json_schema_extra={"example": "nnt_official"},
+    )
+    title: str | None = Field(
+        default=None,
+        description="Title of the resource, such as the headline of an article",
+        json_schema_extra={"example": "Student theatre at its best"},
+    )
+    date: FuzzyDate | None = Field(
+        default=None,
+        description="Date the resource was published, of year, month or day precision",
+        json_schema_extra={"example": "2022-01-31"},
+    )
+    publisher: str | None = Field(
+        default=None,
+        description="Name of the publisher, given for news and reviews",
+        json_schema_extra={"example": "Impact Magazine"},
+    )
+    rating: str | None = Field(
+        default=None,
+        description="Rating a review gave, written as `x/of_y`",
+        json_schema_extra={"example": "4/5"},
+    )
+    quote: str | None = Field(
+        default=None,
+        description="Short quotation summarising the resource",
+        json_schema_extra={"example": "A triumph from start to finish"},
+    )
+    note: str | None = Field(
+        default=None,
+        description="Note about the resource, displayed alongside the link",
+        json_schema_extra={"example": "Requires a subscription"},
+    )
+
+
 class PersonRoleList(models.PersonRole):
     model_config = RESPONSE_CONFIG
 
@@ -162,6 +223,10 @@ class ShowDetail(NthpSchema):
     )
     ignore_missing: bool = Field(
         description="Whether the record is authored as not expected to be complete"
+    )
+    links: list[Link] = Field(
+        default=[],
+        description="Links to press reviews, news stories and recordings of the show",
     )
     ignore_missing_in_seasons: bool = Field(
         description="Whether the show is in a season whose records are not expected "
@@ -300,6 +365,9 @@ class VenueList(NthpSchema):
 
 class VenueDetail(VenueList):
     assets: list[Asset] = []
+    links: list[Link] = Field(
+        default=[], description="Links to the venue's own site and other resources"
+    )
     shows: list[ShowList] = []
     content: str | None = None
 
@@ -452,6 +520,12 @@ class PersonDetail(NthpSchema):
     graduated: PersonGraduated | None = None
     show_roles: list[PersonShowRoles]
     committee_roles: list[PersonCommitteeRole]
+    links: list[Link] = Field(
+        default=[], description="Links to the person's profiles beyond the archive"
+    )
+    news: list[Link] = Field(
+        default=[], description="Links to news stories about the person"
+    )
     content: str | None = None
 
 

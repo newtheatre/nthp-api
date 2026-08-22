@@ -5,7 +5,7 @@ from typing import NamedTuple
 
 from slugify import slugify
 
-from nthp_api.nthp_build import assets, database, models
+from nthp_api.nthp_build import assets, database, links, models
 from nthp_api.nthp_build.schema import Location, VenueDetail, VenueList
 from nthp_api.nthp_build.shows import get_show_list_item
 
@@ -141,6 +141,7 @@ def get_venue_detail(record: VenueRecord) -> VenueDetail:
             if data
             else []
         ),
+        links=links.get_links(data.links) if data else [],
         shows=[get_show_list_item(show) for show in record.shows],
         content=record.document.content if record.document else None,
     )

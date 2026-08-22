@@ -238,3 +238,27 @@ class CrewRoleDefinition(NthpModel):
 
 class CrewRoleDefinitionCollection(BaseCollectionModel[CrewRoleDefinition]):
     pass
+
+
+class LinkTypeDefinition(NthpModel):
+    """
+    A link type as defined by the content repo's `_data/link-types.yaml`.
+
+    Icons and proofer flags are presentation concerns and are ignored.
+    """
+
+    type: str
+    href: str | None = None
+    is_news: bool = False
+
+    @field_validator("type", "href", mode="before")
+    @classmethod
+    def strip_whitespace(cls, value: object) -> object:
+        """Types in link-types.yaml carry trailing whitespace."""
+        if isinstance(value, str):
+            return value.strip()
+        return value
+
+
+class LinkTypeDefinitionCollection(BaseCollectionModel[LinkTypeDefinition]):
+    pass
