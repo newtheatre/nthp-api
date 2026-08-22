@@ -189,9 +189,11 @@ class TestCrewRoles:
         assert {person.role for person in people} == {"Playwright"}
 
     def test_count_is_holdings_not_people(self, populated_db):
+        expected_holdings = 3
         definition = roles.get_crew_role_definitions()[0]
         assert (
-            roles.get_role_holding_count(definition, database.PersonRoleType.CREW) == 3
+            roles.get_role_holding_count(definition, database.PersonRoleType.CREW)
+            == expected_holdings
         )
 
     def test_roles_without_definition_are_reported(self, populated_db):
@@ -268,9 +270,7 @@ class TestDumpRoles:
     def test_people_duplicated_per_committee_holding(
         self, populated_db, output_dir: Path
     ):
-        president = read_json(
-            dump_roles(output_dir) / "committee" / "president.json"
-        )
+        president = read_json(dump_roles(output_dir) / "committee" / "president.json")
         assert [person["id"] for person in president] == ["alice", "bob"]
 
 
