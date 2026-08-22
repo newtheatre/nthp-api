@@ -14,13 +14,12 @@ One source: pydantic ingest models, with `Field(description=…, examples=…)` 
 ## Outputs
 
 1. **JSON Schema** (draft 2020-12), one file per document type, emitted by the dump into `dist/content-schema/{show,person,venue,committee,year,history,roles,link-types}.json`, so they are published at the API URL alongside `openapi.json` and versioned with it. Generated via `model_json_schema()` after `extra="forbid"` (task 24) so unknown keys are rejected. `FuzzyDate`, `Link`, `PersonRef`, `Asset`, `Trivia` as `$defs` shared across files. Include a top-level `description` per document type (where the file lives, filename → id rule, what the body is).
-2. **Human page** `dist/content-schema/index.html` in the docs site (doc 08): per type, a table of field / type / required / description / example, plus a "rules beyond the schema" list (date order, `playwright_alias` needs `student_written`, `devised` xor `playwright`, venue naming → id) sourced from the validator docstrings in task 24. Replaces `def-data.html`.
+2. **Human page** `dist/content-schema/index.html` in the docs site (doc 08): per type, a table of field / type / required / description / example, plus a "rules beyond the schema" list (date order, `playwright_alias` needs `student_written`, `devised` xor `playwright`, venue naming → id) sourced from the validator docstrings in task 24. Replaces `def-data.html`; the old `_data/defs/*.yaml` are deleted, not maintained.
 3. **CLI**
    - `nthp schema [type] [--format json|markdown]` — print a schema, for agents that want it inline.
    - `nthp validate <path>…` — validate one or more content files (frontmatter + body) against the models and the per-document validators, rich output like `nthp lint`, nonzero exit on failure. This is the agent/editor feedback loop: write a page, run validate, fix.
    - `nthp new show|person|venue [--id …]` — emit a skeleton with every field commented, replacing `_shows/_skeleton.md`.
 4. **Editor integration** in the content repo: `.vscode/settings.json` mapping `_shows/**/*.md` frontmatter to the published schema URL (via a frontmatter-schema extension), and a short `AGENTS.md` in the content repo pointing at the schema URL, `nthp validate`, and `nthp new`.
-5. **Jekyll transition**: until the new site launches the old site still reads `_data/defs/*.yaml`. Add `--format defs-yaml` to `nthp schema` and regenerate those files from the models in the same PR that migrates the descriptions, so the Ruby site keeps rendering without drift. Delete once Jekyll goes.
 
 ## Do
 
