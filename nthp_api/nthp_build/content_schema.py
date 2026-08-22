@@ -58,7 +58,7 @@ SHOW = ContentDocumentType(
         "filename, without its extension, is the show's identifier within that "
         "year."
     ),
-    body="A synopsis of the show, in Markdown.",
+    body="a synopsis of the show, in Markdown.",
     rules=(
         "`date_end` must not be before `date_start`.",
         "`date_start` must fall inside the academic year the folder names.",
@@ -98,7 +98,7 @@ PERSON = ContentDocumentType(
         "gets a page; this document adds a biography and everything below to it. "
         "The filename is the person's identifier."
     ),
-    body="A biography, in Markdown.",
+    body="a biography, in Markdown.",
     rules=(
         "`title` must match the filename: `Fred Bloggs` is `fred_bloggs.md`.",
         (
@@ -127,7 +127,7 @@ VENUE = ContentDocumentType(
         "published as stubs; this document gives one a description, links and a "
         "location. The filename is the venue's identifier."
     ),
-    body="A description of the venue, in Markdown.",
+    body="a description of the venue, in Markdown.",
     rules=(
         (
             "The filename must be `title` slugified: `Nottingham New Theatre` is "
@@ -146,7 +146,7 @@ COMMITTEE = ContentDocumentType(
     description=(
         "One year's committee. The filename is the academic year the committee served."
     ),
-    body="A note about the year, in Markdown.",
+    body="a note about the year, in Markdown.",
     rules=(
         (
             "Every entry needs a `role`; one left out, or set to `unknown`, appears in "
@@ -255,5 +255,7 @@ def write_document_schemas(directory: Path) -> None:
     for document_type in CONTENT_DOCUMENT_TYPES:
         path = directory / document_type.filename
         with path.open("w") as f:
-            json.dump(get_document_schema(document_type), f, indent=2)
+            json.dump(
+                get_document_schema(document_type), f, indent=2, ensure_ascii=False
+            )
             f.write("\n")
