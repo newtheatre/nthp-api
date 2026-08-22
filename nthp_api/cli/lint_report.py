@@ -111,6 +111,10 @@ def render_check(
     heading.append(f"  [{check.name}]", style="dim")
     console.print(heading)
     console.print(Text(check.explanation, style=None if plain else "dim"))
+    if verbose and check.note is not None:
+        note = check.note()
+        if note:
+            console.print(Text(f"  {note}", style=None if plain else "dim"))
     if not findings:
         console.print(Text("  Nothing to report.", style=None if plain else "green"))
         console.print()

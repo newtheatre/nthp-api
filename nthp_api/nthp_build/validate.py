@@ -24,6 +24,10 @@ from nthp_api.nthp_build import assets, database, links, models, people, roles
 log = logging.getLogger(__name__)
 
 MAX_YEARS_AFTER_LAST_CREDIT = 10
+# A break this long between one id's credits reads as two people, not one career.
+MERGE_GAP_YEARS = 8
+# How far from a documented graduation year that person's credits may still run.
+DOCUMENTED_GRADUATION_MARGIN = 6
 # How alike two forenames behind one surname must be to read as one person.
 FORENAME_SIMILARITY_LIMIT = 0.6
 FORENAME_SHARED_PREFIX = 2
@@ -60,11 +64,19 @@ class Finding(NamedTuple):
 
 
 class Check(NamedTuple):
+    """
+    One check, and how `nthp lint` should introduce it.
+
+    `note` is for what the check chose not to report: cases it suppressed on
+    purpose, shown under `--verbose` so the suppression is visible.
+    """
+
     name: str
     title: str
     explanation: str
     severity: Severity
     func: Callable[[], list[Finding]]
+    note: Callable[[], str | None] | None = None
 
 
 PLACEHOLDER_CONTENT_CHECK = "placeholder-content"
@@ -337,6 +349,100 @@ def check_graduation_plausible() -> list[Finding]:
     return findings
 
 
+def get_active_year_clusters(years: Iterable[int]) -> list[list[int]]:
+    """Active years split wherever the break between them is long enough."""
+    clusters: list[list[int]] = []
+    for year in sorted(set(years)):
+        if clusters and year - clusters[-1][-1] < MERGE_GAP_YEARS:
+            clusters[-1].append(year)
+        else:
+            clusters.append([year])
+    return clusters
+
+
+def format_year_clusters(clusters: list[list[int]]) -> str:
+    spans = [
+        str(cluster[0]) if cluster[0] == cluster[-1] else f"{cluster[0]}-{cluster[-1]}"
+        for cluster in clusters
+    ]
+    *earlier, last = spans
+    return " and ".join([", ".join(earlier), last]) if earlier else last
+
+
+class PersonDocument(NamedTuple):
+    source_path: str
+    graduated: int | None
+
+
+def get_person_documents() -> dict[str, PersonDocument]:
+    return {
+        person.id: PersonDocument(person.source_path, person.graduated)
+        for person in database.Person.select()
+    }
+
+
+def clusters_fit_graduation(clusters: list[list[int]], graduated: int) -> bool:
+    """Whether every cluster falls in the working life a graduation year implies."""
+    return all(
+        abs(year - graduated) <= DOCUMENTED_GRADUATION_MARGIN
+        for cluster in clusters
+        for year in (cluster[0], cluster[-1])
+    )
+
+
+class MergedPeople(NamedTuple):
+    findings: list[Finding]
+    skipped: list[str]
+
+
+def find_merged_people() -> MergedPeople:
+    """
+    Ids whose credits fall in clusters far enough apart to be two careers.
+
+    A documented person is taken as read where their `graduated` year vouches
+    for the whole span; without one, a document is no answer to the gap.
+    """
+    documents = get_person_documents()
+    findings: list[Finding] = []
+    skipped: list[str] = []
+    for person_id, years in sorted(get_years_active().items()):
+        clusters = get_active_year_clusters(years)
+        if len(clusters) <= 1:
+            continue
+        spans = format_year_clusters(clusters)
+        document = documents.get(person_id)
+        if (
+            document is not None
+            and document.graduated is not None
+            and clusters_fit_graduation(clusters, document.graduated)
+        ):
+            skipped.append(f"{person_id}: {spans}, graduated {document.graduated}")
+            continue
+        findings.append(
+            Finding(
+                person_id,
+                document.source_path if document else None,
+                f"{spans} ({pluralise(len(years), 'credit')})",
+            )
+        )
+    return MergedPeople(findings, skipped)
+
+
+def check_merged_people() -> list[Finding]:
+    return find_merged_people().findings
+
+
+def describe_skipped_merged_people() -> str | None:
+    skipped = find_merged_people().skipped
+    if not skipped:
+        return None
+    people_or_person = "person" if len(skipped) == 1 else "people"
+    return (
+        f"Skipped {len(skipped)} documented {people_or_person}, "
+        f"vouched for by their graduation year: " + "; ".join(skipped)
+    )
+
+
 def check_tour_dates() -> list[Finding]:
     """A tour date with neither a venue nor a date says nothing."""
     return [
@@ -511,6 +617,16 @@ LINT_CHECKS: list[Check] = [
         "spelling, or set `id` on the person to join them up.",
         Severity.WORTH_FIXING,
         check_near_duplicate_person_ids,
+    ),
+    Check(
+        "merged-people",
+        "People whose credits span two eras",
+        "Credits decades apart under one id — probably two people with the same "
+        "name. If they are one person add a `_people/` document; if two, set `id` "
+        "on the later credits.",
+        Severity.WORTH_FIXING,
+        check_merged_people,
+        describe_skipped_merged_people,
     ),
     Check(
         "unnamed-credits",

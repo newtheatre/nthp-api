@@ -221,6 +221,72 @@ class TestGraduationPlausibility:
         assert validate.check_graduation_plausible() == []
 
 
+class TestMergedPeople:
+    @staticmethod
+    def make_years(*years: int, person_id: str = "fred_bloggs") -> None:
+        for year in years:
+            make_role(
+                person_id=person_id,
+                target_id=f"{year}-{year + 1}/a_show",
+                target_year=year,
+            )
+
+    def test_a_continuous_career(self, test_db):
+        self.make_years(1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001)
+        assert validate.check_merged_people() == []
+
+    def test_a_single_year(self, test_db):
+        self.make_years(1994)
+        assert validate.check_merged_people() == []
+
+    def test_two_clusters_decades_apart(self, test_db):
+        self.make_years(1975, 1976, 1994, 1995)
+        findings = validate.check_merged_people()
+        assert len(findings) == 1
+        assert findings[0].value == "fred_bloggs"
+        assert findings[0].hint == "1975-1976 and 1994-1995 (4 credits)"
+
+    def test_a_single_year_cluster_is_named_alone(self, test_db):
+        self.make_years(1975, 1994, 1995)
+        assert (
+            validate.check_merged_people()[0].hint == "1975 and 1994-1995 (3 credits)"
+        )
+
+    def test_three_clusters(self, test_db):
+        self.make_years(1975, 1994, 2013)
+        assert (
+            validate.check_merged_people()[0].hint == "1975, 1994 and 2013 (3 credits)"
+        )
+
+    def test_a_gap_below_the_threshold(self, test_db):
+        self.make_years(1994, 1994 + validate.MERGE_GAP_YEARS - 1)
+        assert validate.check_merged_people() == []
+
+    def test_a_gap_at_the_threshold(self, test_db):
+        self.make_years(1994, 1994 + validate.MERGE_GAP_YEARS)
+        assert len(validate.check_merged_people()) == 1
+
+    def test_a_document_vouching_for_the_span(self, test_db):
+        make_person(graduated=1997)
+        self.make_years(1992, 2003)
+        assert validate.check_merged_people() == []
+        note = validate.describe_skipped_merged_people()
+        assert "fred_bloggs: 1992 and 2003, graduated 1997" in note
+
+    def test_a_document_whose_graduation_is_too_far_off(self, test_db):
+        make_person(graduated=1975)
+        self.make_years(1975, 1994)
+        findings = validate.check_merged_people()
+        assert len(findings) == 1
+        assert findings[0].source_path == "_people/fred_bloggs.md"
+
+    def test_a_document_without_a_graduation_year(self, test_db):
+        make_person()
+        self.make_years(1975, 1994)
+        assert len(validate.check_merged_people()) == 1
+        assert validate.describe_skipped_merged_people() is None
+
+
 class TestTourDates:
     def test_a_tour_date_with_a_venue(self, test_db):
         make_show(tour=[models.TourDate(venue="The Zoo")])
