@@ -150,6 +150,32 @@ def save_show_assets(
     ]
 
 
+def assets_from_venue_model(
+    venue: models.Venue,
+) -> Generator[schema.Asset, None, None]:
+    """Generate venue assets (output type) from a venue model (input type)"""
+    for image_id in venue.images:
+        yield schema.Asset(
+            type=str(AssetType.IMAGE),
+            source=str(AssetSource.SMUGMUG),
+            mime_type=get_mime_type(AssetSource.SMUGMUG, AssetType.IMAGE, image_id),
+            id=image_id,
+        )
+
+
+def save_venue_assets(path: DocumentPath, venue: models.Venue) -> list[database.Asset]:
+    return [
+        save_asset(
+            target_id=path.id,
+            target_type=AssetTarget.VENUE,
+            source=AssetSource.SMUGMUG,
+            type=AssetType.IMAGE,
+            id=image_id,
+        )
+        for image_id in venue.images
+    ]
+
+
 def save_person_assets(
     path: DocumentPath, person: models.Person
 ) -> list[database.Asset]:

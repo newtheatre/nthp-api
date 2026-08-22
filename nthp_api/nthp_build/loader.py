@@ -51,6 +51,8 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
         year_id=years.get_public_year_id(year),
         title=data.title,
         venue_id=venues.get_venue_id(data.venue) if data.venue else None,
+        venue_name=data.venue,
+        venue_sort=data.venue_sort,
         season_id=seasons.get_show_season_id(data.season, str(path.content_path)),
         season_sort=data.season_sort,
         date_start=FuzzyDate.to_db_value(data.date_start),
@@ -118,6 +120,7 @@ def load_venue(path: DocumentPath, document: frontmatter.Post, data: models.Venu
         content=markdown_to_html(document.content),
         plaintext=markdown_to_plaintext(document.content),
     )
+    assets.save_venue_assets(path, data)
 
 
 def load_person(path: DocumentPath, document: frontmatter.Post, data: models.Person):

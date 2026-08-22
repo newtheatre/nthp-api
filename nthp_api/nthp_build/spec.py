@@ -200,14 +200,17 @@ SPEC = {
             operation_id="getVenueList",
             tags=["venues"],
             summary="Get list of venues",
-            description="Listing of known venues.",
+            description="Every venue referenced by a show, whether documented in the "
+            "archive or not, sorted by id.",
             model=schema.VenueCollection,
         ),
         "/venues/{id}.json": make_detail_get_operation(
             operation_id="getVenueDetail",
             tags=["venues"],
             summary="Get venue detail",
-            description="Details of a single venue, including show list.",
+            description="Details of a single venue, including show list. Venues with "
+            "no document of their own are stubs, carrying only name, shows and "
+            "grouping; sentinel venues stand in for an unknown or online venue.",
             model=schema.VenueDetail,
             key="id",
         ),

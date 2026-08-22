@@ -176,12 +176,45 @@ class PlaywrightShowListItem(NthpSchema):
 
 
 class VenueList(NthpSchema):
-    id: str
-    name: str
-    show_count: int
-    built: int | None = None
+    id: str = Field(
+        description="ID of the venue, slugified from the authored venue name",
+        json_schema_extra={"example": "new-theatre"},
+    )
+    name: str = Field(
+        description="Name of the venue",
+        json_schema_extra={"example": "New Theatre"},
+    )
+    show_count: int = Field(
+        description="Number of shows at the venue",
+        json_schema_extra={"example": 42},
+    )
+    venue_sort: str | None = Field(
+        default=None,
+        description="Name of the group the venue belongs to, where shows give one, "
+        "for grouping venues such as Edinburgh's C venues",
+        json_schema_extra={"example": "C venues"},
+    )
+    has_record: bool = Field(
+        description="Whether the venue is documented in the archive; venues only "
+        "referenced by shows are stubs, carrying no details beyond name and shows",
+        json_schema_extra={"example": True},
+    )
+    sentinel: bool = Field(
+        description="Whether the venue stands in for the absence of a venue, such as "
+        "an unknown venue or an online performance",
+        json_schema_extra={"example": False},
+    )
+    built: int | None = Field(
+        default=None,
+        description="Year the venue was built",
+        json_schema_extra={"example": 1965},
+    )
     location: Location | None = None
-    city: str | None = None
+    city: str | None = Field(
+        default=None,
+        description="City the venue is in",
+        json_schema_extra={"example": "Nottingham"},
+    )
 
 
 class VenueDetail(VenueList):

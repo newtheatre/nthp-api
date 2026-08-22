@@ -135,6 +135,7 @@ class Show(NthpModel):
     season: str
     season_sort: int | None = None
     venue: PermissiveStr | None = None
+    venue_sort: PermissiveStr | None = None
     date_start: FuzzyDate | None = None
     date_end: FuzzyDate | None = None
     # tour TODO

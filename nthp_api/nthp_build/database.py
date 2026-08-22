@@ -48,6 +48,8 @@ class Show(NthpDbModel):
     year_id = peewee.CharField(index=True)
     title = peewee.CharField()
     venue_id = peewee.CharField(index=True, null=True)
+    venue_name = peewee.CharField(null=True)
+    venue_sort = peewee.CharField(null=True)
     season_id = peewee.CharField(index=True, null=True)
     season_sort = peewee.IntegerField(null=True, index=True)
     # Reduced ISO 8601 strings, see fields.FuzzyDate. Text sort is date order.
