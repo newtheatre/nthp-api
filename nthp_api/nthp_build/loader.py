@@ -41,23 +41,10 @@ log = logging.getLogger(__name__)
 
 def check_show(path: DocumentPath, data: models.Show, year: int) -> None:
     """Report authoring that costs the show part of its output."""
-    if (
-        data.date_start is not None
-        and data.date_end is not None
-        and data.date_end.latest() < data.date_start.earliest()
-    ):
-        log.error(
-            f"{path.content_path}: date_end ({data.date_end}) is before"
-            f" date_start ({data.date_start})"
-        )
-    if data.date_start is not None and not years.check_date_in_year(
-        data.date_start, year
-    ):
-        log.error(
-            f"{path.content_path}: date_start ({data.date_start}) is outside the "
-            f"academic year {years.get_public_year_id(year)} it is filed under"
-        )
-    for defect in shows.get_show_defects(data):
+    for defect in [
+        *shows.get_show_date_defects(data, year),
+        *shows.get_show_defects(data),
+    ]:
         log.error(f"{path.content_path}: {defect}")
     links.check_links(data.links, path.content_path)
 

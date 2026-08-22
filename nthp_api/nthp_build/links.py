@@ -29,22 +29,26 @@ def validate_href(href: str | None) -> str | None:
     return None
 
 
-def check_links(links: list[models.Link], content_path: Path) -> None:
+def get_link_defects(links: list[models.Link]) -> list[str]:
     """
-    Report links the definitions cannot resolve, as the document is loaded.
+    Links the definitions cannot resolve.
 
     A type that templates a username needs one to make an href at all, so a link
     without one resolves to whatever bare href it carries, if any.
     """
-    for link in links:
-        definition = get_link_type_definition(link.type)
-        if definition is None or definition.href is None:
-            continue
-        if link.username is None:
-            log.error(
-                f"{content_path}: link of type {link.type!r} has no username, "
-                f"though the type templates one"
-            )
+    return [
+        f"link of type {link.type!r} has no username, though the type templates one"
+        for link in links
+        if (definition := get_link_type_definition(link.type)) is not None
+        and definition.href is not None
+        and link.username is None
+    ]
+
+
+def check_links(links: list[models.Link], content_path: Path) -> None:
+    """Report unresolvable links as the document is loaded."""
+    for defect in get_link_defects(links):
+        log.error(f"{content_path}: {defect}")
 
 
 def save_link_type_definitions(

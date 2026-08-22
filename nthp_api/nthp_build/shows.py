@@ -13,6 +13,7 @@ from nthp_api.nthp_build import (
     playwrights,
     schema,
     trivia,
+    years,
 )
 from nthp_api.nthp_build.config import settings
 
@@ -181,6 +182,27 @@ def get_show_defects(show: models.Show) -> list[str]:
         defects.append(
             f"playwright_alias {show.playwright_alias!r} is inert, as the show "
             f"generates no student writing credit"
+        )
+    return defects
+
+
+def get_show_date_defects(show: models.Show, year: int) -> list[str]:
+    """Dates that contradict each other, or the academic year the show is filed in."""
+    defects = []
+    if (
+        show.date_start is not None
+        and show.date_end is not None
+        and show.date_end.latest() < show.date_start.earliest()
+    ):
+        defects.append(
+            f"date_end ({show.date_end}) is before date_start ({show.date_start})"
+        )
+    if show.date_start is not None and not years.check_date_in_year(
+        show.date_start, year
+    ):
+        defects.append(
+            f"date_start ({show.date_start}) is outside the academic year "
+            f"{years.get_public_year_id(year)} it is filed under"
         )
     return defects
 
