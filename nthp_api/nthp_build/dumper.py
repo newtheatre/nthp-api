@@ -12,6 +12,8 @@ from pydantic_collections import BaseCollectionModel
 
 from nthp_api.nthp_build import (
     assets,
+    content_schema,
+    content_schema_docs,
     database,
     history,
     homepage,
@@ -40,6 +42,7 @@ from nthp_api.nthp_build.version import get_version
 
 log = logging.getLogger(__name__)
 OUTPUT_DIR = Path("dist")
+CONTENT_SCHEMA_DIR = Path("content-schema")
 STATIC_DIR = Path(__file__).parent / "static"
 
 
@@ -73,6 +76,18 @@ def write_file(path: Path, obj: pydantic.BaseModel) -> None:
 
 def dump_specs(state: DumperSharedState):
     spec.write_spec(OUTPUT_DIR / "openapi.json")
+
+
+def dump_content_schema(state: DumperSharedState) -> None:
+    """
+    Publish the shape of the content repo alongside the shape of the API.
+
+    Editors validate their front matter against these, and the page beside them
+    is what a person reads instead.
+    """
+    directory = OUTPUT_DIR / CONTENT_SCHEMA_DIR
+    content_schema.write_document_schemas(directory)
+    (directory / "index.html").write_text(content_schema_docs.render_html())
 
 
 def dump_show(
@@ -504,6 +519,7 @@ class Dumper(NamedTuple):
 
 DUMPERS: list[Dumper] = [
     Dumper("spec", dump_specs),
+    Dumper("content schema", dump_content_schema),
     Dumper("shows", dump_shows),
     Dumper("years", dump_years),
     Dumper("seasons", dump_seasons),
