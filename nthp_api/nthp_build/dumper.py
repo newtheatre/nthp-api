@@ -222,7 +222,9 @@ def dump_real_person(
 ) -> schema.PersonDetail:
     path = make_out_path(Path("people"), inst.id)
     source_data = models.Person(**json.loads(inst.data))
-    person_detail = people.make_person_detail(source_data, inst.content)
+    person_detail = people.make_person_detail(
+        source_data, inst.content, trivia=trivia.make_person_trivia(inst.id)
+    )
     search.add_document(
         state=state,
         type=schema.SearchDocumentType.PERSON,
@@ -241,7 +243,10 @@ def dump_real_people(state: DumperSharedState):
 
 def dump_virtual_person(ref, state: DumperSharedState) -> schema.PersonDetail:
     path = make_out_path(Path("people"), ref.person_id)
-    person_detail = people.make_person_detail(people.make_virtual_person_model(ref))
+    person_detail = people.make_person_detail(
+        people.make_virtual_person_model(ref),
+        trivia=trivia.make_person_trivia(ref.person_id),
+    )
     search.add_document(
         state=state,
         type=schema.SearchDocumentType.PERSON,
@@ -375,38 +380,6 @@ def dump_roles(state: DumperSharedState):
     dump_people_if_cast()
 
 
-def dump_show_trivia(show_id: str):
-    path = make_out_path(Path("trivia/shows"), show_id)
-    trivia_show = trivia.make_targeted_trivia(show_id, database.TargetType.SHOW)
-    write_file(path, schema.TargetedTriviaCollection(trivia_show))
-
-
-def dump_targeted_trivia(state: DumperSharedState):
-    show_trivia_query = (
-        database.Trivia.select(database.Trivia.target_id)
-        .where(database.Trivia.target_type == database.TargetType.SHOW)
-        .group_by(database.Trivia.target_id)
-    )
-    [dump_show_trivia(result.target_id) for result in show_trivia_query]
-
-
-def dump_person_trivia(person_id: str):
-    path = make_out_path(Path("trivia/people"), person_id)
-    trivia_show = trivia.make_person_trivia(person_id)
-    write_file(path, schema.PersonTriviaCollection(trivia_show))
-
-
-def dump_people_trivia(state: DumperSharedState):
-    people_trivia_query = (
-        database.Trivia.select(database.Trivia.person_id)
-        .where(database.Trivia.person_id.is_null(False))
-        .group_by(database.Trivia.person_id)
-    )
-    for result in people_trivia_query:
-        if result.person_id is not None:
-            dump_person_trivia(result.person_id)
-
-
 def dump_playwrights(state: DumperSharedState):
     path = make_out_path(Path("playwrights"), "index")
     collection = schema.PlaywrightCollection(
@@ -491,8 +464,6 @@ DUMPERS: list[Dumper] = [
     Dumper("people index", dump_people_index),
     Dumper("collaborators", dump_collaborators),
     Dumper("roles", dump_roles),
-    Dumper("targeted trivia", dump_targeted_trivia),
-    Dumper("people trivia", dump_people_trivia),
     Dumper("playwrights", dump_playwrights),
     Dumper("plays", dump_plays),
     Dumper("history records", dump_history_records),

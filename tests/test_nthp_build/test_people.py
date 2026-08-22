@@ -395,6 +395,29 @@ class TestMakePersonDetail:
         assert len(person.links) == 1
         assert len(person.news) == 1
 
+    def test_no_trivia_defaults_to_empty(self, test_db):
+        person = people.make_person_detail(
+            models.Person(id="fred_bloggs", title="Fred Bloggs")
+        )
+        assert person.trivia == []
+
+    def test_trivia_is_embedded(self, test_db):
+        trivia = [
+            schema.PersonTrivia(
+                quote="A quote",
+                submitted="2001-06",
+                target_id="1999-00/show",
+                target_type="show",
+                target_name="A Show",
+                target_image_id=None,
+                target_year="1999",
+            )
+        ]
+        person = people.make_person_detail(
+            models.Person(id="fred_bloggs", title="Fred Bloggs"), trivia=trivia
+        )
+        assert person.trivia == trivia
+
 
 class TestGetAwardHolders:
     @staticmethod

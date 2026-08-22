@@ -330,6 +330,7 @@ def make_virtual_person_model(ref) -> models.Person:
 def make_person_detail(
     model: models.Person,
     content: str | None = None,
+    trivia: list[schema.PersonTrivia] | None = None,
 ) -> schema.PersonDetail:
     assert model.id is not None, "Person model should have id by now"
     graduation = get_graduation(model)
@@ -353,5 +354,6 @@ def make_person_detail(
         ),
         links=links.get_links(model.links),
         news=links.get_links(model.news),
+        trivia=trivia or [],
         content=content,
     )

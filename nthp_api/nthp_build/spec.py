@@ -26,7 +26,6 @@ PYDANTIC_JSON_SCHEMA = models_json_schema(
         schema.PersonDetail,
         schema.PersonIndexCollection,
         schema.PersonShowRoleListCollection,
-        schema.PersonTriviaCollection,
         schema.PlayCollection,
         schema.PlaywrightCollection,
         schema.RoleCollection,
@@ -37,7 +36,6 @@ PYDANTIC_JSON_SCHEMA = models_json_schema(
         schema.ShowDetail,
         schema.ShowIndexCollection,
         schema.SiteStats,
-        schema.TargetedTriviaCollection,
         schema.VenueCollection,
         schema.VenueDetail,
         schema.YearDetail,
@@ -290,24 +288,6 @@ SPEC = {
             summary="Get people if cast in any show",
             description="People are not duplicated. ",
             model=schema.PersonShowRoleListCollection,
-        ),
-        "/trivia/shows/{id}.json": make_detail_get_operation(
-            operation_id="getShowTrivia",
-            tags=["trivia"],
-            summary="Get show trivia",
-            description="A collection of trivia for a show. If response is 404 then "
-            "the show doesn't have trivia yet.",
-            model=schema.TargetedTriviaCollection,
-            key="id",
-        ),
-        "/trivia/people/{id}.json": make_detail_get_operation(
-            operation_id="getPersonTrivia",
-            tags=["trivia"],
-            summary="Get person trivia",
-            description="A collection of trivia for a person. If response is 404 then "
-            "the person hasn't submitted any trivia yet.",
-            model=schema.PersonTriviaCollection,
-            key="id",
         ),
         "/assets/album/{id}.json": make_detail_get_operation(
             operation_id="getAlbumAssets",

@@ -476,3 +476,47 @@ class TestStudentPlaywrightCredit:
         )
         assert shows.get_crew_with_student_playwright(show) == show.crew
         assert "by hand" in caplog.text
+
+
+class TestShowTrivia:
+    def test_a_show_without_trivia_has_none(self, test_db):
+        make_show("show")
+        show_detail = shows.get_show_detail(database.Show.get_by_id("1999-00/show"))
+        assert show_detail.trivia == []
+
+    def test_trivia_targeted_at_the_show_is_embedded(self, test_db):
+        make_show("show")
+        database.Trivia.create(
+            target_id="1999-00/show",
+            target_type=database.TargetType.SHOW,
+            target_name="A Show",
+            target_image_id=None,
+            target_year=1999,
+            person_id="fred_bloggs",
+            person_name="Fred Bloggs",
+            quote="A quote",
+            submitted="2001-06",
+            data="{}",
+        )
+        show_detail = shows.get_show_detail(database.Show.get_by_id("1999-00/show"))
+        assert len(show_detail.trivia) == 1
+        assert show_detail.trivia[0].quote == "A quote"
+        assert show_detail.trivia[0].person_id == "fred_bloggs"
+
+    def test_trivia_targeted_at_another_show_is_not_embedded(self, test_db):
+        make_show("show")
+        make_show("other")
+        database.Trivia.create(
+            target_id="1999-00/other",
+            target_type=database.TargetType.SHOW,
+            target_name="Other Show",
+            target_image_id=None,
+            target_year=1999,
+            person_id=None,
+            person_name=None,
+            quote="A quote",
+            submitted=None,
+            data="{}",
+        )
+        show_detail = shows.get_show_detail(database.Show.get_by_id("1999-00/show"))
+        assert show_detail.trivia == []

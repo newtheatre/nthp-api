@@ -11,6 +11,7 @@ from nthp_api.nthp_build import (
     people,
     playwrights,
     schema,
+    trivia,
 )
 from nthp_api.nthp_build.config import settings
 
@@ -319,6 +320,7 @@ def get_show_detail(
         ),
         previous=previous,
         next=next_show,
+        trivia=trivia.make_targeted_trivia(show_inst.id, database.TargetType.SHOW),
         content=show_inst.content,
     )
 

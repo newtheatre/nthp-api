@@ -189,6 +189,69 @@ class ShowMissingField(Enum):
     VENUE = "venue"
 
 
+class BaseTrivia(NthpSchema):
+    quote: str = Field(
+        title="Quote",
+        description="The quote",
+        json_schema_extra={
+            "example": "Every character in this play was portrayed by a "
+            "perfectly circular Victoria Sponge"
+        },
+    )
+    submitted: FuzzyDate | None = Field(
+        title="Submitted Date",
+        description="The date the quote was submitted, of year, month or day "
+        "precision, if null it's likely pulled from the programme or other source.",
+        json_schema_extra={"example": "2022-01"},
+    )
+
+
+class TargetedTrivia(BaseTrivia):
+    """Trivia that is targeted to a specific object (show)"""
+
+    person_id: str | None = Field(
+        title="Person ID",
+        description="The person ID of the person who submitted the quote",
+        json_schema_extra={"example": "fred_bloggs"},
+    )
+    person_name: str | None = Field(
+        title="Person Name",
+        description="The name of the person who submitted the quote",
+        json_schema_extra={"example": "Fred Bloggs"},
+    )
+
+
+class PersonTrivia(BaseTrivia):
+    """Trivia submitted by a single known person, targets want to be known"""
+
+    target_id: str = Field(
+        title="Target ID",
+        description="The ID of the target of the quote",
+        json_schema_extra={"example": "the_show"},
+    )
+    target_type: str = Field(
+        title="Target Type",
+        description="The type of the target of the quote",
+        json_schema_extra={"example": "show"},
+    )
+    target_name: str = Field(
+        title="Target Name",
+        description="The name of the target of the quote",
+        json_schema_extra={"example": "The Show"},
+    )
+    target_image_id: str | None = Field(
+        title="Target Image ID",
+        description="The image ID of the target of the quote",
+        json_schema_extra={"example": "qABC123"},
+    )
+    # Uses YYYY, not YY_YY, 2000 means 2000-2001
+    target_year: PermissiveStr | None = Field(
+        title="Target Year",
+        description="The year of the target of the quote",
+        json_schema_extra={"example": "2000"},
+    )
+
+
 class ShowSequenceItem(NthpSchema):
     id: str
     title: str
@@ -237,6 +300,9 @@ class ShowDetail(NthpSchema):
     )
     next: ShowSequenceItem | None = Field(
         default=None, description="The show after this one across the whole archive"
+    )
+    trivia: list[TargetedTrivia] = Field(
+        default=[], description="Trivia submitted about this show"
     )
 
     content: str | None = None
@@ -571,6 +637,9 @@ class PersonDetail(NthpSchema):
     news: list[Link] = Field(
         default=[], description="Links to news stories about the person"
     )
+    trivia: list[PersonTrivia] = Field(
+        default=[], description="Trivia submitted by this person"
+    )
     content: str | None = None
 
 
@@ -598,77 +667,6 @@ class PersonCollaborator(NthpSchema):
 
 
 class PersonCollaboratorCollection(BaseCollectionModel[PersonCollaborator]):
-    pass
-
-
-class BaseTrivia(NthpSchema):
-    quote: str = Field(
-        title="Quote",
-        description="The quote",
-        json_schema_extra={
-            "example": "Every character in this play was portrayed by a "
-            "perfectly circular Victoria Sponge"
-        },
-    )
-    submitted: FuzzyDate | None = Field(
-        title="Submitted Date",
-        description="The date the quote was submitted, of year, month or day "
-        "precision, if null it's likely pulled from the programme or other source.",
-        json_schema_extra={"example": "2022-01"},
-    )
-
-
-class TargetedTrivia(BaseTrivia):
-    """Trivia that is targeted to a specific object (show)"""
-
-    person_id: str | None = Field(
-        title="Person ID",
-        description="The person ID of the person who submitted the quote",
-        json_schema_extra={"example": "fred_bloggs"},
-    )
-    person_name: str | None = Field(
-        title="Person Name",
-        description="The name of the person who submitted the quote",
-        json_schema_extra={"example": "Fred Bloggs"},
-    )
-
-
-class TargetedTriviaCollection(BaseCollectionModel[TargetedTrivia]):
-    pass
-
-
-class PersonTrivia(BaseTrivia):
-    """Trivia submitted by a single known person, targets want to be known"""
-
-    target_id: str = Field(
-        title="Target ID",
-        description="The ID of the target of the quote",
-        json_schema_extra={"example": "the_show"},
-    )
-    target_type: str = Field(
-        title="Target Type",
-        description="The type of the target of the quote",
-        json_schema_extra={"example": "show"},
-    )
-    target_name: str = Field(
-        title="Target Name",
-        description="The name of the target of the quote",
-        json_schema_extra={"example": "The Show"},
-    )
-    target_image_id: str | None = Field(
-        title="Target Image ID",
-        description="The image ID of the target of the quote",
-        json_schema_extra={"example": "qABC123"},
-    )
-    # Uses YYYY, not YY_YY, 2000 means 2000-2001
-    target_year: PermissiveStr | None = Field(
-        title="Target Year",
-        description="The year of the target of the quote",
-        json_schema_extra={"example": "2000"},
-    )
-
-
-class PersonTriviaCollection(BaseCollectionModel[PersonTrivia]):
     pass
 
 
