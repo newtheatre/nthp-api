@@ -115,7 +115,11 @@ def dump_shows(state: DumperSharedState):
     dump_show_index(show_insts)
 
 
-def dump_year(year: int, state: DumperSharedState) -> schema.YearDetail:
+def dump_year(
+    year: int,
+    state: DumperSharedState,
+    award_holders: dict[str, dict[models.Award, list[schema.PersonAwardHolder]]],
+) -> schema.YearDetail:
     year_id = years.get_public_year_id(year)
     path = make_out_path(Path("years"), year_id)
     year_shows = shows.get_show_query().where(database.Show.year_id == year_id)
@@ -135,6 +139,8 @@ def dump_year(year: int, state: DumperSharedState) -> schema.YearDetail:
             schema.PersonRoleList(**json.loads(person_inst.data))
             for person_inst in year_committee
         ],
+        fellows=award_holders.get(year_id, {}).get(models.Award.FELLOWSHIP, []),
+        commendations=award_holders.get(year_id, {}).get(models.Award.COMMENDATION, []),
     )
     search.add_document(
         state=state,
@@ -155,8 +161,10 @@ def dump_year_index(year_details: list[schema.YearDetail]):
 
 
 def dump_years(state: DumperSharedState):
+    award_holders = people.get_award_holders()
     years_detail = [
-        dump_year(year, state) for year in range(settings.year_start, settings.year_end)
+        dump_year(year, state, award_holders)
+        for year in range(settings.year_start, settings.year_end)
     ]
 
     dump_year_index(years_detail)

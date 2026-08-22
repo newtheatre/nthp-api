@@ -62,8 +62,7 @@ def get_link_href(
         if link.username is not None:
             return definition.href.replace(USERNAME_PLACEHOLDER, link.username)
         log.warning(
-            f"Link of type {link.type!r} has no username, "
-            f"though the type templates one"
+            f"Link of type {link.type!r} has no username, though the type templates one"
         )
     return link.href
 

@@ -426,9 +426,23 @@ class YearListCollection(BaseCollectionModel[YearList]):
     pass
 
 
+class PersonAwardHolder(NthpSchema):
+    id: str
+    title: str
+    headshot: str | None = None
+
+
 class YearDetail(YearList):
     shows: list[ShowList]
     committee: list[PersonRoleList]
+    fellows: list[PersonAwardHolder] = Field(
+        default=[],
+        description="People awarded a Fellowship, by the year they graduated in",
+    )
+    commendations: list[PersonAwardHolder] = Field(
+        default=[],
+        description="People awarded a Commendation, by the year they graduated in",
+    )
 
 
 class PersonShowRoleItem(NthpSchema):

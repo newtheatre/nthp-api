@@ -1,7 +1,7 @@
 import freezegun
 import pytest
 
-from nthp_api.nthp_build import assets, database, models, people
+from nthp_api.nthp_build import assets, database, models, people, schema
 from nthp_api.nthp_build.schema import PersonCollaborator, PersonGraduated
 from nthp_api.smugmugger import SmugMugImageInfo
 
@@ -394,3 +394,78 @@ class TestMakePersonDetail:
         assert person.student is False
         assert len(person.links) == 1
         assert len(person.news) == 1
+
+
+class TestGetAwardHolders:
+    @staticmethod
+    def save_person(person: models.Person) -> None:
+        database.Person.create(
+            id=person.id,
+            title=person.title,
+            graduated=person.graduated,
+            headshot=person.headshot,
+            data=person.model_dump_json(),
+        )
+
+    def test_no_awards(self, test_db):
+        self.save_person(
+            models.Person(id="fred_bloggs", title="Fred Bloggs", graduated=1995)
+        )
+        assert people.get_award_holders() == {}
+
+    def test_filed_under_the_year_graduated_in(self, test_db):
+        self.save_person(
+            models.Person(
+                id="fred_bloggs",
+                title="Fred Bloggs",
+                graduated=1995,
+                award="Fellowship",
+                headshot="abc123",
+            )
+        )
+        holders = people.get_award_holders()
+        assert holders["1994-95"][models.Award.FELLOWSHIP] == [
+            schema.PersonAwardHolder(
+                id="fred_bloggs", title="Fred Bloggs", headshot="abc123"
+            )
+        ]
+
+    def test_awards_kept_apart_and_sorted_by_surname(self, test_db):
+        self.save_person(
+            models.Person(
+                id="zoe_adams", title="Zoe Adams", graduated=1995, award="Fellowship"
+            )
+        )
+        self.save_person(
+            models.Person(
+                id="alice_young",
+                title="Alice Young",
+                graduated=1995,
+                award="Fellowship",
+            )
+        )
+        self.save_person(
+            models.Person(
+                id="fred_bloggs",
+                title="Fred Bloggs",
+                graduated=1995,
+                award="Commendation",
+            )
+        )
+        holders = people.get_award_holders()["1994-95"]
+        assert [person.title for person in holders[models.Award.FELLOWSHIP]] == [
+            "Zoe Adams",
+            "Alice Young",
+        ]
+        assert [person.title for person in holders[models.Award.COMMENDATION]] == [
+            "Fred Bloggs"
+        ]
+
+    def test_unknown_graduation_year_warns(
+        self, test_db, caplog: pytest.LogCaptureFixture
+    ):
+        self.save_person(
+            models.Person(id="fred_bloggs", title="Fred Bloggs", award="Fellowship")
+        )
+        assert people.get_award_holders() == {}
+        assert "no known graduation year" in caplog.text
