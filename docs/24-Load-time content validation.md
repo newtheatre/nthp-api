@@ -1,6 +1,6 @@
 ---
 type: task
-status: todo
+status: done
 ---
 
 # Load-time content validation
@@ -67,3 +67,117 @@ Existing build-time logs that should move to lint: `roles.py` "N crew roles matc
 2. Per-document validators: promote 1, 3, 6; add 2, 3, 4, 8, 9, 11, 12.
 3. Post-load pass scaffold, then promote 2, 4; add 1, 5, 7, 10.
 4. `nthp lint` command reusing the post-load pass for the lint list above.
+
+## Results
+
+Done in four commits against content at 2026-08-23. Counts are from
+`SMUGMUG_FETCH=false ./nthp build content` and `./nthp lint content`.
+
+### 1. `extra="forbid"`
+
+Keys the content uses systematically were modelled rather than left to error:
+`gender` (686 people), link `author` (351 links), `contact_allowed` (95),
+`published` (68 shows), committee `title` (44), venue `title_short` (8), show
+`note` (7), person `alias` (3) and `aliases` (3), asset `comment`, and the
+presentation keys of `_data/roles.yaml` (`icon`, `show`) and
+`_data/link-types.yaml` (`icon`, `data`), which the models had documented as
+ignored. `career` and tour `notes` were aliased by validators that expanded the
+dict before popping the authored key, so the alias never took the key away;
+both are fixed.
+
+What is left is junk, and each one costs its document — 15 more documents fail
+validation than before, all fixable in the content repo:
+
+| Key                    | Documents                                                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `adapted`              | `_shows/09_10/hamlet.md`, `_shows/13_14/a_servant_to_two_masters.md`, `_shows/75_76/the_picture_of_dorian_gray.md` |
+| `adapter`              | `_shows/19_20/still_alice.md`, `_shows/23_24/doctor_faustus.md`                                                    |
+| `awards`               | `_people/elle_ororke.md`, `_people/nicola_fox.md`                                                                  |
+| `canonical[].name`     | `_shows/07_08/bouncers_shakers.md`                                                                                 |
+| `Music, Book & Lyrics` | `_shows/09_10/the_last_5_years.md`                                                                                 |
+| `categories`           | `_shows/11_12/be_my_baby.md`                                                                                       |
+| `start_date`           | `_shows/75_76/smoking_is_bad_for_you.md`                                                                           |
+| `traslator`            | `_shows/75_76/the_possessed.md`                                                                                    |
+| `playright`            | `_shows/97_98/the_trial_spring.md`                                                                                 |
+| `website`              | `_venues/sweet-venues.md`                                                                                          |
+| `Careers`              | `_people/emma_pallett.md`                                                                                          |
+
+(`_people/nick_gill.md` already failed, on an unparsable `submitted` date.)
+
+### 2. Per-document checks
+
+Findings 2, 3, 4 and 9 report from `loader.check_show` rather than a pydantic
+validator: a raised `ValueError` costs the document, and the convention is to
+keep it. Findings 1 and 12 do raise, in `models.Link`, as nothing in the content
+trips them.
+
+| Check                                    | Findings |
+| ---------------------------------------- | -------- |
+| student writer names several people      | 31       |
+| `date_start` outside the folder's year   | 5        |
+| `date_end` before `date_start`           | 2        |
+| student credit written by hand (WARNING) | 2        |
+| inert `playwright_alias`                 | 0        |
+| `devised`/`improvised` with a playwright | 0        |
+| link type templating an absent username  | 0        |
+| disallowed URL scheme                    | 0        |
+| rating outside its scale                 | 0        |
+
+Ratings are authored as `4/5` or `8/10`, not as a bare 0–5, so the validator
+takes a score out of a total and checks the score against it.
+
+### 3. Post-load pass
+
+`nthp_build/validate.py`, run by `nthp load` and `nthp build` between
+`run_loaders()` and `dump_all()`. 7 defects:
+
+| Check            | Findings |
+| ---------------- | -------- |
+| play ids         | 6        |
+| playwright ids   | 1        |
+| venue spellings  | 0        |
+| award graduation | 0        |
+
+### 4. `nthp lint`
+
+`nthp lint <path>` loads into an in-memory database and reports the lint list;
+638 findings, none of them failures:
+
+| Check                     | Findings |
+| ------------------------- | -------- |
+| crew role definitions     | 424      |
+| near-duplicate person ids | 66       |
+| scalar `course`/`careers` | 50       |
+| venues without a document | 37       |
+| link type definitions     | 17       |
+| tour dates                | 12       |
+| person name collisions    | 9        |
+| image categories          | 9        |
+| committee roles           | 5        |
+| graduation plausibility   | 5        |
+| placeholder content       | 2        |
+| trivia people             | 1        |
+| credits without a name    | 1        |
+| awards outside the set    | 0        |
+| inert `venue_sort`        | 0        |
+| shows without a season    | 0        |
+
+Two of the lint list cannot be seen from sqlite — a body that is only an HTML
+comment, and `course`/`careers` authored as a bare value — as both are gone by
+the time the document is stored. The loader records those in a `LoadFinding`
+table for lint to report.
+
+Near-duplicate ids use a heuristic: same surname, forenames sharing their first
+two characters and alike enough over the whole name, which catches `joe`/`joseph`
+without dragging in every `c*_jones`.
+
+### 5. Removals
+
+`homepage.get_show_run`'s date-order warning, the dump-time venue spelling and
+award graduation warnings, `roles.log_crew_roles_without_definition`, and the two
+dead branches (`history.py` image without alt, `venues.py` `or venue_id`).
+
+### Not done
+
+Finding 15's volume was checked rather than assumed: one credit in the whole
+archive has a role and no name, so it stays in lint.
