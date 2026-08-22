@@ -22,8 +22,8 @@ def test_get_current_year_end(today: datetime.date, expected: int):
 @pytest.mark.parametrize(
     "today,expected_last_year_id",
     [
-        (datetime.date(2026, 8, 31), "25_26"),
-        (datetime.date(2026, 9, 1), "26_27"),
+        (datetime.date(2026, 8, 31), "2025-26"),
+        (datetime.date(2026, 9, 1), "2026-27"),
     ],
 )
 def test_last_year_built_either_side_of_september(
@@ -31,4 +31,4 @@ def test_last_year_built_either_side_of_september(
 ):
     """`dump_years` uses `year_end` as an exclusive bound over start years."""
     years_built = range(1940, get_current_year_end(today))
-    assert years.get_year_id(years_built[-1]) == expected_last_year_id
+    assert years.get_public_year_id(years_built[-1]) == expected_last_year_id

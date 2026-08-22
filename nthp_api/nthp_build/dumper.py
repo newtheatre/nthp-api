@@ -90,7 +90,7 @@ def dump_shows(state: DumperSharedState):
 
 
 def dump_year(year: int, state: DumperSharedState) -> schema.YearDetail:
-    year_id = years.get_year_id(year)
+    year_id = years.get_public_year_id(year)
     path = make_out_path(Path("years"), year_id)
     year_shows = shows.get_show_query().where(database.Show.year_id == year_id)
     year_committee = database.PersonRole.select().where(

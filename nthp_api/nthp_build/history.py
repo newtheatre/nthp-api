@@ -1,4 +1,4 @@
-from nthp_api.nthp_build import database, schema
+from nthp_api.nthp_build import database, schema, years
 
 
 def get_history_records() -> list[schema.HistoryRecord]:
@@ -9,7 +9,13 @@ def get_history_records() -> list[schema.HistoryRecord]:
     return [
         schema.HistoryRecord(
             year=record.year,
-            year_id=record.academic_year,
+            year_id=(
+                years.get_public_year_id(
+                    years.get_year_from_source_year_id(record.academic_year)
+                )
+                if record.academic_year
+                else None
+            ),
             title=record.title,
             description=record.description,
         )

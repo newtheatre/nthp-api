@@ -189,7 +189,7 @@ class HistoryRecord(NthpModel):
     @field_validator("academic_year")
     @classmethod
     def require_valid_academic_year(cls, value: str | None) -> str | None:
-        if value is not None and not years.check_year_id_is_valid(value):
+        if value is not None and not years.check_source_year_id_is_valid(value):
             raise ValueError("Invalid academic year")
         return value
 

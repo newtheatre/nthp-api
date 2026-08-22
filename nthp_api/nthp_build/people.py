@@ -99,13 +99,9 @@ def get_person_committee_roles(person_id: str) -> list[schema.PersonCommitteeRol
 
     return [
         schema.PersonCommitteeRole(
-            year_id=person_role.target_id,
-            year_title=years.get_year_title(
-                years.get_year_from_year_id(person_role.target_id)
-            ),
-            year_decade=years.get_year_decade(
-                years.get_year_from_year_id(person_role.target_id)
-            ),
+            year_id=years.get_public_year_id(person_role.target_year),
+            year_title=years.get_year_title(person_role.target_year),
+            year_decade=years.get_year_decade(person_role.target_year),
             role=person_role.role,
         )
         for person_role in query

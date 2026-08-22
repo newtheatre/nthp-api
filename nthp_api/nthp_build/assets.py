@@ -132,12 +132,12 @@ def assets_from_show_model(
 
 
 def save_show_assets(
-    path: DocumentPath, show_assets: Iterable[schema.Asset]
+    show_id: str, show_assets: Iterable[schema.Asset]
 ) -> list[database.Asset]:
     """Write assets to the database"""
     return [
         save_asset(
-            target_id=path.id,
+            target_id=show_id,
             target_type=AssetTarget.SHOW,
             source=AssetSource(asset.source),
             type=AssetType(asset.type),

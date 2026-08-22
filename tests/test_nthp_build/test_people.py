@@ -199,7 +199,7 @@ class TestGetGraduation:
         assert people.get_graduation(
             models.Person(id="fred_bloggs", title="Fred Bloggs", graduated=1995)
         ) == PersonGraduated(
-            year_title="1995", year_decade=199, year_id="94_95", estimated=False
+            year_title="1995", year_decade=199, year_id="1994-95", estimated=False
         )
 
     def test_estimated(self, test_db):
@@ -218,7 +218,7 @@ class TestGetGraduation:
         assert people.get_graduation(
             models.Person(id="fred_bloggs", title="Fred Bloggs")
         ) == PersonGraduated(
-            year_title="1995", year_decade=199, year_id="94_95", estimated=True
+            year_title="1995", year_decade=199, year_id="1994-95", estimated=True
         )
 
     def test_estimated_also_uses_committees(self, test_db):
@@ -229,7 +229,7 @@ class TestGetGraduation:
             person_list=[FRED_PERSON_REF],
         )
         people.save_person_roles(
-            target="01_02",
+            target="2001-02",
             target_type=database.PersonRoleType.COMMITTEE,
             target_year=2001,
             person_list=[FRED_PERSON_REF],
@@ -237,7 +237,7 @@ class TestGetGraduation:
         assert people.get_graduation(
             models.Person(id="fred_bloggs", title="Fred Bloggs")
         ) == PersonGraduated(
-            year_title="2002", year_decade=200, year_id="01_02", estimated=True
+            year_title="2002", year_decade=200, year_id="2001-02", estimated=True
         )
 
     def test_dont_assume_recent_people_have_left(self, test_db):
@@ -248,7 +248,7 @@ class TestGetGraduation:
             person_list=[FRED_PERSON_REF],
         )
         graduated = PersonGraduated(
-            year_title="2021", year_decade=202, year_id="20_21", estimated=True
+            year_title="2021", year_decade=202, year_id="2020-21", estimated=True
         )
         with freezegun.freeze_time("2020-01-01"):
             assert (

@@ -10,8 +10,8 @@ from nthp_api.nthp_build.parallel import DumperSharedState
 FRED = "fred_bloggs"
 ALICE = "alice_froggs"
 
-THE_TEMPEST = "99_00/the_tempest"
-TITUS_ANDRONICUS = "99_00/titus_andronicus"
+THE_TEMPEST = "1999-00/the_tempest"
+TITUS_ANDRONICUS = "1999-00/titus_andronicus"
 
 
 def make_show(show_id: str, title: str) -> database.Show:
@@ -19,7 +19,7 @@ def make_show(show_id: str, title: str) -> database.Show:
         id=show_id,
         source_path=f"_shows/{show_id}.md",
         year=1999,
-        year_id="99_00",
+        year_id="1999-00",
         title=title,
         assets="[]",
         data="{}",
@@ -63,8 +63,8 @@ def populated_db(test_db):
     )
     save_role("Fred Bloggs", THE_TEMPEST, database.PersonRoleType.CAST, "Prospero")
     save_role("Fred Bloggs", THE_TEMPEST, database.PersonRoleType.CREW, "Director")
-    save_role("Fred Bloggs", "99_00", database.PersonRoleType.COMMITTEE, "President")
-    save_role("Fred Bloggs", "00_01", database.PersonRoleType.COMMITTEE, "President")
+    save_role("Fred Bloggs", "1999-00", database.PersonRoleType.COMMITTEE, "President")
+    save_role("Fred Bloggs", "2000-01", database.PersonRoleType.COMMITTEE, "President")
     save_role("Alice Froggs", TITUS_ANDRONICUS, database.PersonRoleType.CAST, "Titus")
     return test_db
 
@@ -113,7 +113,7 @@ class TestDumpPeopleIndex:
             "graduated": {
                 "yearTitle": "2016",
                 "yearDecade": 201,
-                "yearId": "15_16",
+                "yearId": "2015-16",
                 "estimated": False,
             },
             "showRoleCount": 1,

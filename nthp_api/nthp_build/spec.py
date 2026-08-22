@@ -163,6 +163,7 @@ SPEC = {
             operation_id="getYearDetail",
             tags=["years"],
             summary="Get year detail",
+            description="Academic years are identified as `YYYY-YY`, e.g. `2024-25`.",
             model=schema.YearDetail,
             key="id",
         ),
@@ -170,6 +171,8 @@ SPEC = {
             operation_id="getShowDetail",
             tags=["shows"],
             summary="Get show detail",
+            description="Shows are identified as `{yearId}/{slug}`, "
+            "e.g. `2024-25/macbeth`.",
             model=schema.ShowDetail,
             key="id",
         ),

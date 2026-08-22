@@ -185,12 +185,30 @@ class PlayCollection(BaseCollectionModel[PlayListItem]):
 
 
 class YearList(NthpSchema):
-    title: str
-    decade: int
-    year_id: str
-    start_year: int
-    grad_year: int
-    show_count: int
+    title: str = Field(
+        description="Title of the academic year",
+        json_schema_extra={"example": "2024-25"},
+    )
+    decade: int = Field(
+        description="First three digits of the start year, e.g. 202 for the 2020s",
+        json_schema_extra={"example": 202},
+    )
+    year_id: str = Field(
+        description="ID of the academic year, in YYYY-YY form",
+        json_schema_extra={"example": "2024-25"},
+    )
+    start_year: int = Field(
+        description="Calendar year the academic year starts in",
+        json_schema_extra={"example": 2024},
+    )
+    grad_year: int = Field(
+        description="Calendar year students of this academic year graduate in",
+        json_schema_extra={"example": 2025},
+    )
+    show_count: int = Field(
+        description="Number of shows in the academic year",
+        json_schema_extra={"example": 42},
+    )
 
 
 class YearListCollection(BaseCollectionModel[YearList]):
@@ -269,7 +287,7 @@ class PersonGraduated(NthpSchema):
         return cls(
             year_title=str(year),
             year_decade=years.get_year_decade(year - 1),
-            year_id=years.get_year_id(year - 1),
+            year_id=years.get_public_year_id(year - 1),
             estimated=estimated,
         )
 
@@ -390,8 +408,8 @@ class HistoryRecord(NthpSchema):
         json_schema_extra={"example": "1940s"},
     )
     year_id: str | None = Field(
-        description="Exact year ID of the record",
-        json_schema_extra={"example": "40_41"},
+        description="Exact year ID of the record, in YYYY-YY form",
+        json_schema_extra={"example": "1940-41"},
     )
     title: str = Field(
         description="Title of the record",

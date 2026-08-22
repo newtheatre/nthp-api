@@ -112,13 +112,9 @@ def get_people_committee_roles_by_role(
                 id=r.person_id,
                 title=r.person_name,
                 headshot=r.person.headshot if getattr(r, "person", None) else None,  # type: ignore[attr-defined]
-                year_title=years.get_year_title(
-                    years.get_year_from_year_id(r.target_id)
-                ),
-                year_decade=years.get_year_decade(
-                    years.get_year_from_year_id(r.target_id)
-                ),
-                year_id=r.target_id,
+                year_title=years.get_year_title(r.target_year),
+                year_decade=years.get_year_decade(r.target_year),
+                year_id=years.get_public_year_id(r.target_year),
                 role=r.role,
             )
             for r in query

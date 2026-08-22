@@ -36,14 +36,17 @@ log = logging.getLogger(__name__)
 
 
 def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show):
-    year_id = years.get_year_id_from_show_path(path)
+    year = years.get_year_from_source_year_id(
+        years.get_source_year_id_from_show_path(path)
+    )
+    show_id = years.get_public_show_id(year, path.basename)
     primary_image = assets.pick_show_primary_image(data.assets) if data.assets else None
     show_assets = list(assets.assets_from_show_model(data))
     database.Show.create(
-        id=path.id,
+        id=show_id,
         source_path=path.path,
-        year=years.get_year_from_year_id(year_id),
-        year_id=year_id,
+        year=year,
+        year_id=years.get_public_year_id(year),
         title=data.title,
         venue_id=venues.get_venue_id(data.venue) if data.venue else None,
         season_sort=data.season_sort,
@@ -55,19 +58,19 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
         content=markdown_to_html(document.content),
         plaintext=markdown_to_plaintext(document.content),
     )
-    assets.save_show_assets(path, show_assets)
+    assets.save_show_assets(show_id, show_assets)
 
     # Record person roles
     people.save_person_roles(
-        target=path.id,
+        target=show_id,
         target_type=database.PersonRoleType.CAST,
-        target_year=years.get_year_from_year_id(year_id),
+        target_year=year,
         person_list=data.cast,
     )
     people.save_person_roles(
-        target=path.id,
+        target=show_id,
         target_type=database.PersonRoleType.CREW,
-        target_year=years.get_year_from_year_id(year_id),
+        target_year=year,
         person_list=data.crew,
     )
 
@@ -77,17 +80,17 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
         playwrights.save_playwright_show(
             play_name=data.title,
             playwright_name=show_playwright.name,
-            show_id=path.id,
+            show_id=show_id,
             student_written=data.student_written,
         )
 
     if data.trivia:
         trivia.save_trivia(
-            target_id=path.id,
+            target_id=show_id,
             target_type=database.TargetType.SHOW,
             target_name=data.title,
             target_image_id=primary_image,
-            target_year=years.get_year_from_year_id(year_id),
+            target_year=year,
             trivia_list=data.trivia,
         )
 
@@ -95,10 +98,11 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
 def load_committee(
     path: DocumentPath, document: frontmatter.Post, data: models.Committee
 ):
+    year = years.get_year_from_source_year_id(path.id)
     people.save_person_roles(
-        target=path.id,
+        target=years.get_public_year_id(year),
         target_type=database.PersonRoleType.COMMITTEE,
-        target_year=years.get_year_from_year_id(path.id),
+        target_year=year,
         person_list=data.committee,
     )
 
