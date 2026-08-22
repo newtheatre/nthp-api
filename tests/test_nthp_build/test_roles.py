@@ -1,10 +1,17 @@
 import json
-import logging
 from pathlib import Path
 
 import pytest
 
-from nthp_api.nthp_build import database, dumper, models, roles, schema, spec
+from nthp_api.nthp_build import (
+    database,
+    dumper,
+    models,
+    roles,
+    schema,
+    spec,
+    validate,
+)
 from nthp_api.nthp_build.config import settings
 from nthp_api.nthp_build.loader import (
     DataLoaderFunc,
@@ -212,20 +219,11 @@ class TestCrewRoles:
     def test_roles_without_definition_are_reported(self, populated_db):
         assert roles.get_crew_roles_without_definition() == ["Bagpiper"]
 
-    def test_roles_without_definition_are_logged(
-        self, populated_db, caplog: pytest.LogCaptureFixture
-    ):
-        with caplog.at_level(logging.DEBUG):
-            roles.log_crew_roles_without_definition()
-        assert "Bagpiper" in caplog.text
-
-    def test_roles_without_definition_summary_is_logged_at_info(
-        self, populated_db, caplog: pytest.LogCaptureFixture
-    ):
-        with caplog.at_level(logging.INFO):
-            roles.log_crew_roles_without_definition()
-        assert "1 crew roles match no definition in roles.yaml" in caplog.text
-        assert "Bagpiper" not in caplog.text
+    def test_roles_without_definition_are_reported_by_lint(self, populated_db):
+        """Expected and long-tail, so `nthp lint` reports it, not the build."""
+        findings = validate.check_crew_role_definitions()
+        assert len(findings) == 1
+        assert "Bagpiper" in findings[0].message
 
 
 class TestPersonRefs:

@@ -23,6 +23,7 @@ from nthp_api.nthp_build import (
     seasons,
     shows,
     trivia,
+    validate,
     venues,
     years,
 )
@@ -76,7 +77,7 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
     show_assets = list(assets.assets_from_show_model(data))
     database.Show.create(
         id=show_id,
-        source_path=path.path,
+        source_path=str(path.content_path),
         year=year,
         year_id=years.get_public_year_id(year),
         title=data.title,
@@ -146,6 +147,7 @@ def load_venue(path: DocumentPath, document: frontmatter.Post, data: models.Venu
     links.check_links(data.links, path.content_path)
     database.Venue.create(
         id=path.id,
+        source_path=str(path.content_path),
         name=data.title,
         data=data.model_dump_json(),
         content=markdown_to_html(document.content, path.content_path),
@@ -154,11 +156,22 @@ def load_venue(path: DocumentPath, document: frontmatter.Post, data: models.Venu
     assets.save_venue_assets(path, data)
 
 
+SCALAR_LIST_PERSON_FIELDS = ("course", "careers", "career")
+
+
 def load_person(path: DocumentPath, document: frontmatter.Post, data: models.Person):
     links.check_links([*data.links, *data.news], path.content_path)
+    for field in SCALAR_LIST_PERSON_FIELDS:
+        if isinstance(document.metadata.get(field), str):
+            validate.record_finding(
+                validate.SCALAR_LIST_FIELD_CHECK,
+                f"{field} is a bare value, not a list",
+                str(path.content_path),
+            )
     try:
         database.Person.create(
             id=data.id,
+            source_path=str(path.content_path),
             title=data.title,
             graduated=data.graduated,
             headshot=data.headshot,
@@ -294,6 +307,9 @@ def run_document_loader(loader: Loader):
                 continue
             if not document.metadata and document.content.strip():
                 log.warning(f"No frontmatter found in {doc_path.path}")
+            validate.check_content_is_not_a_placeholder(
+                document.content, str(doc_path.content_path)
+            )
             try:
                 data = loader.schema_type(**{"id": doc_path.id, **document.metadata})  # type: ignore[call-arg]
             except ValidationError as error:

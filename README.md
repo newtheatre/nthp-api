@@ -31,6 +31,17 @@ This project generates a JSON API from the [history-project](https://github.com/
 
 Alternatively you can run `nthp build` to run both steps in one go.
 
+## Linting the content
+
+`nthp lint <path>` loads the content into an in-memory database and reports what
+the archive tolerates but a maintainer might want to fix: venues referenced
+without a document, credits with no name, near-duplicate person ids, roles and
+link types matching no definition, and so on. It counts every check and lists a
+few examples of each; use `--examples` to list more or fewer.
+
+Linting never fails: these are expectations, not defects. Defects are reported
+as errors by `nthp load` and `nthp build` instead.
+
 ## Contributing
 
 ### Git hooks

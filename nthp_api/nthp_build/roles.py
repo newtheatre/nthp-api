@@ -111,16 +111,6 @@ def get_crew_roles_without_definition() -> list[str]:
     ]
 
 
-def log_crew_roles_without_definition() -> None:
-    undefined_role_names = get_crew_roles_without_definition()
-    for role_name in undefined_role_names:
-        log.debug(f"Crew role {role_name!r} matches no definition in roles.yaml")
-    if undefined_role_names:
-        log.info(
-            f"{len(undefined_role_names)} crew roles match no definition in roles.yaml"
-        )
-
-
 def _get_people_role_conditions(
     target_type: str,
 ) -> list[peewee.Expression]:

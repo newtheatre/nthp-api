@@ -373,7 +373,6 @@ def dump_roles(state: DumperSharedState):
         dump_people_by_committee_role(definition)
 
     crew_definitions = roles.get_crew_role_definitions()
-    roles.log_crew_roles_without_definition()
     dump_crew_roles(crew_definitions)
     for definition in crew_definitions:
         dump_people_by_crew_role(definition)

@@ -27,10 +27,32 @@ def version():
 def load(path):
     environ["CONTENT_ROOT"] = str(path)
 
-    from nthp_api.nthp_build import database, loader
+    from nthp_api.nthp_build import database, loader, validate
 
     database.init_db(create=True)
     loader.run_loaders()
+    validate.run_build_checks()
+
+
+@click.option(
+    "--examples",
+    type=int,
+    default=3,
+    show_default=True,
+    help="How many findings to list under each check.",
+)
+@click.argument("path", type=click.Path(exists=True))
+@cli.command()
+def lint(path, examples):
+    """Report the expected and the advisory in the content: never fails."""
+    environ["DB_URI"] = ":memory:"
+    environ["CONTENT_ROOT"] = str(path)
+
+    from nthp_api.nthp_build import database, loader, validate
+
+    database.init_db(create=True)
+    loader.run_loaders()
+    print(validate.format_lint_report(validate.run_lint_checks(), examples))  # noqa: T201
 
 
 @cli.command()
@@ -77,10 +99,11 @@ def build(path):
     log.info(f"Building from {path} using in-memory database")
 
     import nthp_api.smugmugger.database
-    from nthp_api.nthp_build import database, dumper, loader, smugmug
+    from nthp_api.nthp_build import database, dumper, loader, smugmug, validate
 
     database.init_db(create=True)
     loader.run_loaders()
+    validate.run_build_checks()
     database.show_stats()
     nthp_api.smugmugger.database.init_db()
     smugmug.run()

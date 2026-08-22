@@ -155,15 +155,15 @@ class TestStubNames:
         make_show("1999-00/three", "Three", "The Zoo")
         assert get_record("the-zoo").name == "The Zoo"
 
-    def test_divergent_spellings_are_logged(
+    def test_divergent_spellings_are_not_logged_here(
         self, test_db, caplog: pytest.LogCaptureFixture
     ):
+        """The post-load `venue spellings` check reports these, with paths."""
         make_show("1999-00/one", "One", "The Zoo")
         make_show("1999-00/two", "Two", "The zoo")
         with caplog.at_level(logging.WARNING):
             get_record("the-zoo")
-        assert "the-zoo" in caplog.text
-        assert "The zoo" in caplog.text
+        assert not caplog.records
 
 
 class TestSentinelVenues:

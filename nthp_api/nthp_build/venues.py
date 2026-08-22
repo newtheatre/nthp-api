@@ -1,5 +1,4 @@
 import json
-import logging
 from collections import Counter, defaultdict
 from typing import NamedTuple
 
@@ -8,8 +7,6 @@ from slugify import slugify
 from nthp_api.nthp_build import assets, database, links, models
 from nthp_api.nthp_build.schema import Location, VenueDetail, VenueList
 from nthp_api.nthp_build.shows import get_show_list_item
-
-log = logging.getLogger(__name__)
 
 SENTINEL_VENUE_NAMES = {
     "unknown": "Venue unknown",
@@ -62,12 +59,13 @@ def get_most_common(values: Counter[str]) -> str | None:
 
 
 def get_stub_name(venue_id: str, shows: list[database.Show]) -> str:
+    """
+    The commonest spelling of the venue's name across the shows that reference it.
+
+    Divergent spellings are reported by the post-load `venue spellings` check,
+    which names the shows they were authored in.
+    """
     spellings = Counter(show.venue_name for show in shows if show.venue_name)
-    if len(spellings) > 1:
-        log.warning(
-            f"Venue {venue_id} is authored as {sorted(spellings)}, "
-            f"using the most common spelling"
-        )
     return get_most_common(spellings) or venue_id
 
 

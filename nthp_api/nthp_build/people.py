@@ -352,10 +352,8 @@ def get_award_holders() -> dict[str, dict[str, list[schema.PersonRef]]]:
             continue
         graduation = get_graduation(model)
         if graduation is None:
-            log.warning(
-                f"Person {model.id} holds an award but has no known graduation year, "
-                f"so it appears on no year"
-            )
+            # Reported by the post-load `award graduation` check, which knows the
+            # document the award was authored in.
             continue
         holders[graduation.id][model.award].append(
             schema.PersonRef(

@@ -73,6 +73,7 @@ class PlaywrightShow(NthpDbModel):
 
 class Venue(NthpDbModel):
     id = peewee.CharField(primary_key=True)
+    source_path = peewee.CharField(null=True)
     name = peewee.CharField()
     data = peewee.TextField()
     content = peewee.TextField(null=True)
@@ -81,6 +82,7 @@ class Venue(NthpDbModel):
 
 class Person(NthpDbModel):
     id = peewee.CharField(primary_key=True)
+    source_path = peewee.CharField(null=True)
     title = peewee.CharField()
     graduated = peewee.IntegerField(index=True, null=True)
     headshot = peewee.CharField(null=True)
@@ -132,6 +134,19 @@ class HistoryRecord(NthpDbModel):
     image_alt = peewee.CharField(null=True)
 
 
+class LoadFinding(NthpDbModel):
+    """
+    Something only the loader could see, kept for `nthp lint` to report.
+
+    The authored shape of a document — a scalar where a list was meant, a body
+    that is only a comment — does not survive into the rest of these tables.
+    """
+
+    check = peewee.CharField(index=True)
+    source_path = peewee.CharField()
+    message = peewee.TextField()
+
+
 class Asset(NthpDbModel):
     target_id = peewee.CharField(index=True)
     target_type = peewee.CharField(index=True)
@@ -159,12 +174,16 @@ MODELS = [
     LinkTypeDefinition,
     HistoryRecord,
     Asset,
+    LoadFinding,
 ]
 
 
 def init_db(create: bool = False):
     log.info(f"Initializing database: {db.database}")
 
+    # A second run in the same process, as the tests do, finds the first still open.
+    if not db.is_closed():
+        db.close()
     db.connect()
     if create:
         db.drop_tables(MODELS)

@@ -523,11 +523,12 @@ class TestGetAwardHolders:
             "Fred Bloggs"
         ]
 
-    def test_unknown_graduation_year_warns(
+    def test_unknown_graduation_year_is_filed_under_no_year(
         self, test_db, caplog: pytest.LogCaptureFixture
     ):
+        """The post-load `award graduation` check reports these, with paths."""
         self.save_person(
             models.Person(id="fred_bloggs", title="Fred Bloggs", award="Fellowship")
         )
         assert people.get_award_holders() == {}
-        assert "no known graduation year" in caplog.text
+        assert not caplog.records
