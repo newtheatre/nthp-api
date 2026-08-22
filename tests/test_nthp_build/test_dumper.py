@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from nthp_api.nthp_build import dumper, schema
+from nthp_api.nthp_build import content_schema, dumper, schema
 
 
 @pytest.fixture()
@@ -21,6 +21,24 @@ class TestCopyStaticFiles:
         dumper.copy_static_files()
         page = (output_dir / "index.html").read_text()
         assert 'apiDescriptionUrl="openapi.json"' in page
+
+
+class TestDumpContentSchema:
+    def test_writes_a_schema_per_document_type(self, output_dir: Path):
+        dumper.dump_content_schema(state=None)
+        written = {path.name for path in (output_dir / "content-schema").iterdir()}
+        assert written == {
+            "index.html",
+            *(
+                f"{document_type.name}.json"
+                for document_type in content_schema.CONTENT_DOCUMENT_TYPES
+            ),
+        }
+
+    def test_the_page_links_to_the_schemas_beside_it(self, output_dir: Path):
+        dumper.dump_content_schema(state=None)
+        page = (output_dir / "content-schema" / "index.html").read_text()
+        assert "href='show.json'" in page
 
 
 class TestWriteFile:

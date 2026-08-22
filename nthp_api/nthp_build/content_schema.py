@@ -50,7 +50,8 @@ class ContentDocumentType:
     @property
     def record_model(self) -> type[BaseModel]:
         """The model one record takes; a data file holds a list of them."""
-        return getattr(self.model, "__element__", None) or self.model
+        element = getattr(self.model, "__element__", None)
+        return getattr(element, "annotation", None) or self.model
 
 
 SHOW = ContentDocumentType(

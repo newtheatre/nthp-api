@@ -1,11 +1,13 @@
 """The CLI commands, driven as a user drives them."""
 
+import json
 from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
 
 from nthp_api.cli import cli
+from nthp_api.nthp_build import content_schema
 
 SHOW = """---
 title: A Show
@@ -99,3 +101,85 @@ class TestLint:
     def test_verbose_lists_every_finding(self, content_root: Path):
         result = run_lint(content_root, "--check", "crew-roles", "--verbose")
         assert "more, run with --verbose" not in result.output
+
+
+def run_schema(*args: str):
+    return CliRunner().invoke(cli, ["schema", *args])
+
+
+class TestSchema:
+    def test_a_type_prints_its_json_schema(self):
+        result = run_schema("show")
+        assert result.exit_code == 0
+        schema = json.loads(result.output)
+        assert schema["$id"] == "show.json"
+        assert schema["additionalProperties"] is False
+
+    def test_no_type_prints_every_schema(self):
+        result = run_schema()
+        assert set(json.loads(result.output)) == {
+            document_type.name
+            for document_type in content_schema.CONTENT_DOCUMENT_TYPES
+        }
+
+    def test_markdown_is_for_reading(self):
+        result = run_schema("person", "--format", "markdown")
+        assert "# Person" in result.output
+        assert "| Field | Type | Required | Description | Example |" in result.output
+
+    def test_an_unknown_type_is_rejected(self):
+        result = run_schema("nonsense")
+        assert result.exit_code != 0
+        assert "unknown type" in result.output
+
+
+def run_validate(*args: str):
+    return CliRunner().invoke(cli, ["validate", *args])
+
+
+class TestValidate:
+    def test_a_good_file_passes(self, content_root: Path):
+        result = run_validate(str(content_root / "_shows" / "99_00" / "a_show.md"))
+        assert result.exit_code == 0
+        assert "0 with problems" in result.output
+
+    def test_a_bad_file_fails_and_names_the_key(self, content_root: Path):
+        path = content_root / "_shows" / "99_00" / "broken.md"
+        path.write_text(
+            "---\ntitle: Broken\nseason: In House\nplayright: A N Other\n---\n"
+        )
+        result = run_validate(str(path))
+        assert result.exit_code == 1
+        assert "playright" in result.output
+        assert "1 with problems" in result.output
+
+    def test_a_directory_checks_everything_under_it(self, content_root: Path):
+        result = run_validate(str(content_root))
+        assert "files checked" in result.output
+
+    def test_verbose_names_the_files_with_nothing_wrong(self, content_root: Path):
+        result = run_validate(str(content_root / "_shows"), "--verbose")
+        assert "no problems" in result.output
+
+    def test_plain_format_has_no_colour(self, content_root: Path):
+        result = run_validate(str(content_root), "--format", "plain")
+        assert "\x1b[" not in result.output
+
+
+def run_new(*args: str):
+    return CliRunner().invoke(cli, ["new", *args])
+
+
+class TestNew:
+    def test_a_skeleton_is_front_matter(self):
+        result = run_new("show")
+        assert result.exit_code == 0
+        assert result.output.startswith("---\n")
+
+    def test_an_identifier_names_the_file(self):
+        result = run_new("person", "--id", "fred_bloggs")
+        assert "_people/fred_bloggs.md" in result.output
+        assert "title: Fred Bloggs" in result.output
+
+    def test_an_unknown_type_is_rejected(self):
+        assert run_new("committee").exit_code != 0
