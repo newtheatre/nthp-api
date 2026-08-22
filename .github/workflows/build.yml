@@ -26,7 +26,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: nthp.smug.db
-          key: smugmug-1
+          # A per-run key never hits exactly, so the cache is saved after every
+          # run; restore-keys brings back the most recent previous one.
+          key: smugmug-${{ github.run_id }}
+          restore-keys: |
+            smugmug-
       - name: Fetch SmugMug data if not cached
         run: wget -nc https://nthp-seed.s3.eu-west-2.amazonaws.com/nthp.smug.db
       - name: Build content database

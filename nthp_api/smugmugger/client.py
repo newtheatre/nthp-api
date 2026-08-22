@@ -49,26 +49,61 @@ async def make_client() -> AsyncGenerator[SmugMugClient, None]:
     await client.client.aclose()
 
 
+RETRYABLE_STATUS_CODES = frozenset(
+    {
+        HTTPStatus.TOO_MANY_REQUESTS,
+        HTTPStatus.INTERNAL_SERVER_ERROR,
+        HTTPStatus.BAD_GATEWAY,
+        HTTPStatus.SERVICE_UNAVAILABLE,
+        HTTPStatus.GATEWAY_TIMEOUT,
+    }
+)
+
+
+def get_retry_after_seconds(response: httpx.Response) -> float | None:
+    """Seconds SmugMug asks us to wait, if it says so in a form we understand."""
+    retry_after = response.headers.get("Retry-After")
+    if retry_after is None:
+        return None
+    try:
+        return float(retry_after)
+    except ValueError:
+        log.warning(f"Ignoring unparseable Retry-After header {retry_after!r}")
+        return None
+
+
 async def _get_with_retry(
     client: SmugMugClient, url: str, params: dict
 ) -> httpx.Response:
     last_exc: Exception | None = None
+    last_response: httpx.Response | None = None
+    retry_after_seconds: float | None = None
     for attempt in range(settings.smugmug_retry_attempts):
         if attempt:
-            delay = settings.smugmug_retry_backoff_seconds * 2 ** (attempt - 1)
+            delay = retry_after_seconds or (
+                settings.smugmug_retry_backoff_seconds * 2 ** (attempt - 1)
+            )
+            reason = last_exc if last_exc is not None else last_response
             log.warning(
                 f"Retrying {url} in {delay}s "
                 f"(attempt {attempt + 1}/{settings.smugmug_retry_attempts}): "
-                f"{last_exc!r}"
+                f"{reason!r}"
             )
             await asyncio.sleep(delay)
         try:
             async with client.connection_limit:
-                return await client.client.get(
+                response = await client.client.get(
                     url, params=params, headers={"Accept": "application/json"}
                 )
         except (httpx.TimeoutException, httpx.TransportError) as exc:
-            last_exc = exc
+            last_exc, last_response, retry_after_seconds = exc, None, None
+            continue
+        if response.status_code not in RETRYABLE_STATUS_CODES:
+            return response
+        last_exc, last_response = None, response
+        retry_after_seconds = get_retry_after_seconds(response)
+    if last_response is not None:
+        return last_response
     assert last_exc is not None
     raise last_exc
 

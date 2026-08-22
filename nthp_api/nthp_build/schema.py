@@ -88,6 +88,10 @@ class Asset(NthpSchema):
     category: str | None = None
     title: str | None = None
     page: int | None = None
+    # Intrinsic dimensions and upload date, where SmugMug knows them
+    width: int | None = None
+    height: int | None = None
+    date: str | None = None
 
 
 class AssetCollection(BaseCollectionModel[Asset]):

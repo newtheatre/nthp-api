@@ -1,12 +1,16 @@
+import datetime
+import functools
 import json
 import logging
 import mimetypes
 from collections.abc import Generator, Iterable
 from enum import Enum
 
+import pydantic
+
 from nthp_api.nthp_build import database, models, schema
 from nthp_api.nthp_build.documents import DocumentPath
-from nthp_api.smugmugger import SmugMugImage
+from nthp_api.smugmugger import SmugMugImage, SmugMugImageInfo
 
 log = logging.getLogger(__name__)
 
@@ -217,6 +221,10 @@ def pick_show_primary_image(assets: list[models.Asset]) -> str | None:
     return None
 
 
+def format_asset_date(date: datetime.datetime | None) -> str | None:
+    return date.isoformat() if date is not None else None
+
+
 def smugmug_asset_to_asset(smugmug_asset: SmugMugImage) -> schema.Asset:
     """Convert a SmugMug asset to a schema asset"""
     asset_type = AssetType.VIDEO if smugmug_asset.IsVideo else AssetType.IMAGE
@@ -228,6 +236,45 @@ def smugmug_asset_to_asset(smugmug_asset: SmugMugImage) -> schema.Asset:
         mime_type=get_mime_type(
             AssetSource.SMUGMUG, asset_type, smugmug_asset.ImageKey
         ),
+        width=smugmug_asset.OriginalWidth,
+        height=smugmug_asset.OriginalHeight,
+        date=format_asset_date(smugmug_asset.Date),
+    )
+
+
+@functools.cache
+def get_smugmug_image_info_map() -> dict[str, SmugMugImageInfo]:
+    """Dimensions and dates fetched by the smug step, keyed by SmugMug image key."""
+    query = database.Asset.select().where(
+        database.Asset.asset_source == AssetSource.SMUGMUG,
+        database.Asset.asset_type << [AssetType.IMAGE, AssetType.VIDEO],
+        database.Asset.asset_smugmug_data.is_null(False),
+    )
+    image_info_map = {}
+    for asset in query:
+        try:
+            image_info_map[asset.asset_id] = SmugMugImageInfo(
+                **json.loads(asset.asset_smugmug_data)
+            )
+        except (json.JSONDecodeError, pydantic.ValidationError):
+            log.warning(f"Could not decode smugmug data for image {asset.asset_id}")
+    return image_info_map
+
+
+def add_smugmug_image_info(asset: schema.Asset) -> schema.Asset:
+    """Give a SmugMug image asset the dimensions the smug step fetched for its key."""
+    if asset.source != AssetSource.SMUGMUG.value or asset.type == AssetType.ALBUM.value:
+        return asset
+    image_info = get_smugmug_image_info_map().get(asset.id)
+    if image_info is None:
+        log.warning(f"No SmugMug dimensions for image {asset.id}")
+        return asset
+    return asset.model_copy(
+        update={
+            "width": image_info.width,
+            "height": image_info.height,
+            "date": format_asset_date(image_info.date),
+        }
     )
 
 

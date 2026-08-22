@@ -2,7 +2,14 @@ import json
 
 import peewee
 
-from nthp_api.nthp_build import database, models, people, playwrights, schema
+from nthp_api.nthp_build import (
+    assets,
+    database,
+    models,
+    people,
+    playwrights,
+    schema,
+)
 from nthp_api.nthp_build.config import settings
 
 
@@ -254,7 +261,10 @@ def get_show_detail(
         crew_note=source_data.crew_note,
         # Even though we do have show assets in the db, fetching them for dumping per
         # show would be slow, so instead we use the saved result from when we loaded.
-        assets=[schema.Asset(**asset) for asset in json.loads(show_inst.assets)],
+        assets=[
+            assets.add_smugmug_image_info(schema.Asset(**asset))
+            for asset in json.loads(show_inst.assets)
+        ],
         primary_image=show_inst.primary_image,
         missing_fields=get_show_missing_fields(show_inst, source_data),
         ignore_missing=source_data.ignore_missing,
