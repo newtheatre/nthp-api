@@ -2,6 +2,7 @@
 
 import datetime
 from enum import Enum
+from typing import Annotated, Literal
 
 import humps
 from pydantic import BaseModel, ConfigDict, Field
@@ -717,18 +718,226 @@ class SearchDocumentType(Enum):
     VENUE = "venue"
 
 
-class SearchDocument(NthpSchema):
-    type: SearchDocumentType
-    title: str
-    id: str
-    image_id: str | None = None
-    playwright: PlaywrightShow | None = None
-    company: str | None = None
-    people: list[str] | None = None
-    plaintext: str | None = None
+class SearchDocumentBase(NthpSchema):
+    """
+    Fields every search document carries, whatever it describes.
+
+    Documents are faceted per type: the consumer builds its own index from them,
+    so each carries the fields worth searching or filtering on and nothing more.
+    Anything absent is omitted rather than sent as null, keeping the corpus small.
+    """
+
+    type: SearchDocumentType = Field(
+        description="What the document describes, the union's discriminator"
+    )
+    title: str = Field(
+        description="Name of the record, the primary field to search on",
+        json_schema_extra={"example": "Macbeth"},
+    )
+    id: str = Field(
+        description="ID of the record, as its own document is keyed by",
+        json_schema_extra={"example": "2024-25/macbeth"},
+    )
+    image_id: str | None = Field(
+        default=None,
+        description="Image illustrating the record, where there is one",
+        json_schema_extra={"example": "abc12"},
+    )
+
+
+class SearchDocumentShow(SearchDocumentBase):
+    """A show, the archive's principal record."""
+
+    type: Literal[SearchDocumentType.SHOW]
+    year_id: str = Field(
+        description="ID of the academic year the show ran in, in YYYY-YY form",
+        json_schema_extra={"example": "2024-25"},
+    )
+    year: int = Field(
+        description="Calendar year the academic year starts in",
+        json_schema_extra={"example": 2024},
+    )
+    decade: int = Field(
+        description="First three digits of the start year, e.g. 202 for the 2020s",
+        json_schema_extra={"example": 202},
+    )
+    season: str = Field(
+        description="Season as authored on the show",
+        json_schema_extra={"example": "Autumn Season"},
+    )
+    season_id: str | None = Field(
+        default=None,
+        description="ID of the season, where the authored season is a known one",
+        json_schema_extra={"example": "autumn_season"},
+    )
+    venue_id: str | None = Field(
+        default=None,
+        description="ID of the venue the show ran at",
+        json_schema_extra={"example": "nottingham-new-theatre"},
+    )
+    venue_name: str | None = Field(
+        default=None,
+        description="Name of the venue as authored on the show",
+        json_schema_extra={"example": "Nottingham New Theatre"},
+    )
+    date_start: FuzzyDate | None = Field(
+        default=None,
+        description="Date the show opened, of year, month or day precision",
+        json_schema_extra={"example": "2024-11-13"},
+    )
+    playwright: str | None = Field(
+        default=None,
+        description="How the show describes its authorship, e.g. `by Shakespeare`, "
+        "`Devised` or `Various Writers`",
+        json_schema_extra={"example": "by William Shakespeare"},
+    )
+    company: str | None = Field(
+        default=None,
+        description="Company that staged the show, where it was not the theatre",
+        json_schema_extra={"example": "Nottingham New Theatre"},
+    )
+    people: list[str] | None = Field(
+        default=None,
+        description="Names of everyone credited on the show, cast and crew alike",
+        json_schema_extra={"example": ["Fred Bloggs"]},
+    )
+    plaintext: str | None = Field(
+        default=None,
+        description="The show's description, markup stripped",
+        json_schema_extra={"example": "A tragedy of ambition."},
+    )
+
+
+class SearchDocumentPerson(SearchDocumentBase):
+    """Anyone credited on a show or committee, whether or not they have a bio."""
+
+    type: Literal[SearchDocumentType.PERSON]
+    has_bio: bool = Field(
+        description="Whether the archive holds a document about the person, as "
+        "opposed to knowing them only from the credits they appear in",
+        json_schema_extra={"example": True},
+    )
+    graduation_year: str | None = Field(
+        default=None,
+        description="ID of the academic year the person graduated in, in YYYY-YY "
+        "form; absent where they are yet to graduate or nothing is known",
+        json_schema_extra={"example": "2024-25"},
+    )
+    graduation_decade: int | None = Field(
+        default=None,
+        description="First three digits of the graduation year's start year",
+        json_schema_extra={"example": 202},
+    )
+    graduation_estimated: bool | None = Field(
+        default=None,
+        description="Whether the graduation year is estimated from the person's "
+        "credits rather than authored",
+        json_schema_extra={"example": False},
+    )
+    course: list[str] | None = Field(
+        default=None,
+        description="Courses the person studied",
+        json_schema_extra={"example": ["English"]},
+    )
+    careers: list[str] | None = Field(
+        default=None,
+        description="Careers the person has followed, theatre related or not",
+        json_schema_extra={"example": ["Director"]},
+    )
+    award: str | None = Field(
+        default=None,
+        description="Award the person received on leaving the theatre, as authored",
+        json_schema_extra={"example": "Fellowship"},
+    )
+    show_roles: list[str] | None = Field(
+        default=None,
+        description="Distinct roles the person has taken on a show, crew roles under "
+        "their canonical name and acting as `Actor`",
+        json_schema_extra={"example": ["Actor", "Director"]},
+    )
+    committee_roles: list[str] | None = Field(
+        default=None,
+        description="Distinct committee positions the person has held, under their "
+        "canonical name",
+        json_schema_extra={"example": ["Publicity Manager"]},
+    )
+    show_count: int = Field(
+        description="Number of shows the person is credited on",
+        json_schema_extra={"example": 7},
+    )
+    year_ids: list[str] | None = Field(
+        default=None,
+        description="IDs of the academic years the person is credited in, whether "
+        "on a show or a committee",
+        json_schema_extra={"example": ["2023-24", "2024-25"]},
+    )
+    plaintext: str | None = Field(
+        default=None,
+        description="The person's biography, markup stripped",
+        json_schema_extra={"example": "Fred read English and directed a lot."},
+    )
+
+
+class SearchDocumentVenue(SearchDocumentBase):
+    """A venue, whether or not the archive holds a document about it."""
+
+    type: Literal[SearchDocumentType.VENUE]
+    city: str | None = Field(
+        default=None,
+        description="City the venue is in, where the archive holds a document for it",
+        json_schema_extra={"example": "Nottingham"},
+    )
+    show_count: int = Field(
+        description="Number of shows that ran at the venue",
+        json_schema_extra={"example": 42},
+    )
+    plaintext: str | None = Field(
+        default=None,
+        description="The venue's description, markup stripped",
+        json_schema_extra={"example": "A studio theatre on University Park."},
+    )
+
+
+class SearchDocumentYear(SearchDocumentBase):
+    """An academic year."""
+
+    type: Literal[SearchDocumentType.YEAR]
+    decade: int = Field(
+        description="First three digits of the start year, e.g. 202 for the 2020s",
+        json_schema_extra={"example": 202},
+    )
+    show_count: int = Field(
+        description="Number of shows in the academic year",
+        json_schema_extra={"example": 42},
+    )
+
+
+SearchDocument = Annotated[
+    SearchDocumentShow
+    | SearchDocumentPerson
+    | SearchDocumentVenue
+    | SearchDocumentYear,
+    Field(discriminator="type"),
+]
 
 
 class SearchDocumentCollection(BaseCollectionModel[SearchDocument]):
+    pass
+
+
+class SearchDocumentShowCollection(BaseCollectionModel[SearchDocumentShow]):
+    pass
+
+
+class SearchDocumentPersonCollection(BaseCollectionModel[SearchDocumentPerson]):
+    pass
+
+
+class SearchDocumentVenueCollection(BaseCollectionModel[SearchDocumentVenue]):
+    pass
+
+
+class SearchDocumentYearCollection(BaseCollectionModel[SearchDocumentYear]):
     pass
 
 
@@ -765,5 +974,11 @@ class SiteStats(NthpSchema):
     trivia_count: int = Field(
         title="Trivia Count",
         description="Number of bits of trivia or stories.",
+        json_schema_extra={"example": 1234},
+    )
+    search_document_count: int = Field(
+        title="Search Document Count",
+        description="Number of documents in the search corpus, shows, people, venues "
+        "and years together.",
         json_schema_extra={"example": 1234},
     )

@@ -86,6 +86,19 @@ class TestLoadCrewRoleDefinitions:
         assert crew_role_definitions[2].aliases == set()
 
 
+class TestCrewRoleCanonicalNames:
+    def test_maps_names_and_aliases_to_the_canonical_name(self, crew_role_definitions):
+        assert roles.get_crew_role_canonical_names() == {
+            "Playwright": "Playwright",
+            "Author": "Playwright",
+            "Writer": "Playwright",
+            "Director": "Director",
+            "Co-director": "Director",
+            "Stage Manager": "Stage Manager",
+            "President": "President",
+        }
+
+
 def make_person_role(
     person_id: str, role: str, target_type: str, target_year: int = 1999
 ) -> database.PersonRole:

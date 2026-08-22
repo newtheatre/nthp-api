@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import NamedTuple, Protocol
 
 import pydantic
+from pydantic_collections import BaseCollectionModel
 
 from nthp_api.nthp_build import (
     assets,
@@ -75,17 +76,7 @@ def dump_show(
 ) -> schema.ShowDetail:
     path = make_out_path(Path("shows"), inst.id)
     show = shows.get_show_detail(inst, previous=previous, next_show=next_show)
-    search.add_document(
-        state=state,
-        type=schema.SearchDocumentType.SHOW,
-        title=show.title,
-        id=inst.id,
-        image_id=inst.primary_image,
-        playwright=show.playwright,
-        company=show.company,
-        people=shows.get_show_people_names(show),
-        plaintext=inst.plaintext,
-    )
+    search.add_document(state, search.get_show_document(inst, show))
     write_file(path, show)
     return show
 
@@ -142,12 +133,7 @@ def dump_year(
         fellows=award_holders.get(year_id, {}).get(models.Award.FELLOWSHIP, []),
         commendations=award_holders.get(year_id, {}).get(models.Award.COMMENDATION, []),
     )
-    search.add_document(
-        state=state,
-        type=schema.SearchDocumentType.YEAR,
-        title=year_detail.title,
-        id=year_id,
-    )
+    search.add_document(state, search.get_year_document(year_detail))
     write_file(path, year_detail)
     return year_detail
 
@@ -198,12 +184,7 @@ def dump_venue(
 ) -> schema.VenueList:
     path = make_out_path(Path("venues"), record.id)
     write_file(path, venues.get_venue_detail(record))
-    search.add_document(
-        state=state,
-        type=schema.SearchDocumentType.VENUE,
-        title=record.name,
-        id=record.id,
-    )
+    search.add_document(state, search.get_venue_document(record))
     return venues.get_venue_list(record)
 
 
@@ -218,7 +199,9 @@ def dump_venues(state: DumperSharedState):
 
 
 def dump_real_person(
-    inst: database.Person, state: DumperSharedState
+    inst: database.Person,
+    state: DumperSharedState,
+    crew_role_canonical_names: dict[str, str],
 ) -> schema.PersonDetail:
     path = make_out_path(Path("people"), inst.id)
     source_data = models.Person(**json.loads(inst.data))
@@ -226,42 +209,48 @@ def dump_real_person(
         source_data, inst.content, trivia=trivia.make_person_trivia(inst.id)
     )
     search.add_document(
-        state=state,
-        type=schema.SearchDocumentType.PERSON,
-        title=person_detail.title,
-        id=inst.id,
-        image_id=inst.headshot,
+        state,
+        search.get_person_document(
+            person_detail,
+            crew_role_canonical_names,
+            has_bio=True,
+            plaintext=inst.plaintext,
+        ),
     )
     write_file(path, person_detail)
     return person_detail
 
 
 def dump_real_people(state: DumperSharedState):
+    crew_role_canonical_names = roles.get_crew_role_canonical_names()
     for person_inst in people.get_real_people():
-        dump_real_person(person_inst, state)
+        dump_real_person(person_inst, state, crew_role_canonical_names)
 
 
-def dump_virtual_person(ref, state: DumperSharedState) -> schema.PersonDetail:
+def dump_virtual_person(
+    ref, state: DumperSharedState, crew_role_canonical_names: dict[str, str]
+) -> schema.PersonDetail:
     path = make_out_path(Path("people"), ref.person_id)
     person_detail = people.make_person_detail(
         people.make_virtual_person_model(ref),
         trivia=trivia.make_person_trivia(ref.person_id),
     )
     search.add_document(
-        state=state,
-        type=schema.SearchDocumentType.PERSON,
-        title=person_detail.title,
-        id=ref.person_id,
+        state,
+        search.get_person_document(
+            person_detail, crew_role_canonical_names, has_bio=False
+        ),
     )
     write_file(path, person_detail)
     return person_detail
 
 
 def dump_virtual_people(state: DumperSharedState):
+    crew_role_canonical_names = roles.get_crew_role_canonical_names()
     real_people_ids = [x.id for x in database.Person.select(database.Person.id)]
     virtual_people_query = people.get_people_from_roles(excluded_ids=real_people_ids)
     for ref in virtual_people_query:
-        dump_virtual_person(ref, state)
+        dump_virtual_person(ref, state, crew_role_canonical_names)
 
 
 def make_person_index_item(
@@ -428,19 +417,38 @@ def dump_site_stats(state: DumperSharedState) -> None:
             person_with_bio_count=database.Person.select().count(),
             credit_count=database.PersonRole.select().count(),
             trivia_count=database.Trivia.select().count(),
+            search_document_count=len(state.search_documents),
         ),
     )
 
 
+SEARCH_DOCUMENT_COLLECTIONS: dict[
+    schema.SearchDocumentType, type[BaseCollectionModel]
+] = {
+    schema.SearchDocumentType.SHOW: schema.SearchDocumentShowCollection,
+    schema.SearchDocumentType.PERSON: schema.SearchDocumentPersonCollection,
+    schema.SearchDocumentType.VENUE: schema.SearchDocumentVenueCollection,
+    schema.SearchDocumentType.YEAR: schema.SearchDocumentYearCollection,
+}
+
+
 def dump_search_documents(state: DumperSharedState):
-    path = make_out_path(Path("search"), "documents")
-    collection = schema.SearchDocumentCollection(
-        sorted(
-            state.search_documents,
-            key=lambda document: (document.type.value, document.id),
-        )
+    """Write the whole corpus, and a file per type for consumers indexing one."""
+    documents = sorted(
+        state.search_documents,
+        key=lambda document: (document.type.value, document.id),
     )
-    write_file(path, collection)
+    write_file(
+        make_out_path(Path("search"), "documents"),
+        schema.SearchDocumentCollection(documents),
+    )
+    for document_type, collection_model in SEARCH_DOCUMENT_COLLECTIONS.items():
+        write_file(
+            make_out_path(Path("search/documents"), document_type.value),
+            collection_model(
+                [document for document in documents if document.type == document_type]
+            ),
+        )
 
 
 class DumperFunc(Protocol):
@@ -468,11 +476,13 @@ DUMPERS: list[Dumper] = [
     Dumper("plays", dump_plays),
     Dumper("history records", dump_history_records),
     Dumper("albums", dump_albums),
-    Dumper("site stats", dump_site_stats),
 ]
 
+# Run once the parallel dumpers have filled the shared state: the search corpus is
+# built from what they emit, and the site stats count it.
 POST_DUMPERS: list[Dumper] = [
     Dumper("search documents", dump_search_documents),
+    Dumper("site stats", dump_site_stats),
 ]
 
 

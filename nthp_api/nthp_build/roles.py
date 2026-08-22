@@ -11,6 +11,8 @@ log = logging.getLogger(__name__)
 
 UNKNOWN_ROLE_NAMES = {"unknown", "Unknown"}
 
+CAST_ROLE_NAME = "Actor"
+
 
 class RoleDefinition(NamedTuple):
     name: str
@@ -132,6 +134,15 @@ def _get_people_role_conditions(
 
 def get_role_names(definition: RoleDefinition) -> set[str]:
     return {definition.name} | definition.aliases
+
+
+def get_crew_role_canonical_names() -> dict[str, str]:
+    """Every defined crew role name and alias against the canonical name for it."""
+    return {
+        role_name: definition.name
+        for definition in get_crew_role_definitions()
+        for role_name in get_role_names(definition)
+    }
 
 
 def get_role_holding_count(definition: RoleDefinition, target_type: str) -> int:
@@ -276,7 +287,7 @@ def get_people_cast() -> list[schema.PersonShowRoleList]:
                 id=r.person_id,
                 title=r.person_name,
                 headshot=r.person.headshot if getattr(r, "person", None) else None,  # type: ignore[attr-defined]
-                role="Actor",
+                role=CAST_ROLE_NAME,
                 show_count=r.show_count,  # type: ignore[attr-defined]
             )
             for r in query

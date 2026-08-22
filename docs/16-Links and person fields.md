@@ -27,7 +27,7 @@ Web doc 30 §6; 03 summary items 1–4. Largest gap: `Link` is ingested everywhe
 
 ## Notes
 
-- `award` values in content are wider than the two the year pages use: `Fellowship`, `Commendation`, `Merit`, `Union Prize`. The enum takes all four; `YearDetail.fellows`/`commendations` take the first two.
+- `award` values in content are wider than the two the year pages use: `Fellowship`, `Commendation`, `Merit`, `Union Prize`. Originally an enum of all four, since relaxed to a plain string so a new award cannot fail a record; `models.Award` survives as the known set, and `YearDetail.fellows`/`commendations` are still keyed on the first two.
 - `careers.yaml` is not loaded: the Ruby site only uses it for the collection form's checkboxes, never to canonicalise a record, so careers are output as authored.
 - Link types are matched case-insensitively and output under the name `link-types.yaml` gives; types with no definition keep the authored name. The `default` type carries nothing but an icon, so it is no fallback.
 - `playwright_false` appears nowhere in the content; its behaviour is covered by tests only.
