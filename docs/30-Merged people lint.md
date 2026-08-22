@@ -33,5 +33,7 @@ From task 29's double-space list, once the slug collapses them: Sam Morris (05/0
 
 ## Questions
 
-- Threshold 8: agree, or derive from data (histogram of largest gaps across all ids)?
-- Skip documented people entirely, or still report when the document has no `graduated` to anchor to?
+Q: Threshold 8: agree, or derive from data (histogram of largest gaps across all ids)?
+A: Agree
+Q: Skip documented people entirely, or still report when the document has no `graduated` to anchor to?
+A: Still report
