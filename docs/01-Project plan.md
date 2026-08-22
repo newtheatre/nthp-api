@@ -40,7 +40,7 @@ Parity with the Ruby builder where its features still matter:
 
 ## Phase 4 — Longevity (doc 02 §3)
 
-- SmugMug: retry on 429/5xx, tolerate deleted albums, fix the never-updating Actions cache key, fallback when the API/seed is unreachable
+- SmugMug: retries on 429/5xx and the Actions cache key are done (19116ae); still to do: tolerate deleted albums, fallback when the API/seed is unreachable
 - Pin `fork` start method or drop multiprocessing before any Python 3.14 bump
 - Y2K39 fix in `years.py` (breaks September 2039)
 - Replace `pytest-vcr`/`pydantic-collections` when they next block an upgrade

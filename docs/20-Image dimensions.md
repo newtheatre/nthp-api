@@ -1,6 +1,6 @@
 ---
 type: task
-status: todo
+status: done
 ---
 
 # Image dimensions
@@ -20,3 +20,10 @@ Web doc 30 §7. Every SmugMug asset the API emits must carry `width`, `height` (
 - Alt text: not in content, out of scope.
 
 Decision: live calls with persistent cache; first run slow, accepted.
+
+## Done
+
+`GET /api/v2/image/{key}` carries `OriginalWidth`, `OriginalHeight` and `Date`
+in one request, so `!sizedetails` is only a fallback. That endpoint 301s from
+the bare key to its serial-suffixed URI, so the client follows redirects
+(a2bf036). Live-checked against three 2024/25 posters.

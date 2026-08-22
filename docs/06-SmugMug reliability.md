@@ -32,7 +32,7 @@ propagates, failing the step with all other results discarded.
   summary (`N albums failed`) so partial data is cached but the failure is
   still loud. Silent partial success is the failure mode §3.3 warns about.
 
-## 2. Retry only covers transport errors
+## 2. Retry only covers transport errors — done (19116ae)
 
 `smugmugger/client.py:52` `_get_with_retry` retries `httpx.TimeoutException` /
 `TransportError` only. HTTP 429/5xx come back as a response, pass the retry
@@ -44,7 +44,7 @@ loop, and raise `SmugMugApiError` immediately (`client.py:92`).
 - Existing settings `smugmug_retry_attempts` / `smugmug_retry_backoff_seconds`
   apply unchanged.
 
-## 3. Actions cache never re-saves
+## 3. Actions cache never re-saves — done (19116ae)
 
 `build.yml:25` uses `actions/cache@v4` with fixed key `smugmug-1`.
 `actions/cache` skips the save step on an exact-key hit, so the cache is frozen
@@ -97,10 +97,10 @@ step before that setting matters.
 
 ## Order of work
 
-1. Status-code retries in `client.py` (2) — smallest, purely internal.
+1. ~~Status-code retries in `client.py` (2) — smallest, purely internal.~~ Done.
 2. Error tolerance in the gather (1), with tests using stubbed
    failures.
-3. CI cache key + seed fallback (3, 5) — `build.yml` only.
+3. CI cache key done; seed fallback (5) outstanding — `build.yml` only.
 4. Decide and implement (or document) invalidation policy (4).
 
 ## Tests
