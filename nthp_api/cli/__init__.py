@@ -15,17 +15,23 @@ log = logging.getLogger(__name__)
 
 @click.group()
 def cli():
-    pass
+    """Build the New Theatre history JSON API from the content repository."""
 
 
-@cli.command()
+@cli.command(short_help="Print the nthp-api version.")
 def version():
+    """Print the nthp-api version."""
     print(f"nthp-api {get_version()}")  # noqa T201
 
 
 @click.argument("path", type=click.Path(exists=True))
-@cli.command()
+@cli.command(short_help="Load a content repository into the sqlite database.")
 def load(path):
+    """Load a content repository into the sqlite database.
+
+    Parses every document under PATH into the database named by DB_URI, then runs
+    the build checks. Reports defects; documents that fail validation are skipped.
+    """
     environ["CONTENT_ROOT"] = str(path)
 
     from nthp_api.nthp_build import database, loader, validate
@@ -52,9 +58,14 @@ def load(path):
     help="Output style. Defaults to plain when not writing to a terminal.",
 )
 @click.argument("path", type=click.Path(exists=True))
-@cli.command()
+@cli.command(short_help="Report the content's rough edges.")
 def lint(path, check_names, verbose, output_format):
-    """Report the content's rough edges. Never fails."""
+    """Report the content's rough edges.
+
+    Loads PATH into an in-memory database and runs every cross-document check:
+    spelling variants, namesake collisions, merged people, uncovered crew roles.
+    Advisory — it never fails. Use `validate` for per-file defects.
+    """
     environ["DB_URI"] = ":memory:"
     environ["CONTENT_ROOT"] = str(path)
 
@@ -93,9 +104,13 @@ def lint(path, check_names, verbose, output_format):
     help="Output style. JSON Schema by default; Markdown to read.",
 )
 @click.argument("document_type", required=False)
-@cli.command()
+@cli.command(short_help="Print the content schema.")
 def schema(document_type, output_format):
-    """Print the schema for a content document type, or for all of them."""
+    """Print the content schema.
+
+    JSON Schema or Markdown for one content document type (show, person, venue…)
+    or for all of them. The same schema is written to dist/content-schema on dump.
+    """
     import json
 
     environ["CONTENT_ROOT"] = "does-not-matter"
@@ -140,9 +155,14 @@ def schema(document_type, output_format):
     help="Output style. Defaults to plain when not writing to a terminal.",
 )
 @click.argument("paths", nargs=-1, required=True, type=click.Path(exists=True))
-@cli.command()
+@cli.command(short_help="Check content files against the schema.")
 def validate(paths, verbose, output_format):
-    """Check content files against the schema and the per-document rules."""
+    """Check content files against the schema.
+
+    Runs the models and per-document rules the build uses on each of PATHS, without
+    a database, so a file this accepts is a file `build` accepts. Exits non-zero on
+    any problem. Whole-repository checks belong to `lint`.
+    """
     from pathlib import Path
 
     given = [Path(path) for path in paths]
@@ -177,9 +197,13 @@ def validate(paths, verbose, output_format):
 
 @click.option("--id", "identifier", default=None, help="Identifier, and so filename.")
 @click.argument("document_type", type=click.Choice(["show", "person", "venue"]))
-@cli.command()
+@cli.command(short_help="Print a skeleton content file.")
 def new(document_type, identifier):
-    """Print a skeleton content file, with every field described."""
+    """Print a skeleton content file.
+
+    A template for a new DOCUMENT_TYPE (show, person, venue) named IDENTIFIER,
+    with every field present and described. Redirect it into the content repo.
+    """
     environ["CONTENT_ROOT"] = "does-not-matter"
 
     from nthp_api.nthp_build import content_schema, skeleton
@@ -192,8 +216,9 @@ def new(document_type, identifier):
     )
 
 
-@cli.command()
+@cli.command(short_help="Print row counts from the database.")
 def stats():
+    """Print row counts from the database."""
     environ["CONTENT_ROOT"] = "does-not-matter"
 
     from nthp_api.nthp_build import database
@@ -202,8 +227,13 @@ def stats():
     database.show_stats()
 
 
-@cli.command()
+@cli.command(short_help="Fetch SmugMug image data.")
 def smug():
+    """Fetch SmugMug image data.
+
+    Fetches dimensions for every image the loaded content references into the
+    SmugMug cache database. Needs SMUGMUG_API_KEY; skipped with a warning without it.
+    """
     environ["CONTENT_ROOT"] = "does-not-matter"
 
     import nthp_api.smugmugger.database
@@ -214,8 +244,13 @@ def smug():
     smugmug.run()
 
 
-@cli.command()
+@cli.command(short_help="Write the JSON API from the database.")
 def dump():
+    """Write the JSON API from the database.
+
+    Clears dist/ and writes every endpoint from the database at DB_URI. Run after
+    `load` (and `smug`).
+    """
     environ["CONTENT_ROOT"] = "does-not-matter"
 
     from nthp_api.nthp_build import database, dumper
@@ -226,8 +261,13 @@ def dump():
 
 
 @click.argument("path", type=click.Path(exists=True))
-@cli.command()
+@cli.command(short_help="Load, fetch images and dump in one step.")
 def build(path):
+    """Load, fetch images and dump in one step.
+
+    Runs load, build checks, the SmugMug fetch and dump from PATH using an in-memory
+    database. This is what CI runs.
+    """
     # Set settings using environment variables as workers and threads will recreate
     # the settings object and not pick up the values if set here.
     environ["DB_URI"] = ":memory:"
