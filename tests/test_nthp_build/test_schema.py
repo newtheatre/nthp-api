@@ -55,5 +55,6 @@ class TestDatesFromDatabase:
             submitted=submitted,
             show_roles=[],
             committee_roles=[],
+            student=False,
         )
         assert json.loads(person.model_dump_json())["submitted"] == submitted

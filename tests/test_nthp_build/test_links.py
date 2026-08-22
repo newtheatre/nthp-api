@@ -136,7 +136,10 @@ class TestGetLink:
         assert (
             len(
                 links.get_links(
-                    [models.Link(type="Review"), models.Link(type="Twitter", username="x")]
+                    [
+                        models.Link(type="Review"),
+                        models.Link(type="Twitter", username="x"),
+                    ]
                 )
             )
             == 2  # noqa: PLR2004

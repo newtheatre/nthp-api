@@ -145,3 +145,35 @@ class TestHistoryRecord:
                 title="hello",
                 description="world",
             )
+
+
+class TestPerson:
+    def test_course_coerced_to_list(self):
+        assert models.Person(title="Fred Bloggs", course="English").course == [
+            "English"
+        ]
+        assert models.Person(
+            title="Fred Bloggs", course=["English", "Drama"]
+        ).course == [
+            "English",
+            "Drama",
+        ]
+        assert models.Person(title="Fred Bloggs", course=None).course == []
+
+    def test_careers_coerced_to_list(self):
+        assert models.Person(title="Fred Bloggs", careers="Director").careers == [
+            "Director"
+        ]
+
+    def test_career_alias_accepted(self):
+        assert models.Person(title="Fred Bloggs", career=["Actor"]).careers == ["Actor"]
+
+    def test_award(self):
+        assert (
+            models.Person(title="Fred Bloggs", award="Commendation").award
+            == models.Award.COMMENDATION
+        )
+        assert models.Person(title="Fred Bloggs", award=None).award is None
+        assert models.Person(title="Fred Bloggs", award="  ").award is None
+        with pytest.raises(ValidationError):
+            models.Person(title="Fred Bloggs", award="Knighthood")

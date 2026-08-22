@@ -247,6 +247,28 @@ def get_graduation(model: models.Person) -> schema.PersonGraduated | None:
     return None
 
 
+def get_is_student(
+    graduation: schema.PersonGraduated | None, *, has_credits: bool
+) -> bool:
+    """
+    Whether the person is likely still a student, as of the build date.
+
+    Those yet to graduate, and those graduating later this year, are students, as
+    the old site's `_plugins/people.rb` has it. Someone with no credits at all is
+    nobody's student. Estimated graduations are only made once the recency limit
+    has passed, so they always read as graduated.
+    """
+    if not has_credits:
+        return False
+    if graduation is None:
+        return True
+    today = datetime.date.today()
+    graduation_year = int(graduation.year_title)
+    return graduation_year > today.year or (
+        graduation_year == today.year and today.month < settings.graduation_month
+    )
+
+
 def make_virtual_person_model(ref) -> models.Person:
     """Make a Person model not from a file but from cast/crew lists"""
     return models.Person(
@@ -260,6 +282,9 @@ def make_person_detail(
     content: str | None = None,
 ) -> schema.PersonDetail:
     assert model.id is not None, "Person model should have id by now"
+    graduation = get_graduation(model)
+    show_roles = get_person_show_roles(model.id)
+    committee_roles = get_person_committee_roles(model.id)
     return schema.PersonDetail(
         id=model.id,
         title=model.title,
@@ -267,9 +292,15 @@ def make_person_detail(
         headshot=(
             assets.asset_from_headshot(model.headshot) if model.headshot else None
         ),
-        graduated=get_graduation(model),
-        show_roles=get_person_show_roles(model.id),
-        committee_roles=get_person_committee_roles(model.id),
+        graduated=graduation,
+        show_roles=show_roles,
+        committee_roles=committee_roles,
+        course=model.course,
+        award=model.award,
+        careers=model.careers,
+        student=get_is_student(
+            graduation, has_credits=bool(show_roles or committee_roles)
+        ),
         links=links.get_links(model.links),
         news=links.get_links(model.news),
         content=content,

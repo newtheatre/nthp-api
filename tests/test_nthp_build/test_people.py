@@ -327,3 +327,70 @@ class TestPersonDetailHeadshot:
         headshot = people.make_person_detail(self.make_person("abc123")).headshot
         assert headshot is not None
         assert (headshot.width, headshot.height) == (600, 800)
+
+
+class TestGetIsStudent:
+    def test_no_credits_is_not_a_student(self):
+        assert people.get_is_student(None, has_credits=False) is False
+
+    def test_no_known_graduation_with_credits_is_a_student(self):
+        assert people.get_is_student(None, has_credits=True) is True
+
+    def test_graduating_in_the_future_is_a_student(self):
+        with freezegun.freeze_time("2022-01-01"):
+            assert (
+                people.get_is_student(
+                    PersonGraduated.from_year(2024, estimated=False), has_credits=True
+                )
+                is True
+            )
+
+    def test_graduating_later_this_year_is_a_student(self):
+        with freezegun.freeze_time("2022-01-01"):
+            assert (
+                people.get_is_student(
+                    PersonGraduated.from_year(2022, estimated=False), has_credits=True
+                )
+                is True
+            )
+
+    def test_graduated_earlier_this_year_is_not_a_student(self):
+        with freezegun.freeze_time("2022-08-01"):
+            assert (
+                people.get_is_student(
+                    PersonGraduated.from_year(2022, estimated=False), has_credits=True
+                )
+                is False
+            )
+
+    def test_graduated_long_ago_is_not_a_student(self):
+        with freezegun.freeze_time("2022-01-01"):
+            assert (
+                people.get_is_student(
+                    PersonGraduated.from_year(1995, estimated=False), has_credits=True
+                )
+                is False
+            )
+
+
+class TestMakePersonDetail:
+    def test_person_fields(self, test_db):
+        person = people.make_person_detail(
+            models.Person(
+                id="fred_bloggs",
+                title="Fred Bloggs",
+                course="English",
+                career="Director",
+                award="Fellowship",
+                links=[
+                    models.Link(type="Personal Website", href="https://example.com")
+                ],
+                news=[models.Link(type="Article", href="https://example.com/news")],
+            )
+        )
+        assert person.course == ["English"]
+        assert person.careers == ["Director"]
+        assert person.award == models.Award.FELLOWSHIP
+        assert person.student is False
+        assert len(person.links) == 1
+        assert len(person.news) == 1

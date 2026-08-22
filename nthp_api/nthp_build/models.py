@@ -1,5 +1,7 @@
 """The models for ingesting data"""
 
+from enum import Enum
+
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -29,6 +31,15 @@ class Link(NthpModel):
     quote: PermissiveStr | None = None
     note: PermissiveStr | None = None
     comment: PermissiveStr | None = None
+
+
+class Award(str, Enum):
+    """An award made to a person on leaving the theatre."""
+
+    FELLOWSHIP = "Fellowship"
+    COMMENDATION = "Commendation"
+    MERIT = "Merit"
+    UNION_PRIZE = "Union Prize"
 
 
 class Location(NthpModel):
@@ -188,13 +199,38 @@ class Person(NthpModel):
     title: str
     submitted: FuzzyDate | bool | None = None
     headshot: str | None = None
-    # course: List[str] = [] TODO: both lists and strings
+    course: list[PermissiveStr] = []
     graduated: int | None = None
-    award: str | None = None
-    # career: Optional[str] TODO: both lists and strings
+    award: Award | None = None
+    careers: list[PermissiveStr] = []
     links: list[Link] = []
     news: list[Link] = []
     comment: PermissiveStr | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def accept_career_alias(cls, values: dict) -> dict:
+        """Most records use `careers`, a couple use `career`."""
+        if isinstance(values, dict) and "career" in values:
+            values = {**values, "careers": values.pop("career")}
+        return values
+
+    @field_validator("course", "careers", mode="before")
+    @classmethod
+    def coerce_to_list(cls, value: object) -> object:
+        """Both fields are authored as either a single value or a list of them."""
+        if value is None:
+            return []
+        if isinstance(value, list):
+            return value
+        return [value]
+
+    @field_validator("award", mode="before")
+    @classmethod
+    def blank_award_is_none(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
 
 
 class HistoryRecord(NthpModel):

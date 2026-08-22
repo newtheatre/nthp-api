@@ -520,6 +520,29 @@ class PersonDetail(NthpSchema):
     graduated: PersonGraduated | None = None
     show_roles: list[PersonShowRoles]
     committee_roles: list[PersonCommitteeRole]
+    course: list[str] = Field(
+        default=[],
+        description="Courses the person studied",
+        json_schema_extra={"example": ["English"]},
+    )
+    award: models.Award | None = Field(
+        default=None,
+        description="Award the person received on leaving the theatre",
+        json_schema_extra={"example": "Fellowship"},
+    )
+    careers: list[str] = Field(
+        default=[],
+        description="Careers the person has followed, theatre related or not, as "
+        "authored; the content repo's `_data/careers.yaml` lists the recognised "
+        "theatre careers but records are not held to it",
+        json_schema_extra={"example": ["Director"]},
+    )
+    student: bool = Field(
+        description="Whether the person is likely still a student, worked out from "
+        "their graduation year and the date the API was built, so it goes stale "
+        "between builds",
+        json_schema_extra={"example": False},
+    )
     links: list[Link] = Field(
         default=[], description="Links to the person's profiles beyond the archive"
     )
