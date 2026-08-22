@@ -43,6 +43,7 @@ def get_show_dated_ref(show: database.Show) -> schema.ShowDatedRef:
 
 
 def get_playwright_shows() -> PlaywrightShowMapping:
+    """Shows by writer, named as the most recent show spells the writer."""
     query = (
         database.PlaywrightShow.select(database.PlaywrightShow, database.Show)
         .join(
@@ -56,12 +57,15 @@ def get_playwright_shows() -> PlaywrightShowMapping:
             database.Show.date_start,
         )
     )
-    playwright_shows = defaultdict(list)
+    shows_by_id: dict[str, list[database.Show]] = defaultdict(list)
+    latest_name: dict[str, str] = {}
     for result in query:
-        playwright_shows[(result.playwright_id, result.playwright_name)].append(
-            result.show  # type: ignore[attr-defined]
-        )
-    return playwright_shows
+        shows_by_id[result.playwright_id].append(result.show)  # type: ignore[attr-defined]
+        latest_name[result.playwright_id] = result.playwright_name
+    return {
+        (playwright_id, latest_name[playwright_id]): shows
+        for playwright_id, shows in shows_by_id.items()
+    }
 
 
 def get_playwright_list(
@@ -88,6 +92,7 @@ PlayShowMapping = dict[PlayRef, list[database.Show]]
 
 
 def get_play_shows() -> PlayShowMapping:
+    """Shows by play and writer, titled as the most recent show spells the play."""
     query = (
         database.PlaywrightShow.select(database.PlaywrightShow, database.Show)
         .join(
@@ -101,18 +106,18 @@ def get_play_shows() -> PlayShowMapping:
             database.Show.date_start,
         )
     )
-    play_shows = defaultdict(list)
+    shows_by_key: dict[tuple[str, str], list[database.Show]] = defaultdict(list)
+    latest_ref: dict[tuple[str, str], PlayRef] = {}
     for result in query:
-        show = result.show  # type: ignore[attr-defined]
-        play_shows[
-            PlayRef(
-                play_id=result.play_id,
-                play_name=result.play_name,
-                playwright_id=result.playwright_id,
-                playwright_name=result.playwright_name,
-            )
-        ].append(show)
-    return play_shows
+        key = (result.play_id, result.playwright_id)
+        shows_by_key[key].append(result.show)  # type: ignore[attr-defined]
+        latest_ref[key] = PlayRef(
+            play_id=result.play_id,
+            play_name=result.play_name,
+            playwright_id=result.playwright_id,
+            playwright_name=result.playwright_name,
+        )
+    return {latest_ref[key]: shows for key, shows in shows_by_key.items()}
 
 
 def get_play_list(
