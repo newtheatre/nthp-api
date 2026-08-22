@@ -1,6 +1,6 @@
 ---
 type: task
-status: todo
+status: done
 ---
 
 # Merged people lint
@@ -37,3 +37,49 @@ Q: Threshold 8: agree, or derive from data (histogram of largest gaps across all
 A: Agree
 Q: Skip documented people entirely, or still report when the document has no `graduated` to anchor to?
 A: Still report
+
+## Results
+
+`validate.check_merged_people`, lint check `merged-people`, severity worth
+fixing. `MERGE_GAP_YEARS = 8` as decided; a documented person is skipped only
+where `graduated` is set and every cluster lies within `graduated ± 6`, and
+`--verbose` lists those skipped ids with their spans and graduation year (a new
+optional `note` on `Check`, rendered under the explanation).
+
+Against content at 2026-08-23: 8 findings, lint total 646.
+
+| Id                    | Clusters                      | Credits |
+| --------------------- | ----------------------------- | ------- |
+| `alan_jones`          | 1961 and 1975                 | 3       |
+| `alison_mackay`       | 1968 and 1977                 | 2       |
+| `dave_anderson`       | 1975 and 1994                 | 2       |
+| `matt_wilson`         | 2002-2003 and 2022            | 4       |
+| `michael_hyde`        | 1950 and 2001                 | 3       |
+| `rachel_brook`        | 1959 and 1994                 | 2       |
+| `technical_committee` | 1955 and 1964-1965            | 3       |
+| `unknown`             | 1965-1970, 1999-2013 and 2023 | 12      |
+
+The last two are sentinel ids rather than people; left in, as suppressing them
+would hide a real id that happened to be named that way.
+
+No documented person was skipped: nothing in the archive has a document, a
+`graduated` year and two clusters that year vouches for. The suppression is
+built and tested but currently inert.
+
+### Calibration
+
+Three of the four known true positives are caught — `alan_jones` (gap 14),
+`alison_mackay` (9), `dave_anderson` (19).
+
+**`sam_morris` is missed, and the threshold is not the reason.** Their credits
+are 2005–2007, then a single 2011 `freshers_fringe` credit, then 2016–2019: the
+largest gap is 5, because the 2011 credit bridges the two careers. No threshold
+that catches this stays useful — 5 would take in six more ids, and the 2011
+credit would still have to be assigned to one Sam or the other by hand. Left as
+a miss rather than tuned; task 29's double-space list is the authority for this
+one.
+
+The gap histogram over 3,647 credited ids supports 8: 2,556 ids have no gap at
+all, the tail runs 1 (918), 2 (133), 3 (21), 4 (5), 5 (3), 6 (2), 7 (1), then
+nothing until 9 (2), 14, 19 (2), 29, 35, 51. Eight sits in an empty band, so the
+findings are the far tail rather than a cut through a continuum.
