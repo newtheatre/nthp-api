@@ -38,8 +38,16 @@ class NthpSchema(BaseModel):
 
 
 class Location(NthpSchema):
-    lat: float
-    lon: float
+    """Where a venue is, as a point in decimal degrees."""
+
+    lat: float = Field(
+        description="Latitude in decimal degrees",
+        json_schema_extra={"example": 52.9385},
+    )
+    lon: float = Field(
+        description="Longitude in decimal degrees",
+        json_schema_extra={"example": -1.1957},
+    )
 
     @classmethod
     def from_model(cls, model: models.Location):
@@ -171,7 +179,7 @@ class Asset(ImageRef):
 
 
 class AssetCollection(BaseCollectionModel[Asset]):
-    pass
+    """The images an album holds, in the order SmugMug gives them."""
 
 
 class PersonRef(NthpSchema):
@@ -323,6 +331,14 @@ class PlaywrightRef(NthpSchema):
 
 
 class PlaywrightType(Enum):
+    """
+    How the work a show staged came to be written.
+
+    `playwright` names a writer; `various` is a bill of several writers' work;
+    `unknown` is a written work whose author the archive does not know; `devised`
+    was made by the company; `improvised` was made on the night.
+    """
+
     PLAYWRIGHT = "playwright"
     VARIOUS = "various"
     UNKNOWN = "unknown"
@@ -364,6 +380,8 @@ class PersonCredit(NthpSchema):
 
 
 class ShowTourDate(NthpSchema):
+    """A run of the show at another venue, while on tour."""
+
     venue: str | None = Field(
         default=None,
         description="Venue the show toured to, as authored",
@@ -398,6 +416,8 @@ class ShowMissingField(Enum):
 
 
 class TriviaTargetType(Enum):
+    """What kind of record a piece of trivia is about; only shows carry trivia."""
+
     SHOW = "show"
 
 
@@ -486,7 +506,7 @@ class ShowIndexItem(NthpSchema):
 
 
 class ShowIndexCollection(BaseCollectionModel[ShowIndexItem]):
-    pass
+    """Every show in the archive's canonical order: year, then season, then date."""
 
 
 class ShowList(ShowIndexItem):
@@ -588,7 +608,12 @@ class OnThisDayShow(ShowRef):
 
 
 class OnThisDayShowCollection(BaseCollectionModel[OnThisDayShow]):
-    pass
+    """
+    Shows running on one day of the year, in the archive's canonical show order.
+
+    Shows dated only to the month or the year cannot be placed on a day, so they
+    appear on none.
+    """
 
 
 class PosterItem(ShowRef):
@@ -598,10 +623,12 @@ class PosterItem(ShowRef):
 
 
 class PosterCollection(BaseCollectionModel[PosterItem]):
-    pass
+    """Every show with a primary image, in the archive's canonical show order."""
 
 
 class SeasonList(NthpSchema):
+    """A season as the index of seasons gives it."""
+
     id: str = Field(
         description="ID of the season, slugified from its canonical name",
         json_schema_extra={"example": "in-house"},
@@ -622,14 +649,18 @@ class SeasonList(NthpSchema):
 
 
 class SeasonListCollection(BaseCollectionModel[SeasonList]):
-    pass
+    """Every season, in the order the API defines them."""
 
 
 class SeasonDetail(SeasonList):
+    """A season and its shows; seasons span academic years, so shows run by date."""
+
     shows: list[ShowList] = Field(default=[], description="Shows in the season")
 
 
 class VenueList(NthpSchema):
+    """A venue as the index of venues gives it."""
+
     id: str = Field(
         description="ID of the venue, slugified from the authored venue name",
         json_schema_extra={"example": "new-theatre"},
@@ -674,6 +705,13 @@ class VenueList(NthpSchema):
 
 
 class VenueDetail(VenueList):
+    """
+    Everything the archive holds about a venue.
+
+    A venue only referenced by shows is a stub: it carries no assets, links or
+    description, just its name and the shows that ran there.
+    """
+
     assets: list[Asset] = Field(default=[], description="Images held of the venue")
     links: list[Link] = Field(
         default=[], description="Links to the venue's own site and other resources"
@@ -685,29 +723,35 @@ class VenueDetail(VenueList):
 
 
 class VenueCollection(BaseCollectionModel[VenueList]):
-    pass
+    """Every venue, documented or merely referenced by a show, ordered by id."""
 
 
 class PlaywrightListItem(PlaywrightRef):
+    """A writer and every show of their work, oldest first."""
+
     shows: list[ShowDatedRef] = Field(
         default=[], description="Shows of the playwright's work"
     )
 
 
 class PlaywrightCollection(BaseCollectionModel[PlaywrightListItem]):
-    pass
+    """Every writer of a staged work, by id, named as their latest show spells them."""
 
 
 class PlayListItem(PlayRef):
+    """A play and every show of it, oldest first."""
+
     playwright: PlaywrightRef = Field(description="Who wrote the play")
     shows: list[ShowDatedRef] = Field(default=[], description="Shows of the play")
 
 
 class PlayCollection(BaseCollectionModel[PlayListItem]):
-    pass
+    """Every play staged, one entry per play and writer, ordered by play id."""
 
 
 class YearList(YearRef):
+    """An academic year as the index of years gives it."""
+
     show_count: int = Field(
         description="Number of shows in the academic year",
         json_schema_extra={"example": 42},
@@ -715,10 +759,12 @@ class YearList(YearRef):
 
 
 class YearListCollection(BaseCollectionModel[YearList]):
-    pass
+    """Every academic year the archive covers, earliest first."""
 
 
 class YearDetail(YearList):
+    """Everything the archive holds about an academic year."""
+
     shows: list[ShowList] = Field(default=[], description="Shows in the academic year")
     committee: list[PersonCredit] = Field(
         default=[], description="Who sat on the committee in the academic year"
@@ -734,11 +780,15 @@ class YearDetail(YearList):
 
 
 class ShowRoleType(Enum):
+    """Which credit list a show role comes from: `cast` acted, `crew` made it."""
+
     CAST = "cast"
     CREW = "crew"
 
 
 class PersonShowRoleItem(NthpSchema):
+    """One role a person took on a show."""
+
     role: str | None = Field(
         default=None,
         description="Role as authored, absent for a cast credit naming no part",
@@ -778,7 +828,12 @@ class PersonCommitteeRoleList(NthpSchema):
 
 
 class PersonCommitteeRoleListCollection(BaseCollectionModel[PersonCommitteeRoleList]):
-    pass
+    """
+    Everyone who has held one committee position, earliest academic year first.
+
+    Aliases of the position are folded in, and a person appears once for every year
+    they held it.
+    """
 
 
 class PersonShowRoleList(NthpSchema):
@@ -796,7 +851,12 @@ class PersonShowRoleList(NthpSchema):
 
 
 class PersonShowRoleListCollection(BaseCollectionModel[PersonShowRoleList]):
-    pass
+    """
+    Everyone who has taken one show role, ordered by person id.
+
+    Aliases of the role are folded in, and a person appears once however many shows
+    they took it on.
+    """
 
 
 class Role(NthpSchema):
@@ -822,7 +882,12 @@ class Role(NthpSchema):
 
 
 class RoleCollection(BaseCollectionModel[Role]):
-    pass
+    """
+    Roles of one kind, show or committee.
+
+    Crew roles come in the order the content repo defines them, committee roles
+    alphabetically; roles named `unknown` are left out of both.
+    """
 
 
 class PersonGraduated(YearRef):
@@ -883,7 +948,7 @@ class PersonIndexItem(NthpSchema):
 
 
 class PersonIndexCollection(BaseCollectionModel[PersonIndexItem]):
-    pass
+    """Everyone the archive gives a document to, with a bio or without, by id."""
 
 
 class PersonDetail(PersonIndexItem):
@@ -949,7 +1014,7 @@ class PersonCollaborator(NthpSchema):
 
 
 class PersonCollaboratorCollection(BaseCollectionModel[PersonCollaborator]):
-    pass
+    """Everyone one person worked alongside, ordered by collaborator id."""
 
 
 class HistoryRecordImage(NthpSchema):
@@ -966,6 +1031,8 @@ class HistoryRecordImage(NthpSchema):
 
 
 class HistoryRecord(NthpSchema):
+    """A moment in the theatre's history, as the content repo's timeline records it."""
+
     year: str = Field(
         description="Short description of the year of the record, "
         "e.g. '1940' / '1940s'",
@@ -990,7 +1057,7 @@ class HistoryRecord(NthpSchema):
 
 
 class HistoryRecordCollection(BaseCollectionModel[HistoryRecord]):
-    pass
+    """The theatre's timeline, in the order the content repo records it."""
 
 
 class SearchDocumentType(Enum):
@@ -1034,7 +1101,9 @@ class SearchDocumentBase(NthpSchema):
 class SearchDocumentShow(SearchDocumentBase):
     """A show, the archive's principal record."""
 
-    type: Literal[SearchDocumentType.SHOW]
+    type: Literal[SearchDocumentType.SHOW] = Field(
+        description="What the document describes, always `show`"
+    )
     year_id: str = Field(
         description="ID of the academic year the show ran in, in YYYY-YY form",
         json_schema_extra={"example": "2024-25"},
@@ -1097,7 +1166,9 @@ class SearchDocumentShow(SearchDocumentBase):
 class SearchDocumentPerson(SearchDocumentBase):
     """Anyone credited on a show or committee, whether or not they have a bio."""
 
-    type: Literal[SearchDocumentType.PERSON]
+    type: Literal[SearchDocumentType.PERSON] = Field(
+        description="What the document describes, always `person`"
+    )
     has_bio: bool = Field(
         description="Whether the archive holds a document about the person, as "
         "opposed to knowing them only from the credits they appear in",
@@ -1172,7 +1243,9 @@ class SearchDocumentPerson(SearchDocumentBase):
 class SearchDocumentVenue(SearchDocumentBase):
     """A venue, whether or not the archive holds a document about it."""
 
-    type: Literal[SearchDocumentType.VENUE]
+    type: Literal[SearchDocumentType.VENUE] = Field(
+        description="What the document describes, always `venue`"
+    )
     city: str | None = Field(
         default=None,
         description="City the venue is in, where the archive holds a document for it",
@@ -1192,7 +1265,9 @@ class SearchDocumentVenue(SearchDocumentBase):
 class SearchDocumentYear(SearchDocumentBase):
     """An academic year."""
 
-    type: Literal[SearchDocumentType.YEAR]
+    type: Literal[SearchDocumentType.YEAR] = Field(
+        description="What the document describes, always `year`"
+    )
     decade: int = Field(
         description="Calendar year the start year's decade begins in",
         json_schema_extra={"example": 2020},
@@ -1213,26 +1288,28 @@ SearchDocument = Annotated[
 
 
 class SearchDocumentCollection(BaseCollectionModel[SearchDocument]):
-    pass
+    """The whole search corpus, ordered by type then id."""
 
 
 class SearchDocumentShowCollection(BaseCollectionModel[SearchDocumentShow]):
-    pass
+    """The show documents of the search corpus, ordered by id."""
 
 
 class SearchDocumentPersonCollection(BaseCollectionModel[SearchDocumentPerson]):
-    pass
+    """The person documents of the search corpus, ordered by id."""
 
 
 class SearchDocumentVenueCollection(BaseCollectionModel[SearchDocumentVenue]):
-    pass
+    """The venue documents of the search corpus, ordered by id."""
 
 
 class SearchDocumentYearCollection(BaseCollectionModel[SearchDocumentYear]):
-    pass
+    """The year documents of the search corpus, ordered by id."""
 
 
 class SiteStats(NthpSchema):
+    """What the archive holds and how it was built, as of the last build."""
+
     build_time: datetime.datetime = Field(
         title="Build Time",
         description="When was the API built, in UTC.",
