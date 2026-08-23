@@ -592,3 +592,41 @@ class TestShowDefects:
             )
             == []
         )
+
+
+class TestGetCanonicalPlays:
+    def test_without_canonical_indexes_the_show_as_itself(self):
+        show = models.Show(
+            id="dr_faustus", title="Dr Faustus", season="In House", playwright="Marlowe"
+        )
+        assert shows.get_canonical_plays(show, "Marlowe") == [("Dr Faustus", "Marlowe")]
+
+    def test_canonical_title_overrides_show_title(self):
+        show = models.Show(
+            id="dr_faustus",
+            title="Dr Faustus",
+            season="In House",
+            playwright="Marlowe",
+            canonical=[{"title": "Doctor Faustus"}],
+        )
+        assert shows.get_canonical_plays(show, "Marlowe") == [
+            ("Doctor Faustus", "Marlowe")
+        ]
+
+    def test_each_entry_yields_a_play_with_fallbacks(self):
+        show = models.Show(
+            id="double_bill",
+            title="Double Bill",
+            season="In House",
+            playwright="A. Writer",
+            canonical=[
+                {"title": "First Play"},
+                {"title": "Second Play", "playwright": "B. Writer"},
+                {"playwright": "C. Writer"},
+            ],
+        )
+        assert shows.get_canonical_plays(show, "A. Writer") == [
+            ("First Play", "A. Writer"),
+            ("Second Play", "B. Writer"),
+            ("Double Bill", "C. Writer"),
+        ]

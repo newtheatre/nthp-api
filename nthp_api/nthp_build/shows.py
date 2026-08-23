@@ -57,6 +57,23 @@ def get_show_play(show: models.Show) -> schema.PlayRef | None:
     return None
 
 
+def get_canonical_plays(
+    show: models.Show, playwright_name: str
+) -> list[tuple[str, str]]:
+    """
+    (play title, playwright name) pairs the show is indexed under.
+
+    Each `canonical` entry yields one, falling back to the show's own title and
+    playwright where it omits either; a show without any is indexed as itself.
+    """
+    if not show.canonical:
+        return [(show.title, playwright_name)]
+    return [
+        (entry.title or show.title, entry.playwright or playwright_name)
+        for entry in show.canonical
+    ]
+
+
 def get_show_playwright(  # noqa: PLR0911
     show: models.Show,
 ) -> schema.PlaywrightShow | None:

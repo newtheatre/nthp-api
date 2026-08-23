@@ -101,12 +101,15 @@ def load_show(path: DocumentPath, document: frontmatter.Post, data: models.Show)
     # Record playwright, if show has one
     show_playwright = shows.get_show_playwright(data)
     if show_playwright and show_playwright.name:
-        playwrights.save_playwright_show(
-            play_name=data.title,
-            playwright_name=show_playwright.name,
-            show_id=show_id,
-            student_written=data.student_written,
-        )
+        for play_name, playwright_name in shows.get_canonical_plays(
+            data, show_playwright.name
+        ):
+            playwrights.save_playwright_show(
+                play_name=play_name,
+                playwright_name=playwright_name,
+                show_id=show_id,
+                student_written=data.student_written,
+            )
 
     if data.trivia:
         trivia.save_trivia(
