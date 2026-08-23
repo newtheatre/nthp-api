@@ -10,27 +10,34 @@ every nullable field carries a default so the spec's `required` is honest.
 
 import datetime
 from enum import Enum
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 import humps
 from pydantic import BaseModel, ConfigDict, Field
-from pydantic.fields import ComputedFieldInfo, FieldInfo
+from pydantic.json_schema import GenerateJsonSchema
 from pydantic_collections import BaseCollectionModel
 
 from nthp_api.nthp_build import models, years
 from nthp_api.nthp_build.fields import ApiFuzzyDate
 
-
-def field_title(field_name: str, _field_info: FieldInfo | ComputedFieldInfo) -> str:
-    return field_name.replace("_", " ").title()
-
-
 RESPONSE_CONFIG = ConfigDict(
     populate_by_name=True,
     alias_generator=humps.camelize,
-    field_title_generator=field_title,
     frozen=True,
 )
+
+
+class UntitledProperties(GenerateJsonSchema):
+    """
+    Leaves properties without the title pydantic gives them.
+
+    A title made from the field name — `Year Id` for `yearId` — says nothing the
+    name does not, and a client generator reading the spec takes it for a label
+    worth showing. Schema-level titles stay: those name the components.
+    """
+
+    def field_title_should_be_set(self, schema: Any) -> bool:
+        return False
 
 
 class NthpSchema(BaseModel):
@@ -1304,7 +1311,6 @@ class SiteStats(NthpSchema):
     """What the archive holds and how it was built, as of the last build."""
 
     build_time: datetime.datetime = Field(
-        title="Build Time",
         description="When was the API built, in UTC.",
         examples=["2022-01-01T12:34:45.678901Z"],
     )
@@ -1313,81 +1319,66 @@ class SiteStats(NthpSchema):
         examples=["master"],
     )
     api_version: str = Field(
-        title="API Version",
         description="Version of nthp-api that built the API.",
         examples=["0.3.0"],
     )
     commit: str | None = Field(
         default=None,
-        title="Commit",
         description="Commit of the repository the API was built from, where it was "
         "built by CI.",
         examples=["1f0a9c2e0c0a4a1b8d3f6e5c4b3a29180706f5e4"],
     )
     build_number: str | None = Field(
         default=None,
-        title="Build Number",
         description="Number of the GitHub Actions run that built the API, where it "
         "was built by one.",
         examples=["42"],
     )
     show_count: int = Field(
-        title="Show Count",
         description="Number of shows in the database.",
         examples=[1234],
     )
     person_count: int = Field(
-        title="Person Count",
         description="Number of people in the database.",
         examples=[1234],
     )
     person_with_bio_count: int = Field(
-        title="Person with bio count",
         description="Number of people with bio records.",
         examples=[1234],
     )
     person_with_headshot_count: int = Field(
-        title="Person with headshot count",
         description="Number of people with a headshot.",
         examples=[1234],
     )
     show_with_image_count: int = Field(
-        title="Show with image count",
         description="Number of shows with a primary image.",
         examples=[1234],
     )
     venue_count: int = Field(
-        title="Venue Count",
         description="Number of venues, documented or merely referenced by a show.",
         examples=[1234],
     )
     year_count: int = Field(
-        title="Year Count",
         description="Number of academic years covered by the archive.",
         examples=[85],
     )
     first_year_id: str = Field(
-        title="First Year ID",
         description="ID of the earliest academic year covered, in YYYY-YY form.",
         examples=["1940-41"],
     )
     latest_year_id: str = Field(
-        title="Latest Year ID",
         description="ID of the most recent academic year covered, in YYYY-YY form.",
         examples=["2024-25"],
     )
     credit_count: int = Field(
-        title="Credit Count",
         description="Number of credits, inc. cast/crew/committee roles.",
         examples=[1234],
     )
     trivia_count: int = Field(
-        title="Trivia Count",
         description="Number of bits of trivia or stories.",
         examples=[1234],
     )
     search_document_count: int = Field(
-        title="Search Document Count",
         description="Number of documents in the search corpus, shows, people, venues "
         "and years together.",
         examples=[1234],

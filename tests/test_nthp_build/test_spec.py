@@ -1,6 +1,5 @@
 from typing import Any
 
-import humps
 import pytest
 
 from nthp_api.nthp_build import content_schema, spec
@@ -138,7 +137,6 @@ class TestFuzzyDateFields:
     def test_field_description_survives_beside_the_ref(self):
         day_precision = get_property("OnThisDayShow", "dateStart")
         assert day_precision == FUZZY_DATE_REF | {
-            "title": "Date Start",
             "description": "First day of the run, always to day precision",
         }
 
@@ -216,17 +214,18 @@ class TestContentSchema:
         assert response_schema == {"type": "object"}
 
 
-class TestFieldTitles:
-    def test_titles_from_field_names_not_aliases(self):
-        assert get_property("ShowDetail", "dateStart")["title"] == "Date Start"
-        assert get_property("ShowDetail", "dateEnd")["title"] == "Date End"
-
-    def test_no_title_case_mangled_aliases(self):
-        """Camelised aliases must not be title-cased into words like Datestart."""
-        mangled = {
-            f"{model}.{field}": prop["title"]
+class TestPropertyTitles:
+    def test_properties_carry_no_title(self):
+        """A title made from the field name is noise a generator shows as a label."""
+        titled = [
+            f"{model}.{field}"
             for model, model_schema in SCHEMAS.items()
             for field, prop in model_schema.get("properties", {}).items()
-            if humps.decamelize(field) != field and prop.get("title") == field.title()
-        }
-        assert mangled == {}
+            if "title" in prop
+        ]
+        assert titled == []
+
+    def test_components_keep_their_title(self):
+        """Schema-level titles name the components."""
+        assert SCHEMAS["ShowDetail"]["title"] == "ShowDetail"
+        assert all("title" in model_schema for model_schema in SCHEMAS.values())
