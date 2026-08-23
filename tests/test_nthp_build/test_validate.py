@@ -128,6 +128,26 @@ class TestDuplicateIds:
         assert "'A Student'" in findings[0].hint
         assert "'Eugène Ionesco'" in findings[0].hint
 
+    def test_one_show_with_several_co_writers_is_fine(self, test_db):
+        for writer in ("Alice Ash", "Bob Birch", "Carol Cedar"):
+            self.make_playwright_show("Around the Bend", writer, "a")
+        assert validate.check_play_ids() == []
+
+    def test_two_shows_with_the_same_co_writers_are_fine(self, test_db):
+        for show_id in ("a", "b"):
+            for writer in ("Alice Ash", "Bob Birch", "Carol Cedar"):
+                self.make_playwright_show("Around the Bend", writer, show_id)
+        assert validate.check_play_ids() == []
+
+    def test_two_shows_crediting_different_co_writers(self, test_db):
+        for writer in ("Alice Ash", "Bob Birch"):
+            self.make_playwright_show("Around the Bend", writer, "a")
+        self.make_playwright_show("Around the Bend", "Dave Deal", "b")
+        findings = validate.check_play_ids()
+        assert len(findings) == 1
+        assert findings[0].value == "around_the_bend"
+        assert "'Dave Deal'" in findings[0].hint
+
     def test_two_playwright_names_behind_one_id(self, test_db):
         self.make_playwright_show("Blood Wedding", "Federico Garcia Lorca", "a")
         self.make_playwright_show("Yerma", "Federico García Lorca", "b")

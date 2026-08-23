@@ -188,11 +188,16 @@ def check_play_ids() -> list[Finding]:
     Two plays sharing an id, which the play index then lists twice under it.
 
     One play spelt two ways is grouped back together by its id; two plays whose
-    titles slugify alike are not, and are told apart by their writers.
+    titles slugify alike are not, and are told apart by their writers. A show may
+    credit several co-writers, so only a disagreement between shows is a defect.
     """
     writers: dict[str, dict[str, str]] = defaultdict(dict)
+    writers_by_show: dict[str, dict[str, set[str]]] = defaultdict(
+        lambda: defaultdict(set)
+    )
     for row in database.PlaywrightShow.select():
         writers[row.play_id][row.playwright_id] = row.playwright_name
+        writers_by_show[row.play_id][row.show_id].add(row.playwright_id)
     return [
         Finding(
             play_id,
@@ -200,7 +205,7 @@ def check_play_ids() -> list[Finding]:
             + ", ".join(f"{name!r}" for _, name in sorted(names.items())),
         )
         for play_id, names in sorted(writers.items())
-        if len(names) > 1
+        if len({frozenset(ids) for ids in writers_by_show[play_id].values()}) > 1
     ]
 
 
@@ -244,8 +249,9 @@ BUILD_CHECKS: list[Check] = [
     Check(
         "play-ids",
         "Play ids shared by two plays",
-        "Two plays by different writers make one id, which the play index then "
-        "lists twice under it. Distinguish the titles.",
+        "Shows under one play id credit different writers, so two plays likely "
+        "make one id, which the play index then lists twice under it. "
+        "Distinguish the titles, or align the writer credits.",
         Severity.DEFECT,
         check_play_ids,
     ),
