@@ -47,7 +47,7 @@ PYDANTIC_JSON_SCHEMA = models_json_schema(
         schema.YearList,
         schema.YearListCollection,
     ),
-    title="My Schema",
+    title="NTHP API Schemas",
     ref_template="#/components/schemas/{model}",
 )
 
@@ -185,7 +185,20 @@ SPEC = {
         "title": "New Theatre History Project API",
         "version": get_version(),
         "description": "API for serving the content for the New Theatre History "
-        "Project. The API is generated from the content repo.",
+        "Project. The API is generated from the content repo.\n\n"
+        "A static, read-only file API: every response is a pre-built JSON file, so "
+        "every operation is a GET, there is no authentication, and there are no "
+        "query parameters or pagination. A record that does not exist returns a "
+        "plain 404 from the host, with no JSON body. Where an id appears in a path "
+        "it is exactly as it appears in the record's own `id` field.",
+        "license": {
+            "name": "MIT",
+            "url": "https://github.com/newtheatre/nthp-api/blob/master/LICENCE",
+        },
+        "contact": {
+            "name": "New Theatre History Project",
+            "url": "https://history.newtheatre.org.uk",
+        },
     },
     "servers": [
         {
@@ -199,6 +212,10 @@ SPEC = {
             },
         }
     ],
+    "externalDocs": {
+        "description": "history-project content repository",
+        "url": "https://github.com/newtheatre/history-project",
+    },
     "tags": [
         {
             "name": "site",
