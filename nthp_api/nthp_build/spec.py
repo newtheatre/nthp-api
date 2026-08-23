@@ -199,6 +199,41 @@ SPEC = {
             },
         }
     ],
+    "tags": [
+        {
+            "name": "site",
+            "description": "Top level statistics about the archive and the build.",
+        },
+        {"name": "years", "description": "Academic years."},
+        {
+            "name": "shows",
+            "description": "Individual productions, and utilities built from them.",
+        },
+        {"name": "seasons", "description": "Recurring strands shows are grouped into."},
+        {"name": "venues", "description": "Places shows are staged."},
+        {
+            "name": "people",
+            "description": "People credited in shows and on committees.",
+        },
+        {
+            "name": "roles",
+            "description": "Committee and crew role definitions, "
+            "and who has held them.",
+        },
+        {"name": "assets", "description": "Images: show posters and shared albums."},
+        {"name": "playwrights", "description": "Writers of staged plays."},
+        {"name": "plays", "description": "Plays staged, each paired with its writer."},
+        {"name": "history", "description": "The theatre's own history, as a timeline."},
+        {
+            "name": "search",
+            "description": "The search corpus consumers build their own index from.",
+        },
+        {
+            "name": "content-schema",
+            "description": "JSON Schema for content repo "
+            "front matter, for editors and agents authoring content.",
+        },
+    ],
     "paths": {
         "/index.json": make_basic_get_operation(
             operation_id="getSiteStats",

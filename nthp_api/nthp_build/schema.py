@@ -18,7 +18,7 @@ from pydantic.fields import ComputedFieldInfo, FieldInfo
 from pydantic_collections import BaseCollectionModel
 
 from nthp_api.nthp_build import models, years
-from nthp_api.nthp_build.fields import FuzzyDate
+from nthp_api.nthp_build.fields import ApiFuzzyDate
 
 
 def field_title(field_name: str, _field_info: FieldInfo | ComputedFieldInfo) -> str:
@@ -88,9 +88,9 @@ class Link(NthpSchema):
         description="Title of the resource, such as the headline of an article",
         examples=["Student theatre at its best"],
     )
-    date: FuzzyDate | None = Field(
+    date: ApiFuzzyDate | None = Field(
         default=None,
-        description="Date the resource was published, of year, month or day precision",
+        description="Date the resource was published",
         examples=["2022-01-31"],
     )
     publisher: str | None = Field(
@@ -279,14 +279,14 @@ class ShowRef(NthpSchema):
 class ShowDatedRef(ShowRef):
     """A show reference carrying its run, for lists ordered by date."""
 
-    date_start: FuzzyDate | None = Field(
+    date_start: ApiFuzzyDate | None = Field(
         default=None,
-        description="Date the show opened, of year, month or day precision",
+        description="Date the show opened",
         examples=["2024-11-13"],
     )
-    date_end: FuzzyDate | None = Field(
+    date_end: ApiFuzzyDate | None = Field(
         default=None,
-        description="Date the show closed, of year, month or day precision",
+        description="Date the show closed",
         examples=["2024-11-16"],
     )
 
@@ -383,10 +383,10 @@ class ShowTourDate(NthpSchema):
         description="Venue the show toured to, as authored",
         examples=["Lakeside Arts"],
     )
-    date_start: FuzzyDate | None = Field(
+    date_start: ApiFuzzyDate | None = Field(
         default=None, description="Date the run at the venue opened"
     )
-    date_end: FuzzyDate | None = Field(
+    date_end: ApiFuzzyDate | None = Field(
         default=None, description="Date the run at the venue closed"
     )
     note: str | None = Field(default=None, description="Note about the tour date")
@@ -435,11 +435,10 @@ class Trivia(NthpSchema):
             )
         ],
     )
-    submitted_date: FuzzyDate | None = Field(
+    submitted_date: ApiFuzzyDate | None = Field(
         default=None,
-        description="The date the quote was submitted, of year, month or day "
-        "precision; absent where it is likely pulled from the programme or another "
-        "source",
+        description="The date the quote was submitted; absent where it is likely "
+        "pulled from the programme or another source",
         examples=["2022-01"],
     )
     person: PersonRef | None = Field(
@@ -481,14 +480,14 @@ class ShowIndexItem(NthpSchema):
     venue: VenueRef | None = Field(
         default=None, description="Venue the show ran at, where one is authored"
     )
-    date_start: FuzzyDate | None = Field(
+    date_start: ApiFuzzyDate | None = Field(
         default=None,
-        description="Date the show opened, of year, month or day precision",
+        description="Date the show opened",
         examples=["2024-11-13"],
     )
-    date_end: FuzzyDate | None = Field(
+    date_end: ApiFuzzyDate | None = Field(
         default=None,
-        description="Date the show closed, of year, month or day precision",
+        description="Date the show closed",
         examples=["2024-11-16"],
     )
     primary_image: ImageRef | None = Field(
@@ -595,10 +594,10 @@ class ShowDetail(ShowList):
 class OnThisDayShow(ShowRef):
     """A show that was running on a given day of the year."""
 
-    date_start: FuzzyDate = Field(
+    date_start: ApiFuzzyDate = Field(
         description="First day of the run, always to day precision"
     )
-    date_end: FuzzyDate | None = Field(
+    date_end: ApiFuzzyDate | None = Field(
         default=None, description="Last day of the run, where the run spans more days"
     )
 
@@ -926,7 +925,7 @@ class PersonIndexItem(NthpSchema):
         description="Whether the person submitted the record themselves",
         examples=[True],
     )
-    submitted_date: FuzzyDate | None = Field(
+    submitted_date: ApiFuzzyDate | None = Field(
         default=None,
         description="Date the person submitted the record, where it is known",
         examples=["2022-01"],
@@ -1129,9 +1128,9 @@ class SearchDocumentShow(SearchDocumentBase):
         description="Name of the venue as authored on the show",
         examples=["Nottingham New Theatre"],
     )
-    date_start: FuzzyDate | None = Field(
+    date_start: ApiFuzzyDate | None = Field(
         default=None,
-        description="Date the show opened, of year, month or day precision",
+        description="Date the show opened",
         examples=["2024-11-13"],
     )
     playwright_descriptor: str | None = Field(

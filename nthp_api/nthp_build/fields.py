@@ -133,3 +133,50 @@ class FuzzyDate:
         cls, schema: core_schema.CoreSchema, handler: GetJsonSchemaHandler
     ) -> JsonSchemaValue:
         return {"type": "string", "pattern": FUZZY_DATE_PATTERN}
+
+
+FUZZY_DATE_DESCRIPTION = (
+    "A date of year, month or day precision, as ISO 8601 reduced precision: "
+    "`YYYY`, `YYYY-MM` or `YYYY-MM-DD`. The length of the string gives the "
+    "precision the archive holds; a shorter date is not a less certain day, it is "
+    "all that is recorded."
+)
+
+
+class _NamedFuzzyDate:
+    """
+    Marker giving `FuzzyDate` a schema of its own, named and referred to by `$ref`.
+
+    Response models annotate with it so the API spec carries one `FuzzyDate`
+    component that every date field refers to, rather than repeating the pattern on
+    twenty fields. The ingest models keep the inline schema: a content author reads
+    one document type's schema on its own.
+    """
+
+    @classmethod
+    def __get_pydantic_core_schema__(
+        cls, source_type: Any, handler: GetCoreSchemaHandler
+    ) -> core_schema.CoreSchema:
+        schema = handler(source_type)
+        metadata = dict(schema.get("metadata") or {})
+        # A `__get_pydantic_json_schema__` on this marker would be an annotation
+        # function, whose keys pydantic leaves beside the `$ref` on every field.
+        # Joining the type's own functions instead puts them on the definition.
+        metadata["pydantic_js_functions"] = [
+            *metadata.get("pydantic_js_functions", ()),
+            cls._describe,
+        ]
+        return {**schema, "ref": "FuzzyDate", "metadata": metadata}  # type: ignore[typeddict-item]
+
+    @staticmethod
+    def _describe(
+        schema: core_schema.CoreSchema, handler: GetJsonSchemaHandler
+    ) -> JsonSchemaValue:
+        return {
+            **handler(schema),
+            "title": "FuzzyDate",
+            "description": FUZZY_DATE_DESCRIPTION,
+        }
+
+
+ApiFuzzyDate = Annotated[FuzzyDate, _NamedFuzzyDate]

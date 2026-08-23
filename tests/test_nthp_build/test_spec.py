@@ -7,7 +7,7 @@ from nthp_api.nthp_build import content_schema, spec
 
 SCHEMAS = spec.SPEC["components"]["schemas"]
 
-FUZZY_DATE_SCHEMA = {"type": "string", "pattern": r"^\d{4}(-\d{2}(-\d{2})?)?$"}
+FUZZY_DATE_REF = {"$ref": "#/components/schemas/FuzzyDate"}
 NULL_SCHEMA = {"type": "null"}
 BOOLEAN_SCHEMA = {"type": "boolean"}
 
@@ -37,6 +37,20 @@ def test_spec_generates():
     assert len(spec.SPEC["paths"]) > expected_number_of_paths
     expected_number_of_schema = 2
     assert len(SCHEMAS) > expected_number_of_schema
+
+
+def get_operations():
+    return [
+        operation
+        for path_item in spec.SPEC["paths"].values()
+        for operation in path_item.values()
+    ]
+
+
+def test_every_used_tag_is_declared_and_vice_versa():
+    declared_tags = {tag["name"] for tag in spec.SPEC["tags"]}
+    used_tags = {tag for operation in get_operations() for tag in operation["tags"]}
+    assert used_tags == declared_tags
 
 
 def find_keys(node: Any, key: str, path: str = "") -> list[str]:
@@ -104,12 +118,29 @@ class TestFuzzyDateFields:
         ],
     )
     def test_optional_fuzzy_date(self, model, field):
-        assert get_property(model, field)["anyOf"] == [FUZZY_DATE_SCHEMA, NULL_SCHEMA]
+        assert get_property(model, field)["anyOf"] == [FUZZY_DATE_REF, NULL_SCHEMA]
+
+    def test_named_component_carries_the_pattern_and_one_description(self):
+        component = SCHEMAS["FuzzyDate"]
+        assert component["type"] == "string"
+        assert component["pattern"] == r"^\d{4}(-\d{2}(-\d{2})?)?$"
+        assert "`YYYY-MM-DD`" in component["description"]
+
+    def test_pattern_is_not_repeated_on_fields(self):
+        """Every fuzzy date field refers to the one component."""
+        assert find_keys(SCHEMAS, "pattern") == [".FuzzyDate"]
+
+    def test_field_description_survives_beside_the_ref(self):
+        day_precision = get_property("OnThisDayShow", "dateStart")
+        assert day_precision == FUZZY_DATE_REF | {
+            "title": "Date Start",
+            "description": "First day of the run, always to day precision",
+        }
 
     def test_person_submitted_is_a_boolean(self):
         assert get_property("PersonDetail", "submitted")["type"] == "boolean"
         assert get_property("PersonDetail", "submittedDate")["anyOf"] == [
-            FUZZY_DATE_SCHEMA,
+            FUZZY_DATE_REF,
             NULL_SCHEMA,
         ]
 
