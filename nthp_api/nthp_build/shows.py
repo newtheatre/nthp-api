@@ -110,9 +110,9 @@ def get_show_playwright(  # noqa: PLR0911
     return None
 
 
-def get_student_playwright_credit(show: models.Show) -> models.PersonRef | None:
+def get_student_playwright_writer(show: models.Show) -> tuple[str, str] | None:
     """
-    The crew credit a student writer takes, as `_plugins/show.rb` awards it.
+    The student writer of a show and the role they take, or None where none does.
 
     In order of precedence the adaptor, translator or playwright is credited, under
     the student name `playwright_alias` gives where the writing was published under
@@ -131,22 +131,21 @@ def get_student_playwright_credit(show: models.Show) -> models.PersonRef | None:
         writer, role = show.playwright, "Playwright"
     if has_multiple_writers(writer):
         return None
-    return models.PersonRef(role=role, name=show.playwright_alias or writer)
+    return show.playwright_alias or writer, role
 
 
 def get_crew_with_student_playwright(
     show: models.Show, content_path: Path
 ) -> list[models.PersonRef]:
     """The crew list with the student writer credited at the top of it."""
-    credit = get_student_playwright_credit(show)
-    if credit is None:
+    writer_role = get_student_playwright_writer(show)
+    if writer_role is None:
         return show.crew
-    if any(person_ref.role == credit.role for person_ref in show.crew):
-        log.warning(
-            f"{content_path}: credits its student {credit.role.lower()} by hand"
-        )
+    writer, role = writer_role
+    if any(person_ref.role == role for person_ref in show.crew):
+        log.warning(f"{content_path}: credits its student {role.lower()} by hand")
         return show.crew
-    return [credit, *show.crew]
+    return [models.PersonRef(role=role, name=writer), *show.crew]
 
 
 def has_multiple_writers(name: str) -> bool:
@@ -177,7 +176,7 @@ def get_show_defects(show: models.Show) -> list[str]:
         )
     if (
         show.playwright_alias is not None
-        and get_student_playwright_credit(show) is None
+        and get_student_playwright_writer(show) is None
     ):
         defects.append(
             f"playwright_alias {show.playwright_alias!r} is inert, as the show "
