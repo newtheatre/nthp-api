@@ -49,6 +49,7 @@ PYDANTIC_JSON_SCHEMA = models_json_schema(
     ),
     title="NTHP API Schemas",
     ref_template="#/components/schemas/{model}",
+    schema_generator=schema.UntitledProperties,
 )
 
 JSON_SCHEMA = PYDANTIC_JSON_SCHEMA[1]["$defs"]
@@ -207,7 +208,8 @@ SPEC = {
             "variables": {
                 "branch": {
                     "default": "master",
-                    "description": "The production branch of the content repo.",
+                    "description": "The production branch of the content repo. "
+                    "Only `master` is guaranteed to exist.",
                 }
             },
         }
