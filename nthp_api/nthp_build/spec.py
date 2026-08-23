@@ -69,24 +69,24 @@ def make_basic_get_operation(
     description: str | None = None,
 ):
     check_model_present(model)
-    return {
-        "get": {
-            "operationId": operation_id,
-            "tags": tags,
-            "summary": summary,
-            "description": description,
-            "responses": {
-                "200": {
-                    "description": "OK",
-                    "content": {
-                        "application/json": {
-                            "schema": {"$ref": f"#/components/schemas/{model.__name__}"}
-                        }
-                    },
-                }
-            },
-        }
+    operation = {
+        "operationId": operation_id,
+        "tags": tags,
+        "summary": summary,
+        "responses": {
+            "200": {
+                "description": "OK",
+                "content": {
+                    "application/json": {
+                        "schema": {"$ref": f"#/components/schemas/{model.__name__}"}
+                    }
+                },
+            }
+        },
     }
+    if description is not None:
+        operation["description"] = description
+    return {"get": operation}
 
 
 def make_detail_get_operation(  # noqa: PLR0913, PLR0917
@@ -99,38 +99,38 @@ def make_detail_get_operation(  # noqa: PLR0913, PLR0917
 ):
     check_model_present(model)
     keys = [key] if isinstance(key, str) else key
-    return {
-        "get": {
-            "operationId": operation_id,
-            "tags": tags,
-            "summary": summary,
-            "description": description,
-            "parameters": [
-                {
-                    "name": name,
-                    "in": "path",
-                    "required": True,
-                    "schema": {
-                        "type": "string",
-                    },
-                }
-                for name in keys
-            ],
-            "responses": {
-                "200": {
-                    "description": "OK",
-                    "content": {
-                        "application/json": {
-                            "schema": {"$ref": f"#/components/schemas/{model.__name__}"}
-                        }
-                    },
+    operation = {
+        "operationId": operation_id,
+        "tags": tags,
+        "summary": summary,
+        "parameters": [
+            {
+                "name": name,
+                "in": "path",
+                "required": True,
+                "schema": {
+                    "type": "string",
                 },
-                "404": {
-                    "description": "Not Found",
+            }
+            for name in keys
+        ],
+        "responses": {
+            "200": {
+                "description": "OK",
+                "content": {
+                    "application/json": {
+                        "schema": {"$ref": f"#/components/schemas/{model.__name__}"}
+                    }
                 },
             },
-        }
+            "404": {
+                "description": "Not Found",
+            },
+        },
     }
+    if description is not None:
+        operation["description"] = description
+    return {"get": operation}
 
 
 def make_content_schema_get_operation() -> dict:
@@ -212,6 +212,7 @@ SPEC = {
             operation_id="getYearList",
             tags=["years"],
             summary="Get year list",
+            description="Every academic year the archive covers, earliest first.",
             model=schema.YearListCollection,
         ),
         "/years/{id}.json": make_detail_get_operation(
@@ -385,18 +386,24 @@ SPEC = {
             operation_id="getPlaywrights",
             tags=["playwrights"],
             summary="Get list of playwrights and shows performed",
+            description="Every writer of a staged work, by id, named as their latest "
+            "show spells them.",
             model=schema.PlaywrightCollection,
         ),
         "/plays/index.json": make_basic_get_operation(
             operation_id="getPlays",
             tags=["plays"],
             summary="Get list of plays and shows performed",
+            description="Every play staged, one entry per play and writer, ordered "
+            "by play id.",
             model=schema.PlayCollection,
         ),
         "/history/index.json": make_basic_get_operation(
             operation_id="getHistoryRecords",
             tags=["history"],
             summary="Get list of history records",
+            description="The theatre's timeline, in the order the content repo "
+            "records it.",
             model=schema.HistoryRecordCollection,
         ),
         "/search/documents.json": make_basic_get_operation(
