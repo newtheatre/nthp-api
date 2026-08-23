@@ -3,7 +3,7 @@ from typing import Any
 import humps
 import pytest
 
-from nthp_api.nthp_build import spec
+from nthp_api.nthp_build import content_schema, spec
 
 SCHEMAS = spec.SPEC["components"]["schemas"]
 
@@ -135,6 +135,30 @@ class TestPathParameters:
             parameter["in"] == "path" and parameter["required"]
             for parameter in operation["parameters"]
         )
+
+
+class TestContentSchema:
+    def test_path_present(self):
+        operation = spec.SPEC["paths"]["/content-schema/{type}.json"]["get"]
+        assert operation["operationId"] == "getContentSchema"
+        assert operation["tags"] == ["content-schema"]
+
+    def test_type_param_enumerates_document_types(self):
+        [parameter] = spec.SPEC["paths"]["/content-schema/{type}.json"]["get"][
+            "parameters"
+        ]
+        assert parameter["name"] == "type"
+        assert parameter["schema"]["enum"] == [
+            document_type.name
+            for document_type in content_schema.CONTENT_DOCUMENT_TYPES
+        ]
+
+    def test_response_is_a_generic_json_schema_object(self):
+        operation = spec.SPEC["paths"]["/content-schema/{type}.json"]["get"]
+        response_schema = operation["responses"]["200"]["content"]["application/json"][
+            "schema"
+        ]
+        assert response_schema == {"type": "object"}
 
 
 class TestFieldTitles:

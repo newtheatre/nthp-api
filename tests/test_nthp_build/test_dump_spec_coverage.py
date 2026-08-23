@@ -15,10 +15,9 @@ from nthp_api.smugmugger import SmugMugImage
 # spec entries; a dump output missing from the spec by accident must fail here.
 UNDOCUMENTED_PATHS = {
     "openapi.json",  # the spec itself, which cannot document itself
+    "content-schema/index.html",  # a human docs page, not a JSON response
 }
-UNDOCUMENTED_DIRECTORIES = {
-    "content-schema",  # the shape of the content repo, not of the API
-}
+UNDOCUMENTED_DIRECTORIES: set[str] = set()
 
 YEAR_ID = "1999-00"
 SHOW_ID = f"{YEAR_ID}/the_tempest"

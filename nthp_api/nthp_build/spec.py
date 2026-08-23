@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from pydantic.json_schema import JsonSchemaMode, models_json_schema
 from pydantic_collections import BaseCollectionModel
 
-from nthp_api.nthp_build import schema
+from nthp_api.nthp_build import content_schema, schema
 from nthp_api.nthp_build.version import get_version
 
 
@@ -124,6 +124,52 @@ def make_detail_get_operation(  # noqa: PLR0913, PLR0917
                             "schema": {"$ref": f"#/components/schemas/{model.__name__}"}
                         }
                     },
+                },
+                "404": {
+                    "description": "Not Found",
+                },
+            },
+        }
+    }
+
+
+def make_content_schema_get_operation() -> dict:
+    """`/content-schema/{type}.json` — one JSON Schema document per content type.
+
+    These describe the content repo's front matter, not the API's responses,
+    so the response is a generic JSON Schema object rather than a pydantic
+    model.
+    """
+    type_names = [
+        document_type.name for document_type in content_schema.CONTENT_DOCUMENT_TYPES
+    ]
+    return {
+        "get": {
+            "operationId": "getContentSchema",
+            "tags": ["content-schema"],
+            "summary": "Get a content document's JSON Schema",
+            "description": "The JSON Schema (draft 2020-12) an editor validates a "
+            "content repo front matter document against before submitting it. "
+            "For people, not machines: content editors and agents authoring or "
+            "checking `show`, `person`, `venue`, `committee`, `history`, `roles` "
+            "and `link-types` documents in the content repo. See "
+            "`content-schema/index.html` for a human-readable rendering of the "
+            "same schemas.",
+            "parameters": [
+                {
+                    "name": "type",
+                    "in": "path",
+                    "required": True,
+                    "schema": {
+                        "type": "string",
+                        "enum": type_names,
+                    },
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "OK",
+                    "content": {"application/json": {"schema": {"type": "object"}}},
                 },
                 "404": {
                     "description": "Not Found",
@@ -393,6 +439,7 @@ SPEC = {
             description="The year slice of the search corpus.",
             model=schema.SearchDocumentYearCollection,
         ),
+        "/content-schema/{type}.json": make_content_schema_get_operation(),
     },
     "components": {"schemas": JSON_SCHEMA},
 }
