@@ -190,7 +190,11 @@ class TestPosters:
 
 class TestSiteStats:
     @pytest.fixture()
-    def stats(self, test_db, output_dir: Path) -> dict:
+    def stats(self, test_db, output_dir: Path, monkeypatch: pytest.MonkeyPatch) -> dict:
+        # The build details come from the GITHUB_* variables, which are set when the
+        # tests themselves run in CI; the fixture stands for a run outside it.
+        monkeypatch.setattr(settings, "build_number", None)
+        monkeypatch.setattr(settings, "commit", None)
         make_show("macbeth", primary_image="abc12")
         make_show("hamlet")
         database.Venue.create(
