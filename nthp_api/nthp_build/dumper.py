@@ -95,9 +95,12 @@ def dump_show(
     state: DumperSharedState,
     previous: schema.ShowRef | None = None,
     next_show: schema.ShowRef | None = None,
+    headshots: dict[str, str | None] | None = None,
 ) -> schema.ShowDetail:
     path = make_out_path(Path("shows"), inst.id)
-    show = shows.get_show_detail(inst, previous=previous, next_show=next_show)
+    show = shows.get_show_detail(
+        inst, previous=previous, next_show=next_show, headshots=headshots
+    )
     search.add_document(state, search.get_show_document(inst, show))
     write_file(path, show)
     return show
@@ -118,12 +121,14 @@ def dump_shows(state: DumperSharedState):
     show_insts = list(shows.get_show_query())
     sequence_items = [shows.get_show_ref(inst) for inst in show_insts]
     last_index = len(show_insts) - 1
+    headshots = people.get_all_headshots()
     for index, show_inst in enumerate(show_insts):
         dump_show(
             show_inst,
             state,
             previous=sequence_items[index - 1] if index > 0 else None,
             next_show=sequence_items[index + 1] if index < last_index else None,
+            headshots=headshots,
         )
     dump_show_index(show_insts)
 

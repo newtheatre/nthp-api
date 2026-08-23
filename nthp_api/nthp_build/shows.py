@@ -206,17 +206,19 @@ def get_show_date_defects(show: models.Show, year: int) -> list[str]:
     return defects
 
 
-def get_show_roles(person_refs: list[models.PersonRef]) -> list[schema.PersonCredit]:
-    query = database.Person.select(database.Person.id, database.Person.headshot).where(
-        database.Person.id.in_(
-            [
-                people.get_person_id(person_ref.name)
-                for person_ref in person_refs
-                if person_ref.name is not None
-            ]
+def get_show_roles(
+    person_refs: list[models.PersonRef],
+    headshots: dict[str, str | None] | None = None,
+) -> list[schema.PersonCredit]:
+    person_id_to_headshot = (
+        headshots
+        if headshots is not None
+        else people.get_headshots_by_person_id(
+            people.get_person_id(person_ref.name)
+            for person_ref in person_refs
+            if person_ref.name is not None
         )
     )
-    person_id_to_headshot = {r.id: r.headshot for r in query}
     show_roles = []
     for person_ref in person_refs:
         person_id = people.get_person_id(person_ref.name) if person_ref.name else None
@@ -350,7 +352,12 @@ def get_show_detail(
     show_inst: database.Show,
     previous: schema.ShowRef | None = None,
     next_show: schema.ShowRef | None = None,
+    headshots: dict[str, str | None] | None = None,
 ) -> schema.ShowDetail:
+    """
+    Build a show's detail. Pass every person's `headshots` when dumping many shows,
+    to spare a lookup per show.
+    """
     source_data = models.Show(**json.loads(show_inst.data))
     return schema.ShowDetail(
         **dict(get_show_list_item(show_inst)),
@@ -359,8 +366,8 @@ def get_show_detail(
         company=source_data.company,
         period=source_data.period,
         tour=get_show_tour(source_data),
-        cast=get_show_roles(source_data.cast),
-        crew=get_show_roles(source_data.crew),
+        cast=get_show_roles(source_data.cast, headshots),
+        crew=get_show_roles(source_data.crew, headshots),
         cast_incomplete=source_data.cast_incomplete,
         cast_note=source_data.cast_note,
         crew_incomplete=source_data.crew_incomplete,
@@ -379,7 +386,9 @@ def get_show_detail(
         ),
         previous=previous,
         next=next_show,
-        trivia=trivia.make_target_trivia(show_inst.id, database.TargetType.SHOW),
+        trivia=trivia.make_target_trivia(
+            show_inst.id, database.TargetType.SHOW, headshots
+        ),
         content=show_inst.content,
     )
 

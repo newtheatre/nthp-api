@@ -1,4 +1,5 @@
 import datetime
+import functools
 import json
 import logging
 from collections import defaultdict
@@ -22,6 +23,7 @@ SHOW_ROLE_TYPES_TO_SCHEMA = {
 }
 
 
+@functools.cache
 def get_person_id(name: str) -> str:
     return slugify(name, separator="_")
 
@@ -69,6 +71,12 @@ def get_headshots_by_person_id(person_ids: Iterable[str]) -> dict[str, str | Non
     query = database.Person.select(database.Person.id, database.Person.headshot).where(
         database.Person.id.in_(list(person_ids))
     )
+    return {person.id: person.headshot for person in query}
+
+
+def get_all_headshots() -> dict[str, str | None]:
+    """Headshot of every person the archive holds a document for, by id."""
+    query = database.Person.select(database.Person.id, database.Person.headshot)
     return {person.id: person.headshot for person in query}
 
 

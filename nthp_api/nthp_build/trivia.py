@@ -46,16 +46,21 @@ def get_submitter_ref(
     )
 
 
-def make_target_trivia(target_id: str, target_type: str) -> list[schema.Trivia]:
+def make_target_trivia(
+    target_id: str,
+    target_type: str,
+    headshots: dict[str, str | None] | None = None,
+) -> list[schema.Trivia]:
     """Trivia about one record, as its own document carries it."""
     query = database.Trivia.select().where(
         database.Trivia.target_id == target_id,
         database.Trivia.target_type == target_type,
     )
     rows = list(query)
-    headshots = people.get_headshots_by_person_id(
-        {row.person_id for row in rows if row.person_id is not None}
-    )
+    if headshots is None:
+        headshots = people.get_headshots_by_person_id(
+            {row.person_id for row in rows if row.person_id is not None}
+        )
     return [
         schema.Trivia(
             quote=row.quote,
