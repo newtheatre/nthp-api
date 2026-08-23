@@ -459,14 +459,34 @@ class TestStudentPlaywrightCredit:
 
     @pytest.mark.parametrize(
         "playwright",
-        ["Fred Bloggs and Alice Froggs", "Fred Bloggs, Alice Froggs", "Fred & Alice"],
+        [
+            "Fred Bloggs and Alice Froggs",
+            "Fred Bloggs, Alice Froggs",
+            "Fred Bloggs & Alice Froggs",
+            "Fred Bloggs, and Alice Froggs",
+        ],
     )
-    def test_multiple_writers_get_no_credit(self, playwright: str):
+    def test_multiple_writers_get_a_credit_each(self, playwright: str):
         show = self.make_show(playwright=playwright, student_written=True)
-        assert (
-            shows.get_crew_with_student_playwright(show, Path("_shows/00_01/a_show.md"))
-            == []
+        assert shows.get_crew_with_student_playwright(
+            show, Path("_shows/00_01/a_show.md")
+        ) == [
+            models.PersonRef(role="Playwright", name="Fred Bloggs"),
+            models.PersonRef(role="Playwright", name="Alice Froggs"),
+        ]
+
+    def test_alias_not_applied_to_multiple_writers(self):
+        show = self.make_show(
+            playwright="Fred Bloggs and Alice Froggs",
+            playwright_alias="Freddie Bloggs",
+            student_written=True,
         )
+        assert shows.get_crew_with_student_playwright(
+            show, Path("_shows/00_01/a_show.md")
+        ) == [
+            models.PersonRef(role="Playwright", name="Fred Bloggs"),
+            models.PersonRef(role="Playwright", name="Alice Froggs"),
+        ]
 
     def test_not_student_written_gets_no_credit(self):
         show = self.make_show(playwright="William Shakespeare")
@@ -567,13 +587,23 @@ class TestShowDefects:
         assert len(defects) == 1
         assert "improvised" in defects[0]
 
-    def test_student_written_by_several_people(self):
+    def test_alias_on_several_writers_is_inert(self):
+        defects = shows.get_show_defects(
+            self.make_show(
+                playwright="Fred Bloggs and Alice Froggs",
+                playwright_alias="Freddie Bloggs",
+                student_written=True,
+            )
+        )
+        assert any("inert" in defect for defect in defects)
+
+    def test_several_student_writers_are_no_defect(self):
         defects = shows.get_show_defects(
             self.make_show(
                 playwright="Fred Bloggs and Alice Froggs", student_written=True
             )
         )
-        assert any("names several people" in defect for defect in defects)
+        assert defects == []
 
     def test_inert_playwright_alias(self):
         defects = shows.get_show_defects(
@@ -629,4 +659,51 @@ class TestGetCanonicalPlays:
             ("First Play", "A. Writer"),
             ("Second Play", "B. Writer"),
             ("Double Bill", "C. Writer"),
+        ]
+
+
+class TestSplitWriters:
+    @pytest.mark.parametrize(
+        ("credit", "names"),
+        [
+            ("Fred Bloggs", ["Fred Bloggs"]),
+            ("Fred Bloggs and Alice Froggs", ["Fred Bloggs", "Alice Froggs"]),
+            ("Fred Bloggs & Alice Froggs", ["Fred Bloggs", "Alice Froggs"]),
+            (
+                "Jamie Drew, Sam Marshall, and Joe Hadley",
+                ["Jamie Drew", "Sam Marshall", "Joe Hadley"],
+            ),
+            (
+                "Howard Bird, Crispin Harris and Tim Killick",
+                ["Howard Bird", "Crispin Harris", "Tim Killick"],
+            ),
+        ],
+    )
+    def test_splits_on_commas_and_conjunctions(self, credit, names):
+        assert shows.split_writers(credit) == names
+
+
+class TestStudentWrittenCanonicalPlays:
+    def test_joint_student_credit_indexes_each_writer(self):
+        show = models.Show(
+            id="a_show",
+            title="A Show",
+            season="In House",
+            playwright="Fred Bloggs and Alice Froggs",
+            student_written=True,
+        )
+        assert shows.get_canonical_plays(show, "Fred Bloggs and Alice Froggs") == [
+            ("A Show", "Fred Bloggs"),
+            ("A Show", "Alice Froggs"),
+        ]
+
+    def test_joint_credit_left_whole_when_not_student_written(self):
+        show = models.Show(
+            id="iolanthe",
+            title="Iolanthe",
+            season="In House",
+            playwright="Gilbert & Sullivan",
+        )
+        assert shows.get_canonical_plays(show, "Gilbert & Sullivan") == [
+            ("Iolanthe", "Gilbert & Sullivan")
         ]

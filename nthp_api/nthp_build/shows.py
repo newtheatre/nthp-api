@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from pathlib import Path
 
 import peewee
@@ -19,7 +20,7 @@ from nthp_api.nthp_build.config import settings
 
 log = logging.getLogger(__name__)
 
-MULTIPLE_WRITER_SEPARATORS = (" and ", ", ", " & ")
+WRITER_SEPARATORS = re.compile(r",?\s+(?:and|&)\s+|,\s+")
 NON_PERSON_PLAYWRIGHTS = {
     schema.PlaywrightType.VARIOUS.value,
     schema.PlaywrightType.UNKNOWN.value,
@@ -65,12 +66,18 @@ def get_canonical_plays(
 
     Each `canonical` entry yields one, falling back to the show's own title and
     playwright where it omits either; a show without any is indexed as itself.
+    A student writing credit naming several people yields one pair per person,
+    but a joint credit like `Gilbert & Sullivan` is left whole otherwise.
     """
-    if not show.canonical:
-        return [(show.title, playwright_name)]
+    entries = show.canonical or [models.ShowCanonical()]
     return [
-        (entry.title or show.title, entry.playwright or playwright_name)
-        for entry in show.canonical
+        (entry.title or show.title, writer)
+        for entry in entries
+        for writer in (
+            split_writers(entry.playwright or playwright_name)
+            if show.student_written
+            else [entry.playwright or playwright_name]
+        )
     ]
 
 
@@ -120,21 +127,23 @@ def get_show_playwright(  # noqa: PLR0911
             name=show.playwright,
             descriptor=f"by {show.playwright}",
             person_id=(
-                people.get_person_id(show.playwright) if show.student_written else None
+                people.get_person_id(show.playwright)
+                if show.student_written and not has_multiple_writers(show.playwright)
+                else None
             ),
             student_written=show.student_written,
         )
     return None
 
 
-def get_student_playwright_writer(show: models.Show) -> tuple[str, str] | None:
+def get_student_playwright_writers(show: models.Show) -> tuple[list[str], str] | None:
     """
-    The student writer of a show and the role they take, or None where none does.
+    The student writers of a show and the role they take, or None where none do.
 
     In order of precedence the adaptor, translator or playwright is credited, under
     the student name `playwright_alias` gives where the writing was published under
-    another name. Shows written by several people are skipped, as the names cannot
-    be split apart reliably, and `playwright_false` suppresses the credit outright.
+    another name. A credit naming several people is split into one credit each, and
+    `playwright_false` suppresses the credit outright.
     """
     if not show.student_written or show.playwright is None or show.playwright_false:
         return None
@@ -146,27 +155,36 @@ def get_student_playwright_writer(show: models.Show) -> tuple[str, str] | None:
         writer, role = show.translator, "Translator"
     else:
         writer, role = show.playwright, "Playwright"
-    if has_multiple_writers(writer):
-        return None
-    return show.playwright_alias or writer, role
+    writers = split_writers(writer)
+    if len(writers) == 1:
+        writers = [show.playwright_alias or writer]
+    return writers, role
 
 
 def get_crew_with_student_playwright(
     show: models.Show, content_path: Path
 ) -> list[models.PersonRef]:
     """The crew list with the student writer credited at the top of it."""
-    writer_role = get_student_playwright_writer(show)
-    if writer_role is None:
+    writers_role = get_student_playwright_writers(show)
+    if writers_role is None:
         return show.crew
-    writer, role = writer_role
+    writers, role = writers_role
     if any(person_ref.role == role for person_ref in show.crew):
         log.warning(f"{content_path}: credits its student {role.lower()} by hand")
         return show.crew
-    return [models.PersonRef(role=role, name=writer), *show.crew]
+    return [
+        *(models.PersonRef(role=role, name=writer) for writer in writers),
+        *show.crew,
+    ]
 
 
 def has_multiple_writers(name: str) -> bool:
-    return any(separator in name for separator in MULTIPLE_WRITER_SEPARATORS)
+    return len(split_writers(name)) > 1
+
+
+def split_writers(name: str) -> list[str]:
+    """A writing credit's names, split apart on commas and conjunctions."""
+    return [part.strip() for part in WRITER_SEPARATORS.split(name) if part.strip()]
 
 
 def get_show_defects(show: models.Show) -> list[str]:
@@ -182,22 +200,13 @@ def get_show_defects(show: models.Show) -> list[str]:
             f"playwright {show.playwright!r} is dropped, as the show is "
             f"{'devised' if show.devised else 'improvised'}"
         )
-    if (
-        show.student_written
-        and show.playwright is not None
-        and has_multiple_writers(show.playwright)
-    ):
-        defects.append(
-            f"student writer {show.playwright!r} names several people, so none of "
-            f"them takes a crew credit or a person page"
-        )
-    if (
-        show.playwright_alias is not None
-        and get_student_playwright_writer(show) is None
+    writers_role = get_student_playwright_writers(show)
+    if show.playwright_alias is not None and (
+        writers_role is None or len(writers_role[0]) > 1
     ):
         defects.append(
             f"playwright_alias {show.playwright_alias!r} is inert, as the show "
-            f"generates no student writing credit"
+            f"generates no sole student writing credit"
         )
     return defects
 
