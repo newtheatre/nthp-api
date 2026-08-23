@@ -1,4 +1,5 @@
 import datetime
+from enum import StrEnum
 
 from pydantic import BaseModel
 from pydantic_collections import BaseCollectionModel
@@ -34,6 +35,13 @@ class SmugMugAlbum(BaseModel):
     LastUpdated: datetime.datetime
     Name: str
     NiceName: str
+    UrlName: str
+    WebUri: str
+    ImageCount: int
+
+
+class SmugMugAlbumCollection(BaseCollectionModel[SmugMugAlbum]):
+    pass
 
 
 class SmugMugImage(BaseModel):
@@ -83,12 +91,21 @@ class SmugMugImageDetail(BaseModel):
     OriginalWidth: int | None = None
 
 
+class SmugMugImageError(StrEnum):
+    """Why SmugMug could not describe an image key."""
+
+    NOT_FOUND = "not_found"
+    NO_DIMENSIONS = "no_dimensions"
+    FETCH_FAILED = "fetch_failed"
+
+
 class SmugMugImageInfo(BaseModel):
     """The intrinsic dimensions and upload date of an image, however we found them."""
 
     width: int | None = None
     height: int | None = None
     date: datetime.datetime | None = None
+    error: SmugMugImageError | None = None
 
     @property
     def has_dimensions(self) -> bool:

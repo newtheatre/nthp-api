@@ -261,7 +261,7 @@ def add_smugmug_image_info(asset: schema.Asset) -> schema.Asset:
     if asset.source != AssetSource.SMUGMUG.value or asset.type == AssetType.ALBUM.value:
         return asset
     image_info = get_smugmug_image_info_map().get(asset.id)
-    if image_info is None:
+    if image_info is None or not image_info.has_dimensions:
         log.warning(f"No SmugMug dimensions for image {asset.id}")
         return asset
     return asset.model_copy(
@@ -284,7 +284,7 @@ def get_image_ref(image_id: str | None) -> schema.ImageRef | None:
 def _get_image_ref(image_id: str) -> schema.ImageRef:
     """Cached, so an image referenced many times is looked up, and logged, once."""
     image_info = get_smugmug_image_info_map().get(image_id)
-    if image_info is None:
+    if image_info is None or not image_info.has_dimensions:
         log.warning(f"No SmugMug dimensions for image {image_id}")
         return schema.ImageRef(id=image_id)
     return schema.ImageRef(

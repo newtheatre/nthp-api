@@ -165,6 +165,24 @@ class Asset(NthpDbModel):
     asset_smugmug_data = peewee.CharField(null=True)
 
 
+class SmugMugAlbum(NthpDbModel):
+    """
+    Every album in the SmugMug account, whether the content references it or not.
+
+    Written by the smug step from its sweep of the account, so the editor
+    inventory can name the albums nothing links to. `images` holds the album's
+    image collection where the step fetched it, and is null otherwise.
+    """
+
+    key = peewee.CharField(primary_key=True)
+    name = peewee.CharField()
+    url_name = peewee.CharField()
+    web_uri = peewee.CharField()
+    image_count = peewee.IntegerField()
+    last_updated = peewee.CharField(null=True)
+    images = peewee.TextField(null=True)
+
+
 MODELS = [
     Show,
     PlaywrightShow,
@@ -177,6 +195,7 @@ MODELS = [
     HistoryRecord,
     Asset,
     LoadFinding,
+    SmugMugAlbum,
 ]
 
 

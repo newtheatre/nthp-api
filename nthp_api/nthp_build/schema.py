@@ -1419,3 +1419,145 @@ class SiteStats(NthpSchema):
         "and years together.",
         examples=[1234],
     )
+
+
+class AssetUse(NthpSchema):
+    """A place in the content that references an image or an album by key."""
+
+    target_type: str = Field(
+        description="What kind of record references the asset, one of `show`, "
+        "`person` or `venue`",
+        examples=["show"],
+    )
+    target_id: str = Field(
+        description="ID of the record referencing the asset",
+        examples=["2024-25/macbeth"],
+    )
+    title: str = Field(
+        description="Name of the record referencing the asset",
+        examples=["Macbeth"],
+    )
+    role: str = Field(
+        description="What the asset is to the record: its authored category where it "
+        "has one, otherwise `album`, `asset`, `headshot`, `photo` or `trivia`",
+        examples=["poster"],
+    )
+
+
+class SmugMugAlbumSummary(NthpSchema):
+    """A SmugMug album as the account lists it."""
+
+    key: str = Field(
+        description="SmugMug album key",
+        examples=["dvVPZh"],
+    )
+    name: str = Field(
+        description="Name of the album in SmugMug",
+        examples=["East 2013"],
+    )
+    url_name: str = Field(
+        description="Name of the album as it appears in its SmugMug URL",
+        examples=["East-2013"],
+    )
+    web_uri: str = Field(
+        description="URL of the album on the SmugMug site",
+        examples=["https://photos.newtheatre.org.uk/2012-13/East-2013"],
+    )
+    image_count: int = Field(
+        description="Number of images SmugMug holds in the album",
+        examples=[379],
+    )
+    last_updated: datetime.datetime | None = Field(
+        default=None,
+        description="When the album was last changed in SmugMug",
+        examples=["2015-11-06T16:54:32Z"],
+    )
+
+
+class SmugMugAlbumInventory(SmugMugAlbumSummary):
+    """An album, and the shows whose production shots it holds."""
+
+    used_by: list[AssetUse] = Field(
+        default=[],
+        description="Records referencing the album; empty means nothing in the "
+        "archive links to it",
+    )
+
+
+class SmugMugAlbumInventoryCollection(BaseCollectionModel[SmugMugAlbumInventory]):
+    """Every album in the SmugMug account, by name."""
+
+
+class SmugMugImageInventoryItem(NthpSchema):
+    """One image in an album, and what the archive uses it for."""
+
+    key: str = Field(
+        description="SmugMug image key, as content references it",
+        examples=["Dg7GGwL"],
+    )
+    file_name: str = Field(
+        description="Name of the file as uploaded",
+        examples=["macbeth-poster.jpg"],
+    )
+    title: str | None = Field(
+        default=None,
+        description="Title given to the image in SmugMug",
+        examples=["Macbeth poster"],
+    )
+    width: int | None = Field(
+        default=None,
+        description="Intrinsic width of the image in pixels",
+        examples=[1600],
+    )
+    height: int | None = Field(
+        default=None,
+        description="Intrinsic height of the image in pixels",
+        examples=[1200],
+    )
+    is_video: bool = Field(
+        description="Whether the asset is a video rather than an image",
+        examples=[False],
+    )
+    uploaded_at: datetime.datetime | None = Field(
+        default=None,
+        description="When the image was uploaded to SmugMug",
+        examples=["2013-06-04T12:00:00Z"],
+    )
+    web_uri: str = Field(
+        description="URL of the image on the SmugMug site",
+        examples=["https://photos.newtheatre.org.uk/i-Dg7GGwL"],
+    )
+    used_by: list[AssetUse] = Field(
+        default=[],
+        description="Records referencing the image by key, wherever they reference "
+        "it from; empty means the image is unused",
+    )
+
+
+class SmugMugImageInventory(NthpSchema):
+    """The images of one album, each with the records that reference it."""
+
+    album: SmugMugAlbumSummary = Field(description="The album the images belong to")
+    images: list[SmugMugImageInventoryItem] = Field(
+        default=[],
+        description="Images in the album, in the order SmugMug gives them",
+    )
+
+
+class SmugMugBrokenRef(AssetUse):
+    """A content reference to a SmugMug key SmugMug could not describe."""
+
+    key: str = Field(
+        description="SmugMug image key as the content references it",
+        examples=["Dg7GGwL"],
+    )
+    reason: str = Field(
+        description="Why SmugMug could not describe the key: `not_found` for a key "
+        "SmugMug does not know, `no_dimensions` for one it knows but will not give "
+        "a size for, `fetch_failed` where the request itself failed",
+        examples=["not_found"],
+    )
+
+
+class SmugMugBrokenRefCollection(BaseCollectionModel[SmugMugBrokenRef]):
+    """Every content reference to a key SmugMug could not describe."""

@@ -106,7 +106,7 @@ def populated_db(test_db):
         type=AssetType.ALBUM,
         id=ALBUM_ID,
     )
-    album.asset_smugmug_data = json.dumps(
+    album_images = json.dumps(
         [
             SmugMugImage(
                 Uri=f"/api/v2/album/{ALBUM_ID}/image/Dg7GGwL-0",
@@ -124,7 +124,17 @@ def populated_db(test_db):
             ).model_dump(mode="json", by_alias=True)
         ]
     )
+    album.asset_smugmug_data = album_images
     album.save()
+    database.SmugMugAlbum.create(
+        key=ALBUM_ID,
+        name="The Tempest 1999",
+        url_name="The-Tempest-1999",
+        web_uri="https://photos.newtheatre.org.uk/1999-00/The-Tempest-1999",
+        image_count=1,
+        last_updated="2015-11-06T16:54:32+00:00",
+        images=album_images,
+    )
     return test_db
 
 
@@ -149,6 +159,9 @@ class TestDumpMatchesSpec:
             "venues/new_theatre.json",
             "collaborators/fred_bloggs.json",
             f"assets/album/{ALBUM_ID}.json",
+            f"editors/smugmug/album/{ALBUM_ID}.json",
+            "editors/smugmug/albums.json",
+            "editors/smugmug/broken.json",
             "on-this-day/11-13.json",
         } <= dumped
 

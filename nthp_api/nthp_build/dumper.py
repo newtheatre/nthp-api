@@ -15,6 +15,7 @@ from nthp_api.nthp_build import (
     content_schema,
     content_schema_docs,
     database,
+    editors,
     history,
     homepage,
     models,
@@ -449,6 +450,31 @@ def dump_albums(state: DumperSharedState):
     [dump_album(album) for album in albums_query]
 
 
+def dump_editors(state: DumperSharedState) -> None:
+    """
+    The SmugMug inventory the content editors work from, not part of the site.
+
+    Kept out of the search corpus and any index the site builds: these documents
+    are about the archive's plumbing, not its content.
+    """
+    uses_by_key = editors.get_uses_by_key()
+    write_file(
+        make_out_path(Path("editors/smugmug"), "albums"),
+        editors.get_album_inventory(uses_by_key),
+    )
+    for album in editors.get_album_query():
+        images = editors.get_album_images(album)
+        if images is None:
+            continue
+        write_file(
+            make_out_path(Path("editors/smugmug/album"), album.key),
+            editors.get_image_inventory(album, images, uses_by_key),
+        )
+    write_file(
+        make_out_path(Path("editors/smugmug"), "broken"), editors.get_broken_refs()
+    )
+
+
 def dump_on_this_day(state: DumperSharedState) -> None:
     """Write a file per day of the year, the leap day included, empty ones and all."""
     shows_by_day = homepage.get_shows_by_day_of_year()
@@ -552,6 +578,7 @@ DUMPERS: list[Dumper] = [
     Dumper("history records", dump_history_records),
     Dumper("albums", dump_albums),
     Dumper("on this day", dump_on_this_day),
+    Dumper("editors", dump_editors),
     Dumper("posters", dump_posters),
 ]
 

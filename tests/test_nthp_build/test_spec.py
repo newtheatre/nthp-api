@@ -155,6 +155,9 @@ class TestFuzzyDateFields:
         assert find_formats(SCHEMAS) == {
             ".SiteStats.properties.buildTime": "date-time",
             ".Asset.properties.uploadedAt.anyOf[0]": "date-time",
+            ".SmugMugAlbumSummary.properties.lastUpdated.anyOf[0]": "date-time",
+            ".SmugMugAlbumInventory.properties.lastUpdated.anyOf[0]": "date-time",
+            ".SmugMugImageInventoryItem.properties.uploadedAt.anyOf[0]": "date-time",
         }
 
 

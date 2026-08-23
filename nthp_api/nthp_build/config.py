@@ -42,6 +42,12 @@ class Settings(BaseSettings):
     # Mirrors the content repo's _config.yml: a show with this many crew or fewer
     # counts as missing its crew.
     show_low_crew: int = 5
+    # SmugMug albums that hold images referenced by key rather than as an album:
+    # headshots, show assets and venue photos. Swept so the editor inventory can
+    # say which of their images nothing uses.
+    smugmug_utility_album_keys: list[str] = Field(
+        default_factory=lambda: ["hZh8Jt", "C87GJX", "j3PdMh", "BdFr84"]
+    )
     # Seasons whose shows are not expected to be fully documented, by season id.
     ignore_missing_in_season_ids: set[str] = Field(
         default_factory=lambda: {"external", "postgrads", "stuff"}

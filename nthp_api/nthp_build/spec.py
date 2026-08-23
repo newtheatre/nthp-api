@@ -37,6 +37,9 @@ PYDANTIC_JSON_SCHEMA = models_json_schema(
         schema.SearchDocumentVenueCollection,
         schema.SearchDocumentYearCollection,
         schema.SeasonDetail,
+        schema.SmugMugAlbumInventoryCollection,
+        schema.SmugMugBrokenRefCollection,
+        schema.SmugMugImageInventory,
         schema.SeasonListCollection,
         schema.ShowDetail,
         schema.ShowIndexCollection,
@@ -246,6 +249,11 @@ SPEC = {
         {
             "name": "search",
             "description": "The search corpus consumers build their own index from.",
+        },
+        {
+            "name": "editors",
+            "description": "Inventories for the content editors, joining the SmugMug "
+            "account to the content that references it. Not part of the site.",
         },
         {
             "name": "content-schema",
@@ -499,6 +507,36 @@ SPEC = {
             summary="Get year search documents",
             description="The year slice of the search corpus.",
             model=schema.SearchDocumentYearCollection,
+        ),
+        "/editors/smugmug/albums.json": make_basic_get_operation(
+            operation_id="getSmugMugAlbumInventory",
+            tags=["editors"],
+            summary="Get the SmugMug album inventory",
+            description="Every album in the SmugMug account, by name, each with the "
+            "records that reference it. An album with an empty `usedBy` is one "
+            "nothing in the archive links to.",
+            model=schema.SmugMugAlbumInventoryCollection,
+        ),
+        "/editors/smugmug/album/{key}.json": make_detail_get_operation(
+            operation_id="getSmugMugImageInventory",
+            tags=["editors"],
+            summary="Get the images of a SmugMug album",
+            description="The images of one album, each with the records that "
+            "reference it by key, wherever they reference it from; an image with an "
+            "empty `usedBy` is unused. Written only for the albums whose images the "
+            "build fetches: the utility albums editors pick keys out of, and the "
+            "albums a show references.",
+            model=schema.SmugMugImageInventory,
+            key="key",
+        ),
+        "/editors/smugmug/broken.json": make_basic_get_operation(
+            operation_id="getSmugMugBrokenRefs",
+            tags=["editors"],
+            summary="Get broken SmugMug references",
+            description="Every reference in the content to a SmugMug key SmugMug "
+            "could not describe, with the reason it could not. Keys the build never "
+            "asked about are not listed.",
+            model=schema.SmugMugBrokenRefCollection,
         ),
         "/content-schema/{type}.json": make_content_schema_get_operation(),
     },
