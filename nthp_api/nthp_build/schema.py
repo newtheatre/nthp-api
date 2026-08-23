@@ -71,7 +71,9 @@ class Link(NthpSchema):
 
     type: str = Field(
         description="Type of resource, canonical name where the content repo's "
-        "`_data/link-types.yaml` defines the type, otherwise as authored",
+        "`_data/link-types.yaml` defines the type, otherwise as authored. The "
+        "API carries no icon for a type; the consumer maps the canonical name to "
+        "one itself",
         examples=["Review"],
     )
     is_news: bool = Field(
