@@ -14,6 +14,7 @@ from typing import Any, NamedTuple
 import frontmatter
 import yaml
 from pydantic import BaseModel, ValidationError
+from pydantic_collections import BaseCollectionModel
 from pydantic_core import ErrorDetails
 
 from nthp_api.nthp_build import links, shows, validation_messages, years
@@ -195,7 +196,11 @@ def read_document(
 def build_model(document_type: ContentDocumentType, data: Any) -> Any:
     if isinstance(data, dict):
         return document_type.model(**data)
-    return document_type.model(data)
+    model = document_type.model
+    if not issubclass(model, BaseCollectionModel):
+        raise TypeError(f"A {document_type.name} document must be a mapping")
+    collection_model: type[BaseCollectionModel] = model
+    return collection_model(data)
 
 
 def check_file(path: Path) -> FileResult:
