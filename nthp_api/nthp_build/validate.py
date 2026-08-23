@@ -137,7 +137,9 @@ def check_venue_spellings() -> list[Finding]:
         database.Show.venue_id.is_null(False),
         database.Show.venue_name.is_null(False),
     ):
-        spellings[show.venue_id][show.venue_name].append(show.source_path)
+        spellings[database.not_null(show.venue_id)][
+            database.not_null(show.venue_name)
+        ].append(show.source_path)
     return [
         Finding(
             venue_id,
@@ -252,7 +254,7 @@ BUILD_CHECKS: list[Check] = [
 
 def get_credited_person_ids() -> set[str]:
     return {
-        row.person_id
+        database.not_null(row.person_id)
         for row in database.PersonRole.select(database.PersonRole.person_id).where(
             database.PersonRole.person_id.is_null(False)
         )
@@ -276,7 +278,7 @@ def check_person_name_collisions() -> list[Finding]:
         database.PersonRole.person_id.is_null(False),
         database.PersonRole.person_name.is_null(False),
     ):
-        names[row.person_id].add(row.person_name)
+        names[database.not_null(row.person_id)].add(database.not_null(row.person_name))
     documented = get_person_document_ids()
     return [
         Finding(person_id, hint="credited as " + ", ".join(sorted(person_names)))
@@ -330,7 +332,7 @@ def get_years_active() -> dict[str, list[int]]:
     for row in database.PersonRole.select().where(
         database.PersonRole.person_id.is_null(False)
     ):
-        years_active[row.person_id].append(row.target_year)
+        years_active[database.not_null(row.person_id)].append(row.target_year)
     return years_active
 
 
@@ -383,7 +385,7 @@ def format_year_clusters(clusters: list[list[int]]) -> str:
 
 
 class PersonDocument(NamedTuple):
-    source_path: str
+    source_path: str | None
     graduated: int | None
 
 
@@ -491,7 +493,7 @@ def check_asset_categories() -> list[Finding]:
         database.Asset.asset_type == str(assets.AssetType.IMAGE),
     ):
         if row.asset_category not in known_categories:
-            counts[row.asset_category] += 1
+            counts[database.not_null(row.asset_category)] += 1
     return [
         Finding(category, hint=pluralise(count, "image"))
         for category, count in sorted(counts.items())
@@ -569,7 +571,7 @@ def check_venue_documents() -> list[Finding]:
     documented = {venue.id for venue in database.Venue.select(database.Venue.id)}
     referenced: dict[str, int] = defaultdict(int)
     for show in database.Show.select().where(database.Show.venue_id.is_null(False)):
-        referenced[show.venue_id] += 1
+        referenced[database.not_null(show.venue_id)] += 1
     return [
         Finding(venue_id, hint=f"{pluralise(count, 'show')}, dumped as a stub")
         for venue_id, count in sorted(referenced.items())

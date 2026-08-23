@@ -76,7 +76,7 @@ def get_distinct_role_names(target_type: str) -> list[str]:
         )
         .distinct()
     )
-    return sorted(inst.role for inst in query)
+    return sorted(database.not_null(inst.role) for inst in query)
 
 
 def get_committee_role_definitions() -> list[RoleDefinition]:

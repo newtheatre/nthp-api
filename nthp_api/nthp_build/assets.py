@@ -249,7 +249,7 @@ def get_smugmug_image_info_map() -> dict[str, SmugMugImageInfo]:
     for asset in query:
         try:
             image_info_map[asset.asset_id] = SmugMugImageInfo(
-                **json.loads(asset.asset_smugmug_data)
+                **json.loads(database.not_null(asset.asset_smugmug_data))
             )
         except (json.JSONDecodeError, pydantic.ValidationError):
             log.warning(f"Could not decode smugmug data for image {asset.asset_id}")

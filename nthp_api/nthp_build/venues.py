@@ -47,7 +47,7 @@ def get_venue_shows() -> dict[str, list[database.Show]]:
         .where(database.Show.venue_id.is_null(False))  # type: ignore[attr-defined]
         .order_by(database.Show.date_start, database.Show.id)
     ):
-        venue_shows[show.venue_id].append(show)
+        venue_shows[database.not_null(show.venue_id)].append(show)
     return venue_shows
 
 

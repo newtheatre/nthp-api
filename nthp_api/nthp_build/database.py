@@ -5,6 +5,7 @@ import peewee
 from nthp_api.nthp_build.config import settings
 
 log = logging.getLogger(__name__)
+
 db = peewee.SqliteDatabase(settings.db_uri)
 
 
@@ -194,3 +195,15 @@ def init_db(create: bool = False):
 def show_stats():
     for model in MODELS:
         log.info(f"{model.__name__} has {model.select().count()} records")
+
+
+def not_null[T](value: T | None) -> T:
+    """
+    Narrow a nullable column of a row a query has already filtered nulls out of.
+
+    Peewee types every nullable column as optional, which a `.is_null(False)` in
+    the query has no way of telling the type checker about.
+    """
+    if value is None:
+        raise ValueError("Expected a non-null column value")
+    return value
