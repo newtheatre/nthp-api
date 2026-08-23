@@ -17,7 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from pydantic.json_schema import GenerateJsonSchema
 from pydantic_collections import BaseCollectionModel
 
-from nthp_api.nthp_build import models, years
+from nthp_api.nthp_build import models, schema_examples, years
 from nthp_api.nthp_build.fields import ApiFuzzyDate
 
 RESPONSE_CONFIG = ConfigDict(
@@ -25,6 +25,11 @@ RESPONSE_CONFIG = ConfigDict(
     alias_generator=humps.camelize,
     frozen=True,
 )
+
+
+def with_example(example: dict[str, Any]) -> ConfigDict:
+    """The response config, plus one whole document for a spec renderer to show."""
+    return ConfigDict(**RESPONSE_CONFIG, json_schema_extra={"examples": [example]})
 
 
 class UntitledProperties(GenerateJsonSchema):
@@ -531,6 +536,8 @@ class ShowList(ShowIndexItem):
 class ShowDetail(ShowList):
     """Everything the archive holds about a show."""
 
+    model_config = with_example(schema_examples.SHOW_DETAIL)
+
     play: PlayRef | None = Field(
         default=None, description="The play staged, where the show staged one"
     )
@@ -601,6 +608,8 @@ class ShowDetail(ShowList):
 class OnThisDayShow(ShowRef):
     """A show that was running on a given day of the year."""
 
+    model_config = with_example(schema_examples.ON_THIS_DAY_SHOW)
+
     date_start: ApiFuzzyDate = Field(
         description="First day of the run, always to day precision"
     )
@@ -656,6 +665,8 @@ class SeasonListCollection(BaseCollectionModel[SeasonList]):
 
 class SeasonDetail(SeasonList):
     """A season and its shows; seasons span academic years, so shows run by date."""
+
+    model_config = with_example(schema_examples.SEASON_DETAIL)
 
     shows: list[ShowList] = Field(default=[], description="Shows in the season")
 
@@ -714,6 +725,8 @@ class VenueDetail(VenueList):
     description, just its name and the shows that ran there.
     """
 
+    model_config = with_example(schema_examples.VENUE_DETAIL)
+
     assets: list[Asset] = Field(default=[], description="Images held of the venue")
     links: list[Link] = Field(
         default=[], description="Links to the venue's own site and other resources"
@@ -766,6 +779,8 @@ class YearListCollection(BaseCollectionModel[YearList]):
 
 class YearDetail(YearList):
     """Everything the archive holds about an academic year."""
+
+    model_config = with_example(schema_examples.YEAR_DETAIL)
 
     shows: list[ShowList] = Field(default=[], description="Shows in the academic year")
     committee: list[PersonCredit] = Field(
@@ -954,6 +969,8 @@ class PersonIndexCollection(BaseCollectionModel[PersonIndexItem]):
 class PersonDetail(PersonIndexItem):
     """Everything the archive holds about a person."""
 
+    model_config = with_example(schema_examples.PERSON_DETAIL)
+
     headshot: Asset | None = Field(  # type: ignore[assignment]
         default=None, description="The person's headshot, where there is one"
     )
@@ -1100,6 +1117,8 @@ class SearchDocumentBase(NthpSchema):
 
 class SearchDocumentShow(SearchDocumentBase):
     """A show, the archive's principal record."""
+
+    model_config = with_example(schema_examples.SEARCH_DOCUMENT_SHOW)
 
     type: Literal[SearchDocumentType.SHOW] = Field(
         description="What the document describes, always `show`"
@@ -1309,6 +1328,8 @@ class SearchDocumentYearCollection(BaseCollectionModel[SearchDocumentYear]):
 
 class SiteStats(NthpSchema):
     """What the archive holds and how it was built, as of the last build."""
+
+    model_config = with_example(schema_examples.SITE_STATS)
 
     build_time: datetime.datetime = Field(
         description="When was the API built, in UTC.",
