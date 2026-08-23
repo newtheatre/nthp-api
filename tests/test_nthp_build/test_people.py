@@ -426,6 +426,27 @@ class TestMakePersonDetail:
         )
         assert person.award == "Knighthood"
 
+    def test_honourifics(self, test_db):
+        person = people.make_person_detail(
+            models.Person(
+                id="fred_bloggs",
+                title="Fred Bloggs",
+                pre_nominal="Sir",
+                post_nominals=["OBE"],
+            ),
+            has_bio=True,
+        )
+        assert person.title == "Fred Bloggs"
+        assert person.pre_nominal == "Sir"
+        assert person.post_nominals == ["OBE"]
+
+    def test_no_honourifics(self, test_db):
+        person = people.make_person_detail(
+            models.Person(id="fred_bloggs", title="Fred Bloggs"), has_bio=True
+        )
+        assert person.pre_nominal is None
+        assert person.post_nominals == []
+
     def test_no_trivia_defaults_to_empty(self, test_db):
         person = people.make_person_detail(
             models.Person(id="fred_bloggs", title="Fred Bloggs"), has_bio=True

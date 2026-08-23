@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from nthp_api.nthp_build import content_schema, dumper, schema
+from nthp_api.nthp_build import content_schema, database, dumper, models, schema
 
 
 @pytest.fixture()
@@ -76,3 +76,39 @@ class TestWriteFile:
         assert written["shows"] == []
         assert written["assets"] == []
         assert written["links"] == []
+
+
+class TestDumpRealPerson:
+    """Honourifics travel from the loaded document to the person's JSON."""
+
+    @staticmethod
+    def dump(output_dir: Path, person: models.Person) -> dict:
+        database.Person.create(
+            id=person.id,
+            source_path=f"_people/{person.id}.md",
+            title=person.title,
+            data=person.model_dump_json(),
+        )
+        dumper.dump_real_people(dumper.DumperSharedState(search_documents=[]))
+        return json.loads((output_dir / "people" / f"{person.id}.json").read_text())
+
+    def test_honourifics_are_written(self, output_dir: Path, test_db):
+        written = self.dump(
+            output_dir,
+            models.Person(
+                id="fred_bloggs",
+                title="Fred Bloggs",
+                pre_nominal="Sir",
+                post_nominals=["OBE", "FRS"],
+            ),
+        )
+        assert written["title"] == "Fred Bloggs"
+        assert written["preNominal"] == "Sir"
+        assert written["postNominals"] == ["OBE", "FRS"]
+
+    def test_absent_honourifics(self, output_dir: Path, test_db):
+        written = self.dump(
+            output_dir, models.Person(id="fred_bloggs", title="Fred Bloggs")
+        )
+        assert "preNominal" not in written
+        assert written["postNominals"] == []

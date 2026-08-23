@@ -762,6 +762,25 @@ class Person(NthpModel):
         description="Formatted `Firstname Lastname`, and matching the filename.",
         examples=["Fred Bloggs"],
     )
+    pre_nominal: str | None = Field(
+        default=None,
+        title="Style placed before the name",
+        description=(
+            "Free text, as it should read. `title` stays the bare name, as the "
+            "person id comes from it."
+        ),
+        examples=["Sir", "Dame", "Professor"],
+    )
+    post_nominals: list[str] = Field(
+        default=[],
+        title="Honours and fellowships placed after the name",
+        description=(
+            "Granted in later life, in the order they should read. Free text, held "
+            "to no list. Not for a New Theatre or university award, which is "
+            "`award`. `title` stays the bare name, as the person id comes from it."
+        ),
+        examples=[["OBE", "FRS"]],
+    )
     alias: PermissiveStr | None = Field(
         default=None,
         title="Another name this person goes by",

@@ -179,6 +179,8 @@ PERSON_DETAIL = {
     },
     "submitted": True,
     "submittedDate": "2022-01",
+    "preNominal": "Professor",
+    "postNominals": ["OBE"],
     "showRoleCount": 7,
     "committeeRoleCount": 2,
     "showRoles": [

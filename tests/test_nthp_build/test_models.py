@@ -176,6 +176,18 @@ class TestPerson:
         assert models.Person(title="Fred Bloggs", award=None).award is None
         assert models.Person(title="Fred Bloggs", award="  ").award is None
 
+    def test_honourifics(self):
+        person = models.Person(
+            title="Fred Bloggs", pre_nominal="Sir", post_nominals=["OBE", "FRS"]
+        )
+        assert person.pre_nominal == "Sir"
+        assert person.post_nominals == ["OBE", "FRS"]
+
+    def test_honourifics_default_to_absent(self):
+        person = models.Person(title="Fred Bloggs")
+        assert person.pre_nominal is None
+        assert person.post_nominals == []
+
     def test_award_not_held_to_the_known_set(self):
         assert models.Person(title="Fred Bloggs", award="Knighthood").award == (
             "Knighthood"

@@ -976,6 +976,19 @@ class PersonDetail(PersonIndexItem):
     headshot: Asset | None = Field(  # type: ignore[assignment]
         default=None, description="The person's headshot, where there is one"
     )
+    pre_nominal: str | None = Field(
+        default=None,
+        description="Style placed before the person's name, as authored; `title` "
+        "stays the bare name",
+        examples=["Sir"],
+    )
+    post_nominals: list[str] = Field(
+        default=[],
+        description="Honours and fellowships placed after the person's name, as "
+        "authored and in the order they should read; separate from `award`, which "
+        "is what the theatre gave them on leaving",
+        examples=[["OBE", "FRS"]],
+    )
     show_roles: list[PersonShowRoles] = Field(
         default=[], description="What the person did, by show"
     )

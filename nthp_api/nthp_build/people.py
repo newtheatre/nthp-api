@@ -524,6 +524,8 @@ def make_person_detail(
             assets.asset_from_headshot(model.headshot) if model.headshot else None
         ),
         graduated=graduation,
+        pre_nominal=model.pre_nominal,
+        post_nominals=model.post_nominals,
         show_roles=show_roles,
         committee_roles=committee_roles,
         show_role_count=len(show_roles),
