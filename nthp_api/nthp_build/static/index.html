@@ -7,17 +7,12 @@
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
     <title>New Theatre History Project API</title>
-    <script src="https://unpkg.com/@stoplight/elements@9/web-components.min.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/@stoplight/elements@9/styles.min.css"
-    />
   </head>
   <body>
-    <elements-api
-      apiDescriptionUrl="openapi.json"
-      router="hash"
-      layout="sidebar"
-    />
+    <div id="app"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1"></script>
+    <script>
+      Scalar.createApiReference("#app", { url: "openapi.json" });
+    </script>
   </body>
 </html>

@@ -38,8 +38,7 @@ def test_every_200_response_has_a_schema():
     missing = [
         operation["operationId"]
         for operation in get_operations()
-        if "schema"
-        not in operation["responses"]["200"]["content"]["application/json"]
+        if "schema" not in operation["responses"]["200"]["content"]["application/json"]
     ]
     assert missing == []
 

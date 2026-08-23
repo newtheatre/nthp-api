@@ -20,7 +20,7 @@ class TestCopyStaticFiles:
     def test_docs_page_finds_spec_relatively(self, output_dir: Path):
         dumper.copy_static_files()
         page = (output_dir / "index.html").read_text()
-        assert 'apiDescriptionUrl="openapi.json"' in page
+        assert 'url: "openapi.json"' in page
 
 
 class TestDumpContentSchema:

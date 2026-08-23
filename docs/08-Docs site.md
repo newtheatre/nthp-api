@@ -69,3 +69,10 @@ of `dump_all()`, and `.s3deploy.yml` gained the matching `.html` route.
 Verified by serving `dist/` and rendering the page in headless Chrome: Elements
 loads from unpkg, resolves `openapi.json` relative to the page, and renders the
 spec's 19 paths into the sidebar layout.
+
+## Update (2026-08-23)
+
+Swapped Elements for [Scalar](https://github.com/scalar/scalar)
+(`@scalar/api-reference@1`, pinned to the major on jsdelivr): better rendering
+of 3.1 `examples`, discriminated unions and the named `FuzzyDate` ref, keeps a
+try-it client. Same relative `openapi.json` invariant, same dump test.
