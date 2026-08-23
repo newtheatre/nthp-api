@@ -94,10 +94,11 @@ def make_detail_get_operation(  # noqa: PLR0913, PLR0917
     tags: list[str],
     summary: str,
     model: Model,
-    key: str,
+    key: str | list[str],
     description: str | None = None,
 ):
     check_model_present(model)
+    keys = [key] if isinstance(key, str) else key
     return {
         "get": {
             "operationId": operation_id,
@@ -106,13 +107,14 @@ def make_detail_get_operation(  # noqa: PLR0913, PLR0917
             "description": description,
             "parameters": [
                 {
-                    "name": key,
+                    "name": name,
                     "in": "path",
                     "required": True,
                     "schema": {
                         "type": "string",
                     },
-                },
+                }
+                for name in keys
             ],
             "responses": {
                 "200": {
@@ -187,14 +189,14 @@ SPEC = {
             "lists embedded in year and season documents.",
             model=schema.ShowIndexCollection,
         ),
-        "/shows/{id}.json": make_detail_get_operation(
+        "/shows/{yearId}/{slug}.json": make_detail_get_operation(
             operation_id="getShowDetail",
             tags=["shows"],
             summary="Get show detail",
             description="Shows are identified as `{yearId}/{slug}`, "
             "e.g. `2024-25/macbeth`.",
             model=schema.ShowDetail,
-            key="id",
+            key=["yearId", "slug"],
         ),
         "/seasons/index.json": make_basic_get_operation(
             operation_id="getSeasonList",

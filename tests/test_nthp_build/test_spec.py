@@ -110,7 +110,6 @@ class TestPathParameters:
         "path",
         [
             "/years/{id}.json",
-            "/shows/{id}.json",
             "/seasons/{id}.json",
             "/venues/{id}.json",
             "/people/{id}.json",
@@ -123,6 +122,19 @@ class TestPathParameters:
     def test_records_are_addressed_by_id(self, path: str):
         [parameter] = spec.SPEC["paths"][path]["get"]["parameters"]
         assert parameter["name"] == "id"
+
+    def test_shows_are_addressed_by_year_and_slug(self):
+        """A show id contains a slash, which a single path parameter cannot hold."""
+        operation = spec.SPEC["paths"]["/shows/{yearId}/{slug}.json"]["get"]
+        assert operation["operationId"] == "getShowDetail"
+        assert [parameter["name"] for parameter in operation["parameters"]] == [
+            "yearId",
+            "slug",
+        ]
+        assert all(
+            parameter["in"] == "path" and parameter["required"]
+            for parameter in operation["parameters"]
+        )
 
 
 class TestFieldTitles:
