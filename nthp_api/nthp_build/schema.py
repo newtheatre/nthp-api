@@ -42,11 +42,11 @@ class Location(NthpSchema):
 
     lat: float = Field(
         description="Latitude in decimal degrees",
-        json_schema_extra={"example": 52.9385},
+        examples=[52.9385],
     )
     lon: float = Field(
         description="Longitude in decimal degrees",
-        json_schema_extra={"example": -1.1957},
+        examples=[-1.1957],
     )
 
     @classmethod
@@ -60,58 +60,58 @@ class Link(NthpSchema):
     type: str = Field(
         description="Type of resource, canonical name where the content repo's "
         "`_data/link-types.yaml` defines the type, otherwise as authored",
-        json_schema_extra={"example": "Review"},
+        examples=["Review"],
     )
     is_news: bool = Field(
         description="Whether the type is a news type, an article or a review",
-        json_schema_extra={"example": True},
+        examples=[True],
     )
     href: str | None = Field(
         default=None,
         description="URL of the resource, resolved from the username where the type "
         "templates one",
-        json_schema_extra={"example": "https://twitter.com/nnt_official"},
+        examples=["https://twitter.com/nnt_official"],
     )
     href_snapshot: str | None = Field(
         default=None,
         description="URL of the archive.is snapshot of the resource, where one has "
         "been taken",
-        json_schema_extra={"example": "https://archive.is/abc12"},
+        examples=["https://archive.is/abc12"],
     )
     username: str | None = Field(
         default=None,
         description="Username on the service, where the type is a service",
-        json_schema_extra={"example": "nnt_official"},
+        examples=["nnt_official"],
     )
     title: str | None = Field(
         default=None,
         description="Title of the resource, such as the headline of an article",
-        json_schema_extra={"example": "Student theatre at its best"},
+        examples=["Student theatre at its best"],
     )
     date: FuzzyDate | None = Field(
         default=None,
         description="Date the resource was published, of year, month or day precision",
-        json_schema_extra={"example": "2022-01-31"},
+        examples=["2022-01-31"],
     )
     publisher: str | None = Field(
         default=None,
         description="Name of the publisher, given for news and reviews",
-        json_schema_extra={"example": "Impact Magazine"},
+        examples=["Impact Magazine"],
     )
     rating: str | None = Field(
         default=None,
         description="Rating a review gave, written as `x/of_y`",
-        json_schema_extra={"example": "4/5"},
+        examples=["4/5"],
     )
     quote: str | None = Field(
         default=None,
         description="Short quotation summarising the resource",
-        json_schema_extra={"example": "A triumph from start to finish"},
+        examples=["A triumph from start to finish"],
     )
     note: str | None = Field(
         default=None,
         description="Note about the resource, displayed alongside the link",
-        json_schema_extra={"example": "Requires a subscription"},
+        examples=["Requires a subscription"],
     )
 
 
@@ -125,17 +125,17 @@ class ImageRef(NthpSchema):
 
     id: str = Field(
         description="SmugMug image key",
-        json_schema_extra={"example": "qABC123"},
+        examples=["qABC123"],
     )
     width: int | None = Field(
         default=None,
         description="Intrinsic width of the image in pixels",
-        json_schema_extra={"example": 1600},
+        examples=[1600],
     )
     height: int | None = Field(
         default=None,
         description="Intrinsic height of the image in pixels",
-        json_schema_extra={"example": 1200},
+        examples=[1200],
     )
 
 
@@ -144,37 +144,37 @@ class Asset(ImageRef):
 
     type: str = Field(
         description="Kind of asset, one of `album`, `image`, `video` or `other`",
-        json_schema_extra={"example": "image"},
+        examples=["image"],
     )
     source: str = Field(
         description="Where the asset is held, `smugmug` or `file`",
-        json_schema_extra={"example": "smugmug"},
+        examples=["smugmug"],
     )
     mime_type: str | None = Field(
         default=None,
         description="Mime type of the asset, where one applies",
-        json_schema_extra={"example": "image/jpeg"},
+        examples=["image/jpeg"],
     )
     category: str | None = Field(
         default=None,
         description="What the asset depicts, as authored; poster, flyer, programme "
         "and headshot are the recognised categories",
-        json_schema_extra={"example": "poster"},
+        examples=["poster"],
     )
     title: str | None = Field(
         default=None,
         description="Title of the asset, as authored",
-        json_schema_extra={"example": "Programme"},
+        examples=["Programme"],
     )
     page: int | None = Field(
         default=None,
         description="Page of the document the asset is, where it is one of several",
-        json_schema_extra={"example": 2},
+        examples=[2],
     )
     uploaded_at: datetime.datetime | None = Field(
         default=None,
         description="When the asset was uploaded to SmugMug, where SmugMug knows",
-        json_schema_extra={"example": "2022-01-01T12:34:45.678901Z"},
+        examples=["2022-01-01T12:34:45.678901Z"],
     )
 
 
@@ -187,20 +187,20 @@ class PersonRef(NthpSchema):
 
     id: str = Field(
         description="ID of the person",
-        json_schema_extra={"example": "fred_bloggs"},
+        examples=["fred_bloggs"],
     )
     title: str = Field(
         description="Name of the person",
-        json_schema_extra={"example": "Fred Bloggs"},
+        examples=["Fred Bloggs"],
     )
     is_person: bool = Field(
         description="Whether the credit names a person rather than a group",
-        json_schema_extra={"example": True},
+        examples=[True],
     )
     has_bio: bool = Field(
         description="Whether the archive holds a document about the person, as "
         "opposed to knowing them only from the credits they appear in",
-        json_schema_extra={"example": True},
+        examples=[True],
     )
     headshot: ImageRef | None = Field(
         default=None, description="The person's headshot, where there is one"
@@ -212,11 +212,11 @@ class VenueRef(NthpSchema):
 
     id: str = Field(
         description="ID of the venue, slugified from the authored venue name",
-        json_schema_extra={"example": "new-theatre"},
+        examples=["new-theatre"],
     )
     name: str = Field(
         description="Name of the venue as authored on the show",
-        json_schema_extra={"example": "New Theatre"},
+        examples=["New Theatre"],
     )
 
 
@@ -225,23 +225,23 @@ class YearRef(NthpSchema):
 
     id: str = Field(
         description="ID of the academic year, in YYYY-YY form",
-        json_schema_extra={"example": "2024-25"},
+        examples=["2024-25"],
     )
     title: str = Field(
         description="Title of the academic year",
-        json_schema_extra={"example": "2024-25"},
+        examples=["2024-25"],
     )
     start_year: int = Field(
         description="Calendar year the academic year starts in",
-        json_schema_extra={"example": 2024},
+        examples=[2024],
     )
     grad_year: int = Field(
         description="Calendar year students of this academic year graduate in",
-        json_schema_extra={"example": 2025},
+        examples=[2025],
     )
     decade: int = Field(
         description="Calendar year the start year's decade begins in",
-        json_schema_extra={"example": 2020},
+        examples=[2020],
     )
 
     @classmethod
@@ -260,18 +260,16 @@ class ShowRef(NthpSchema):
 
     id: str = Field(
         description="ID of the show, `{yearId}/{slug}`",
-        json_schema_extra={"example": "2024-25/macbeth"},
+        examples=["2024-25/macbeth"],
     )
-    title: str = Field(
-        description="Title of the show", json_schema_extra={"example": "Macbeth"}
-    )
+    title: str = Field(description="Title of the show", examples=["Macbeth"])
     year_id: str = Field(
         description="ID of the academic year the show is in, in YYYY-YY form",
-        json_schema_extra={"example": "2024-25"},
+        examples=["2024-25"],
     )
     year: int = Field(
         description="Calendar year the academic year starts in",
-        json_schema_extra={"example": 2024},
+        examples=[2024],
     )
     primary_image: ImageRef | None = Field(
         default=None, description="Image standing for the show, where there is one"
@@ -284,12 +282,12 @@ class ShowDatedRef(ShowRef):
     date_start: FuzzyDate | None = Field(
         default=None,
         description="Date the show opened, of year, month or day precision",
-        json_schema_extra={"example": "2024-11-13"},
+        examples=["2024-11-13"],
     )
     date_end: FuzzyDate | None = Field(
         default=None,
         description="Date the show closed, of year, month or day precision",
-        json_schema_extra={"example": "2024-11-16"},
+        examples=["2024-11-16"],
     )
 
 
@@ -298,11 +296,9 @@ class PlayRef(NthpSchema):
 
     id: str = Field(
         description="ID of the play, slugified from its title",
-        json_schema_extra={"example": "macbeth"},
+        examples=["macbeth"],
     )
-    title: str = Field(
-        description="Title of the play", json_schema_extra={"example": "Macbeth"}
-    )
+    title: str = Field(description="Title of the play", examples=["Macbeth"])
 
 
 class PlaywrightRef(NthpSchema):
@@ -316,17 +312,17 @@ class PlaywrightRef(NthpSchema):
     id: str | None = Field(
         default=None,
         description="ID of the playwright, slugified from their name",
-        json_schema_extra={"example": "william_shakespeare"},
+        examples=["william_shakespeare"],
     )
     name: str | None = Field(
         default=None,
         description="Name of the playwright",
-        json_schema_extra={"example": "William Shakespeare"},
+        examples=["William Shakespeare"],
     )
     person_id: str | None = Field(
         default=None,
         description="ID of the person the playwright is, where a student wrote it",
-        json_schema_extra={"example": "fred_bloggs"},
+        examples=["fred_bloggs"],
     )
 
 
@@ -353,11 +349,11 @@ class PlaywrightShow(PlaywrightRef):
     descriptor: str | None = Field(
         default=None,
         description="How the show's authorship reads",
-        json_schema_extra={"example": "by William Shakespeare"},
+        examples=["by William Shakespeare"],
     )
     student_written: bool = Field(
         description="Whether a student of the university wrote it",
-        json_schema_extra={"example": False},
+        examples=[False],
     )
 
 
@@ -367,7 +363,7 @@ class PersonCredit(NthpSchema):
     role: str | None = Field(
         default=None,
         description="Role as authored",
-        json_schema_extra={"example": "Director"},
+        examples=["Director"],
     )
     person: PersonRef | None = Field(
         default=None, description="The person credited, where the credit names one"
@@ -375,7 +371,7 @@ class PersonCredit(NthpSchema):
     note: str | None = Field(
         default=None,
         description="Note about the credit, displayed alongside it",
-        json_schema_extra={"example": "Act 2 only"},
+        examples=["Act 2 only"],
     )
 
 
@@ -385,7 +381,7 @@ class ShowTourDate(NthpSchema):
     venue: str | None = Field(
         default=None,
         description="Venue the show toured to, as authored",
-        json_schema_extra={"example": "Lakeside Arts"},
+        examples=["Lakeside Arts"],
     )
     date_start: FuzzyDate | None = Field(
         default=None, description="Date the run at the venue opened"
@@ -432,17 +428,19 @@ class Trivia(NthpSchema):
 
     quote: str = Field(
         description="The quote",
-        json_schema_extra={
-            "example": "Every character in this play was portrayed by a "
-            "perfectly circular Victoria Sponge"
-        },
+        examples=[
+            (
+                "Every character in this play was portrayed by a "
+                "perfectly circular Victoria Sponge"
+            )
+        ],
     )
     submitted_date: FuzzyDate | None = Field(
         default=None,
         description="The date the quote was submitted, of year, month or day "
         "precision; absent where it is likely pulled from the programme or another "
         "source",
-        json_schema_extra={"example": "2022-01"},
+        examples=["2022-01"],
     )
     person: PersonRef | None = Field(
         default=None,
@@ -460,27 +458,25 @@ class ShowIndexItem(NthpSchema):
 
     id: str = Field(
         description="ID of the show, `{yearId}/{slug}`",
-        json_schema_extra={"example": "2024-25/macbeth"},
+        examples=["2024-25/macbeth"],
     )
-    title: str = Field(
-        description="Title of the show", json_schema_extra={"example": "Macbeth"}
-    )
+    title: str = Field(description="Title of the show", examples=["Macbeth"])
     year_id: str = Field(
         description="ID of the academic year the show is in, in YYYY-YY form",
-        json_schema_extra={"example": "2024-25"},
+        examples=["2024-25"],
     )
     year: int = Field(
         description="Calendar year the academic year starts in",
-        json_schema_extra={"example": 2024},
+        examples=[2024],
     )
     season: str = Field(
         description="Season as authored on the show",
-        json_schema_extra={"example": "In House"},
+        examples=["In House"],
     )
     season_id: str | None = Field(
         default=None,
         description="ID of the season, aliases merged",
-        json_schema_extra={"example": "in-house"},
+        examples=["in-house"],
     )
     venue: VenueRef | None = Field(
         default=None, description="Venue the show ran at, where one is authored"
@@ -488,12 +484,12 @@ class ShowIndexItem(NthpSchema):
     date_start: FuzzyDate | None = Field(
         default=None,
         description="Date the show opened, of year, month or day precision",
-        json_schema_extra={"example": "2024-11-13"},
+        examples=["2024-11-13"],
     )
     date_end: FuzzyDate | None = Field(
         default=None,
         description="Date the show closed, of year, month or day precision",
-        json_schema_extra={"example": "2024-11-16"},
+        examples=["2024-11-16"],
     )
     primary_image: ImageRef | None = Field(
         default=None, description="Image standing for the show, where there is one"
@@ -501,7 +497,7 @@ class ShowIndexItem(NthpSchema):
     playwright_descriptor: str | None = Field(
         default=None,
         description="How the show's authorship reads",
-        json_schema_extra={"example": "by William Shakespeare"},
+        examples=["by William Shakespeare"],
     )
 
 
@@ -518,11 +514,11 @@ class ShowList(ShowIndexItem):
     adaptor: str | None = Field(
         default=None,
         description="Who adapted the work, as authored",
-        json_schema_extra={"example": "Fred Bloggs"},
+        examples=["Fred Bloggs"],
     )
     devised: bool = Field(
         description="Whether the show was devised rather than written",
-        json_schema_extra={"example": False},
+        examples=[False],
     )
 
 
@@ -535,17 +531,17 @@ class ShowDetail(ShowList):
     translator: str | None = Field(
         default=None,
         description="Who translated the work, as authored",
-        json_schema_extra={"example": "Fred Bloggs"},
+        examples=["Fred Bloggs"],
     )
     company: str | None = Field(
         default=None,
         description="Company that staged the show, where it was not the theatre",
-        json_schema_extra={"example": "Nottingham New Theatre"},
+        examples=["Nottingham New Theatre"],
     )
     period: str | None = Field(
         default=None,
         description="Period the show is set in, as authored",
-        json_schema_extra={"example": "Victorian"},
+        examples=["Victorian"],
     )
     tour: list[ShowTourDate] = Field(
         default=[], description="Dates the show toured to other venues"
@@ -631,20 +627,20 @@ class SeasonList(NthpSchema):
 
     id: str = Field(
         description="ID of the season, slugified from its canonical name",
-        json_schema_extra={"example": "in-house"},
+        examples=["in-house"],
     )
     name: str = Field(
         description="Canonical name of the season",
-        json_schema_extra={"example": "In House"},
+        examples=["In House"],
     )
     aliases: list[str] = Field(
         default=[],
         description="Other names the season has been authored under",
-        json_schema_extra={"example": ["UNCUT"]},
+        examples=[["UNCUT"]],
     )
     show_count: int = Field(
         description="Number of shows in the season",
-        json_schema_extra={"example": 42},
+        examples=[42],
     )
 
 
@@ -663,36 +659,36 @@ class VenueList(NthpSchema):
 
     id: str = Field(
         description="ID of the venue, slugified from the authored venue name",
-        json_schema_extra={"example": "new-theatre"},
+        examples=["new-theatre"],
     )
     name: str = Field(
         description="Name of the venue",
-        json_schema_extra={"example": "New Theatre"},
+        examples=["New Theatre"],
     )
     show_count: int = Field(
         description="Number of shows at the venue",
-        json_schema_extra={"example": 42},
+        examples=[42],
     )
     group: str | None = Field(
         default=None,
         description="Name of the group the venue belongs to, where shows give one, "
         "for grouping venues such as Edinburgh's C venues",
-        json_schema_extra={"example": "C venues"},
+        examples=["C venues"],
     )
     has_record: bool = Field(
         description="Whether the venue is documented in the archive; venues only "
         "referenced by shows are stubs, carrying no details beyond name and shows",
-        json_schema_extra={"example": True},
+        examples=[True],
     )
     sentinel: bool = Field(
         description="Whether the venue stands in for the absence of a venue, such as "
         "an unknown venue or an online performance",
-        json_schema_extra={"example": False},
+        examples=[False],
     )
     built: int | None = Field(
         default=None,
         description="Year the venue was built",
-        json_schema_extra={"example": 1965},
+        examples=[1965],
     )
     location: Location | None = Field(
         default=None, description="Where the venue is, where it is known"
@@ -700,7 +696,7 @@ class VenueList(NthpSchema):
     city: str | None = Field(
         default=None,
         description="City the venue is in",
-        json_schema_extra={"example": "Nottingham"},
+        examples=["Nottingham"],
     )
 
 
@@ -754,7 +750,7 @@ class YearList(YearRef):
 
     show_count: int = Field(
         description="Number of shows in the academic year",
-        json_schema_extra={"example": 42},
+        examples=[42],
     )
 
 
@@ -792,7 +788,7 @@ class PersonShowRoleItem(NthpSchema):
     role: str | None = Field(
         default=None,
         description="Role as authored, absent for a cast credit naming no part",
-        json_schema_extra={"example": "Director"},
+        examples=["Director"],
     )
     role_type: ShowRoleType = Field(description="Whether the role is cast or crew")
 
@@ -812,7 +808,7 @@ class PersonCommitteeRole(NthpSchema):
     year: YearRef = Field(description="The academic year the position was held in")
     role: str = Field(
         description="Position as authored",
-        json_schema_extra={"example": "Publicity Manager"},
+        examples=["Publicity Manager"],
     )
 
 
@@ -823,7 +819,7 @@ class PersonCommitteeRoleList(NthpSchema):
     year: YearRef = Field(description="The academic year the position was held in")
     role: str = Field(
         description="Position as authored",
-        json_schema_extra={"example": "Publicity Manager"},
+        examples=["Publicity Manager"],
     )
 
 
@@ -842,11 +838,11 @@ class PersonShowRoleList(NthpSchema):
     person: PersonRef = Field(description="The person who took the role")
     role: str = Field(
         description="Canonical name of the role",
-        json_schema_extra={"example": "Director"},
+        examples=["Director"],
     )
     show_count: int = Field(
         description="Number of shows the person took the role on",
-        json_schema_extra={"example": 7},
+        examples=[7],
     )
 
 
@@ -864,20 +860,20 @@ class Role(NthpSchema):
 
     id: str = Field(
         description="ID of the role, slugified from its canonical name",
-        json_schema_extra={"example": "publicity_manager"},
+        examples=["publicity_manager"],
     )
     name: str = Field(
         description="Canonical name of the role",
-        json_schema_extra={"example": "Publicity Manager"},
+        examples=["Publicity Manager"],
     )
     aliases: list[str] = Field(
         default=[],
         description="Other names the role has been authored under",
-        json_schema_extra={"example": ["Publicity"]},
+        examples=[["Publicity"]],
     )
     holding_count: int = Field(
         description="Number of times the role has been held",
-        json_schema_extra={"example": 42},
+        examples=[42],
     )
 
 
@@ -896,7 +892,7 @@ class PersonGraduated(YearRef):
     estimated: bool = Field(
         description="Whether the year is estimated from the person's credits rather "
         "than authored",
-        json_schema_extra={"example": False},
+        examples=[False],
     )
 
     @classmethod
@@ -910,15 +906,13 @@ class PersonIndexItem(NthpSchema):
 
     id: str = Field(
         description="ID of the person, slugified from their name",
-        json_schema_extra={"example": "fred_bloggs"},
+        examples=["fred_bloggs"],
     )
-    title: str = Field(
-        description="Name of the person", json_schema_extra={"example": "Fred Bloggs"}
-    )
+    title: str = Field(description="Name of the person", examples=["Fred Bloggs"])
     has_bio: bool = Field(
         description="Whether the archive holds a document about the person, as "
         "opposed to knowing them only from the credits they appear in",
-        json_schema_extra={"example": True},
+        examples=[True],
     )
     headshot: ImageRef | None = Field(
         default=None, description="The person's headshot, where there is one"
@@ -930,20 +924,20 @@ class PersonIndexItem(NthpSchema):
     )
     submitted: bool = Field(
         description="Whether the person submitted the record themselves",
-        json_schema_extra={"example": True},
+        examples=[True],
     )
     submitted_date: FuzzyDate | None = Field(
         default=None,
         description="Date the person submitted the record, where it is known",
-        json_schema_extra={"example": "2022-01"},
+        examples=["2022-01"],
     )
     show_role_count: int = Field(
         description="Number of shows the person is credited on",
-        json_schema_extra={"example": 7},
+        examples=[7],
     )
     committee_role_count: int = Field(
         description="Number of committee positions the person has held",
-        json_schema_extra={"example": 2},
+        examples=[2],
     )
 
 
@@ -966,27 +960,27 @@ class PersonDetail(PersonIndexItem):
     course: list[str] = Field(
         default=[],
         description="Courses the person studied",
-        json_schema_extra={"example": ["English"]},
+        examples=[["English"]],
     )
     award: str | None = Field(
         default=None,
         description="Award the person received on leaving the theatre, as authored; "
         "usually Fellowship, Commendation, Merit or Union Prize, but not held to "
         "that set",
-        json_schema_extra={"example": "Fellowship"},
+        examples=["Fellowship"],
     )
     careers: list[str] = Field(
         default=[],
         description="Careers the person has followed, theatre related or not, as "
         "authored; the content repo's `_data/careers.yaml` lists the recognised "
         "theatre careers but records are not held to it",
-        json_schema_extra={"example": ["Director"]},
+        examples=[["Director"]],
     )
     student: bool = Field(
         description="Whether the person is likely still a student, worked out from "
         "their graduation year and the date the API was built, so it goes stale "
         "between builds",
-        json_schema_extra={"example": False},
+        examples=[False],
     )
     links: list[Link] = Field(
         default=[], description="Links to the person's profiles beyond the archive"
@@ -1009,7 +1003,7 @@ class PersonCollaborator(NthpSchema):
     target_ids: list[str] = Field(
         default=[],
         description="IDs of the shows and academic years they worked on together",
-        json_schema_extra={"example": ["2024-25/macbeth"]},
+        examples=[["2024-25/macbeth"]],
     )
 
 
@@ -1022,11 +1016,11 @@ class HistoryRecordImage(NthpSchema):
 
     href: str = Field(
         description="URL of the image",
-        json_schema_extra={"example": "https://photos.newtheatre.org.uk/i-abc123.jpg"},
+        examples=["https://photos.newtheatre.org.uk/i-abc123.jpg"],
     )
     alt: str = Field(
         description="Short caption describing the image",
-        json_schema_extra={"example": "The old auditorium"},
+        examples=["The old auditorium"],
     )
 
 
@@ -1036,20 +1030,20 @@ class HistoryRecord(NthpSchema):
     year: str = Field(
         description="Short description of the year of the record, "
         "e.g. '1940' / '1940s'",
-        json_schema_extra={"example": "1940s"},
+        examples=["1940s"],
     )
     year_id: str | None = Field(
         default=None,
         description="Exact year ID of the record, in YYYY-YY form",
-        json_schema_extra={"example": "1940-41"},
+        examples=["1940-41"],
     )
     title: str = Field(
         description="Title of the record",
-        json_schema_extra={"example": "Theatre built"},
+        examples=["Theatre built"],
     )
     description: str = Field(
         description="Description of the record, in HTML",
-        json_schema_extra={"example": "<p>Theatre built in 1940</p>"},
+        examples=["<p>Theatre built in 1940</p>"],
     )
     image: HistoryRecordImage | None = Field(
         default=None, description="Image illustrating the record, where there is one"
@@ -1085,16 +1079,16 @@ class SearchDocumentBase(NthpSchema):
     )
     title: str = Field(
         description="Name of the record, the primary field to search on",
-        json_schema_extra={"example": "Macbeth"},
+        examples=["Macbeth"],
     )
     id: str = Field(
         description="ID of the record, as its own document is keyed by",
-        json_schema_extra={"example": "2024-25/macbeth"},
+        examples=["2024-25/macbeth"],
     )
     image_id: str | None = Field(
         default=None,
         description="Image illustrating the record, where there is one",
-        json_schema_extra={"example": "abc12"},
+        examples=["abc12"],
     )
 
 
@@ -1106,60 +1100,60 @@ class SearchDocumentShow(SearchDocumentBase):
     )
     year_id: str = Field(
         description="ID of the academic year the show ran in, in YYYY-YY form",
-        json_schema_extra={"example": "2024-25"},
+        examples=["2024-25"],
     )
     year: int = Field(
         description="Calendar year the academic year starts in",
-        json_schema_extra={"example": 2024},
+        examples=[2024],
     )
     decade: int = Field(
         description="Calendar year the start year's decade begins in",
-        json_schema_extra={"example": 2020},
+        examples=[2020],
     )
     season: str = Field(
         description="Season as authored on the show",
-        json_schema_extra={"example": "Autumn Season"},
+        examples=["Autumn Season"],
     )
     season_id: str | None = Field(
         default=None,
         description="ID of the season, where the authored season is a known one",
-        json_schema_extra={"example": "autumn_season"},
+        examples=["autumn_season"],
     )
     venue_id: str | None = Field(
         default=None,
         description="ID of the venue the show ran at",
-        json_schema_extra={"example": "nottingham-new-theatre"},
+        examples=["nottingham-new-theatre"],
     )
     venue_name: str | None = Field(
         default=None,
         description="Name of the venue as authored on the show",
-        json_schema_extra={"example": "Nottingham New Theatre"},
+        examples=["Nottingham New Theatre"],
     )
     date_start: FuzzyDate | None = Field(
         default=None,
         description="Date the show opened, of year, month or day precision",
-        json_schema_extra={"example": "2024-11-13"},
+        examples=["2024-11-13"],
     )
     playwright_descriptor: str | None = Field(
         default=None,
         description="How the show describes its authorship, e.g. `by Shakespeare`, "
         "`Devised` or `Various Writers`",
-        json_schema_extra={"example": "by William Shakespeare"},
+        examples=["by William Shakespeare"],
     )
     company: str | None = Field(
         default=None,
         description="Company that staged the show, where it was not the theatre",
-        json_schema_extra={"example": "Nottingham New Theatre"},
+        examples=["Nottingham New Theatre"],
     )
     people: list[str] = Field(
         default=[],
         description="Names of everyone credited on the show, cast and crew alike",
-        json_schema_extra={"example": ["Fred Bloggs"]},
+        examples=[["Fred Bloggs"]],
     )
     plaintext: str | None = Field(
         default=None,
         description="The show's description, markup stripped",
-        json_schema_extra={"example": "A tragedy of ambition."},
+        examples=["A tragedy of ambition."],
     )
 
 
@@ -1172,71 +1166,71 @@ class SearchDocumentPerson(SearchDocumentBase):
     has_bio: bool = Field(
         description="Whether the archive holds a document about the person, as "
         "opposed to knowing them only from the credits they appear in",
-        json_schema_extra={"example": True},
+        examples=[True],
     )
     graduation_year_id: str | None = Field(
         default=None,
         description="ID of the academic year the person graduated in, in YYYY-YY "
         "form; absent where they are yet to graduate or nothing is known",
-        json_schema_extra={"example": "2024-25"},
+        examples=["2024-25"],
     )
     graduation_year: int | None = Field(
         default=None,
         description="Calendar year the person graduated in",
-        json_schema_extra={"example": 2025},
+        examples=[2025],
     )
     graduation_decade: int | None = Field(
         default=None,
         description="Calendar year the graduation year's decade begins in",
-        json_schema_extra={"example": 2020},
+        examples=[2020],
     )
     graduation_estimated: bool | None = Field(
         default=None,
         description="Whether the graduation year is estimated from the person's "
         "credits rather than authored",
-        json_schema_extra={"example": False},
+        examples=[False],
     )
     course: list[str] = Field(
         default=[],
         description="Courses the person studied",
-        json_schema_extra={"example": ["English"]},
+        examples=[["English"]],
     )
     careers: list[str] = Field(
         default=[],
         description="Careers the person has followed, theatre related or not",
-        json_schema_extra={"example": ["Director"]},
+        examples=[["Director"]],
     )
     award: str | None = Field(
         default=None,
         description="Award the person received on leaving the theatre, as authored",
-        json_schema_extra={"example": "Fellowship"},
+        examples=["Fellowship"],
     )
     show_roles: list[str] = Field(
         default=[],
         description="Distinct roles the person has taken on a show, crew roles under "
         "their canonical name and acting as `Actor`",
-        json_schema_extra={"example": ["Actor", "Director"]},
+        examples=[["Actor", "Director"]],
     )
     committee_roles: list[str] = Field(
         default=[],
         description="Distinct committee positions the person has held, under their "
         "canonical name",
-        json_schema_extra={"example": ["Publicity Manager"]},
+        examples=[["Publicity Manager"]],
     )
     show_count: int = Field(
         description="Number of shows the person is credited on",
-        json_schema_extra={"example": 7},
+        examples=[7],
     )
     year_ids: list[str] = Field(
         default=[],
         description="IDs of the academic years the person is credited in, whether "
         "on a show or a committee",
-        json_schema_extra={"example": ["2023-24", "2024-25"]},
+        examples=[["2023-24", "2024-25"]],
     )
     plaintext: str | None = Field(
         default=None,
         description="The person's biography, markup stripped",
-        json_schema_extra={"example": "Fred read English and directed a lot."},
+        examples=["Fred read English and directed a lot."],
     )
 
 
@@ -1249,16 +1243,16 @@ class SearchDocumentVenue(SearchDocumentBase):
     city: str | None = Field(
         default=None,
         description="City the venue is in, where the archive holds a document for it",
-        json_schema_extra={"example": "Nottingham"},
+        examples=["Nottingham"],
     )
     show_count: int = Field(
         description="Number of shows that ran at the venue",
-        json_schema_extra={"example": 42},
+        examples=[42],
     )
     plaintext: str | None = Field(
         default=None,
         description="The venue's description, markup stripped",
-        json_schema_extra={"example": "A studio theatre on University Park."},
+        examples=["A studio theatre on University Park."],
     )
 
 
@@ -1270,11 +1264,11 @@ class SearchDocumentYear(SearchDocumentBase):
     )
     decade: int = Field(
         description="Calendar year the start year's decade begins in",
-        json_schema_extra={"example": 2020},
+        examples=[2020],
     )
     show_count: int = Field(
         description="Number of shows in the academic year",
-        json_schema_extra={"example": 42},
+        examples=[42],
     )
 
 
@@ -1313,89 +1307,89 @@ class SiteStats(NthpSchema):
     build_time: datetime.datetime = Field(
         title="Build Time",
         description="When was the API built, in UTC.",
-        json_schema_extra={"example": "2022-01-01T12:34:45.678901Z"},
+        examples=["2022-01-01T12:34:45.678901Z"],
     )
     branch: str = Field(
         description="Branch of the repository the API was built from.",
-        json_schema_extra={"example": "master"},
+        examples=["master"],
     )
     api_version: str = Field(
         title="API Version",
         description="Version of nthp-api that built the API.",
-        json_schema_extra={"example": "0.3.0"},
+        examples=["0.3.0"],
     )
     commit: str | None = Field(
         default=None,
         title="Commit",
         description="Commit of the repository the API was built from, where it was "
         "built by CI.",
-        json_schema_extra={"example": "1f0a9c2e0c0a4a1b8d3f6e5c4b3a29180706f5e4"},
+        examples=["1f0a9c2e0c0a4a1b8d3f6e5c4b3a29180706f5e4"],
     )
     build_number: str | None = Field(
         default=None,
         title="Build Number",
         description="Number of the GitHub Actions run that built the API, where it "
         "was built by one.",
-        json_schema_extra={"example": "42"},
+        examples=["42"],
     )
     show_count: int = Field(
         title="Show Count",
         description="Number of shows in the database.",
-        json_schema_extra={"example": 1234},
+        examples=[1234],
     )
     person_count: int = Field(
         title="Person Count",
         description="Number of people in the database.",
-        json_schema_extra={"example": 1234},
+        examples=[1234],
     )
     person_with_bio_count: int = Field(
         title="Person with bio count",
         description="Number of people with bio records.",
-        json_schema_extra={"example": 1234},
+        examples=[1234],
     )
     person_with_headshot_count: int = Field(
         title="Person with headshot count",
         description="Number of people with a headshot.",
-        json_schema_extra={"example": 1234},
+        examples=[1234],
     )
     show_with_image_count: int = Field(
         title="Show with image count",
         description="Number of shows with a primary image.",
-        json_schema_extra={"example": 1234},
+        examples=[1234],
     )
     venue_count: int = Field(
         title="Venue Count",
         description="Number of venues, documented or merely referenced by a show.",
-        json_schema_extra={"example": 1234},
+        examples=[1234],
     )
     year_count: int = Field(
         title="Year Count",
         description="Number of academic years covered by the archive.",
-        json_schema_extra={"example": 85},
+        examples=[85],
     )
     first_year_id: str = Field(
         title="First Year ID",
         description="ID of the earliest academic year covered, in YYYY-YY form.",
-        json_schema_extra={"example": "1940-41"},
+        examples=["1940-41"],
     )
     latest_year_id: str = Field(
         title="Latest Year ID",
         description="ID of the most recent academic year covered, in YYYY-YY form.",
-        json_schema_extra={"example": "2024-25"},
+        examples=["2024-25"],
     )
     credit_count: int = Field(
         title="Credit Count",
         description="Number of credits, inc. cast/crew/committee roles.",
-        json_schema_extra={"example": 1234},
+        examples=[1234],
     )
     trivia_count: int = Field(
         title="Trivia Count",
         description="Number of bits of trivia or stories.",
-        json_schema_extra={"example": 1234},
+        examples=[1234],
     )
     search_document_count: int = Field(
         title="Search Document Count",
         description="Number of documents in the search corpus, shows, people, venues "
         "and years together.",
-        json_schema_extra={"example": 1234},
+        examples=[1234],
     )

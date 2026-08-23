@@ -39,6 +39,25 @@ def test_spec_generates():
     assert len(SCHEMAS) > expected_number_of_schema
 
 
+def find_keys(node: Any, key: str, path: str = "") -> list[str]:
+    """Paths of every occurrence of the given key below the given node."""
+    paths = []
+    if isinstance(node, dict):
+        if key in node:
+            paths.append(path)
+        for node_key, value in node.items():
+            paths += find_keys(value, key, f"{path}.{node_key}")
+    elif isinstance(node, list):
+        for index, value in enumerate(node):
+            paths += find_keys(value, key, f"{path}[{index}]")
+    return paths
+
+
+def test_no_openapi_30_example_keyword():
+    """OAS 3.1 takes JSON Schema `examples`, not the 3.0 `example` keyword."""
+    assert find_keys(SCHEMAS, "example") == []
+
+
 class TestPeopleIndex:
     def test_path_present(self):
         operation = spec.SPEC["paths"]["/people/index.json"]["get"]
@@ -95,7 +114,7 @@ class TestFuzzyDateFields:
         ]
 
     def test_trivia_submitted_example_shows_reduced_precision(self):
-        assert get_property("Trivia", "submittedDate")["example"] == "2022-01"
+        assert get_property("Trivia", "submittedDate")["examples"] == ["2022-01"]
 
     def test_only_machine_timestamps_carry_a_date_format(self):
         """Content dates are fuzzy strings; only real timestamps keep a format."""
