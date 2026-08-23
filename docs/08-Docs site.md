@@ -20,7 +20,7 @@ that copies it).
 Changes from the example:
 
 - **Relative spec URL**: `apiDescriptionUrl="openapi.json"`, not the absolute
-  `https://content.nthp.wjdp.uk/v1/master/openapi.json`. The example's
+  `https://nthp-api.newtheatre.org.uk/v1/master/openapi.json`. The example's
   hardcoded path is already wrong (deploy.sh ships to `v1/nthp-api-master`,
   not `v1/master`) — proof enough that the page should locate the spec
   relative to itself. Elements resolves relative URLs against the page.

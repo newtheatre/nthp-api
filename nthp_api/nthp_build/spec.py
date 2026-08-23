@@ -141,7 +141,7 @@ SPEC = {
     },
     "servers": [
         {
-            "url": "https://content.nthp.wjdp.uk/v1/{branch}",
+            "url": "https://nthp-api.newtheatre.org.uk/v1/{branch}",
             "description": "Production",
             "variables": {
                 "branch": {

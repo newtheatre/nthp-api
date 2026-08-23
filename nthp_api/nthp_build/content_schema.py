@@ -25,7 +25,7 @@ JSON_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema"
 RULES_KEYWORD = "x-nthp-rules"
 REF_TEMPLATE = "#/$defs/{model}"
 
-DOCUMENTATION_URL = "https://content.nthp.wjdp.uk/v1/nthp-api-master/content-schema/"
+DOCUMENTATION_URL = "https://nthp-api.newtheatre.org.uk/v1/master/content-schema/"
 
 
 @dataclass(frozen=True)
