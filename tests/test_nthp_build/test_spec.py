@@ -47,6 +47,11 @@ def get_operations():
     ]
 
 
+def test_operation_ids_are_unique():
+    operation_ids = [operation["operationId"] for operation in get_operations()]
+    assert len(operation_ids) == len(set(operation_ids))
+
+
 def test_every_used_tag_is_declared_and_vice_versa():
     declared_tags = {tag["name"] for tag in spec.SPEC["tags"]}
     used_tags = {tag for operation in get_operations() for tag in operation["tags"]}

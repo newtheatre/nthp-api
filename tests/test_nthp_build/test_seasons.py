@@ -202,7 +202,7 @@ class TestSeasonSpec:
     def test_paths_present(self):
         assert (
             spec.SPEC["paths"]["/seasons/index.json"]["get"]["operationId"]
-            == "getSeasonList"
+            == "getSeasonIndex"
         )
         assert (
             spec.SPEC["paths"]["/seasons/{id}.json"]["get"]["operationId"]

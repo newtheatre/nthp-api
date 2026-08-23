@@ -337,11 +337,11 @@ class TestRoleSpec:
     def test_paths_present(self):
         assert (
             spec.SPEC["paths"]["/roles/committee/index.json"]["get"]["operationId"]
-            == "getCommitteeRoles"
+            == "getCommitteeRoleIndex"
         )
         assert (
             spec.SPEC["paths"]["/roles/crew/index.json"]["get"]["operationId"]
-            == "getCrewRoles"
+            == "getCrewRoleIndex"
         )
 
     def test_models_present(self):

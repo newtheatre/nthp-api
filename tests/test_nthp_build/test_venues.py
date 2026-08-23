@@ -288,7 +288,7 @@ class TestVenueSpec:
     def test_paths_present(self):
         assert (
             spec.SPEC["paths"]["/venues/index.json"]["get"]["operationId"]
-            == "getVenueList"
+            == "getVenueIndex"
         )
         assert (
             spec.SPEC["paths"]["/venues/{id}.json"]["get"]["operationId"]

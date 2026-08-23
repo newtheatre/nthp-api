@@ -261,7 +261,7 @@ SPEC = {
             model=schema.SiteStats,
         ),
         "/years/index.json": make_basic_get_operation(
-            operation_id="getYearList",
+            operation_id="getYearIndex",
             tags=["years"],
             summary="Get year list",
             description="Every academic year the archive covers, earliest first.",
@@ -298,7 +298,7 @@ SPEC = {
             key=["yearId", "slug"],
         ),
         "/seasons/index.json": make_basic_get_operation(
-            operation_id="getSeasonList",
+            operation_id="getSeasonIndex",
             tags=["seasons"],
             summary="Get list of seasons",
             description="Every known season, including those with no shows.",
@@ -315,7 +315,7 @@ SPEC = {
             key="id",
         ),
         "/venues/index.json": make_basic_get_operation(
-            operation_id="getVenueList",
+            operation_id="getVenueIndex",
             tags=["venues"],
             summary="Get list of venues",
             description="Every venue referenced by a show, whether documented in the "
@@ -362,7 +362,7 @@ SPEC = {
             key="id",
         ),
         "/roles/committee/index.json": make_basic_get_operation(
-            operation_id="getCommitteeRoles",
+            operation_id="getCommitteeRoleIndex",
             tags=["roles"],
             summary="Get list of committee roles",
             description="Every committee role held, near-duplicate titles merged into "
@@ -380,7 +380,7 @@ SPEC = {
             key="id",
         ),
         "/roles/crew/index.json": make_basic_get_operation(
-            operation_id="getCrewRoles",
+            operation_id="getCrewRoleIndex",
             tags=["roles"],
             summary="Get list of crew roles",
             description="Crew roles as defined by the content repo's "
@@ -416,7 +416,7 @@ SPEC = {
             key="date",
         ),
         "/assets/posters.json": make_basic_get_operation(
-            operation_id="getPosters",
+            operation_id="getPosterPool",
             tags=["assets"],
             summary="Get the poster pool",
             description="Every show with a primary image, in the archive's canonical "
@@ -435,7 +435,7 @@ SPEC = {
             key="id",
         ),
         "/playwrights/index.json": make_basic_get_operation(
-            operation_id="getPlaywrights",
+            operation_id="getPlaywrightIndex",
             tags=["playwrights"],
             summary="Get list of playwrights and shows performed",
             description="Every writer of a staged work, by id, named as their latest "
@@ -443,7 +443,7 @@ SPEC = {
             model=schema.PlaywrightCollection,
         ),
         "/plays/index.json": make_basic_get_operation(
-            operation_id="getPlays",
+            operation_id="getPlayIndex",
             tags=["plays"],
             summary="Get list of plays and shows performed",
             description="Every play staged, one entry per play and writer, ordered "
@@ -451,7 +451,7 @@ SPEC = {
             model=schema.PlayCollection,
         ),
         "/history/index.json": make_basic_get_operation(
-            operation_id="getHistoryRecords",
+            operation_id="getHistoryIndex",
             tags=["history"],
             summary="Get list of history records",
             description="The theatre's timeline, in the order the content repo "
@@ -459,7 +459,7 @@ SPEC = {
             model=schema.HistoryRecordCollection,
         ),
         "/search/documents.json": make_basic_get_operation(
-            operation_id="getSearchDocuments",
+            operation_id="getSearchDocumentIndex",
             tags=["search"],
             summary="Get search documents",
             description="The whole search corpus, sorted by type then id. Documents "
@@ -471,28 +471,28 @@ SPEC = {
             model=schema.SearchDocumentCollection,
         ),
         "/search/documents/show.json": make_basic_get_operation(
-            operation_id="getShowSearchDocuments",
+            operation_id="getShowSearchDocumentIndex",
             tags=["search"],
             summary="Get show search documents",
             description="The show slice of the search corpus.",
             model=schema.SearchDocumentShowCollection,
         ),
         "/search/documents/person.json": make_basic_get_operation(
-            operation_id="getPersonSearchDocuments",
+            operation_id="getPersonSearchDocumentIndex",
             tags=["search"],
             summary="Get person search documents",
             description="The person slice of the search corpus.",
             model=schema.SearchDocumentPersonCollection,
         ),
         "/search/documents/venue.json": make_basic_get_operation(
-            operation_id="getVenueSearchDocuments",
+            operation_id="getVenueSearchDocumentIndex",
             tags=["search"],
             summary="Get venue search documents",
             description="The venue slice of the search corpus.",
             model=schema.SearchDocumentVenueCollection,
         ),
         "/search/documents/year.json": make_basic_get_operation(
-            operation_id="getYearSearchDocuments",
+            operation_id="getYearSearchDocumentIndex",
             tags=["search"],
             summary="Get year search documents",
             description="The year slice of the search corpus.",
