@@ -216,24 +216,39 @@ def dump_venues(state: DumperSharedState):
     dump_venue_index(venue_lists)
 
 
+class PeopleDumpContext(NamedTuple):
+    crew_role_canonical_names: dict[str, str]
+    credits: people.PersonCredits
+    trivia_by_person: dict[str, list[schema.Trivia]]
+
+    @classmethod
+    def load(cls) -> "PeopleDumpContext":
+        return cls(
+            crew_role_canonical_names=roles.get_crew_role_canonical_names(),
+            credits=people.PersonCredits(),
+            trivia_by_person=trivia.get_trivia_by_person(),
+        )
+
+
 def dump_real_person(
     inst: database.Person,
     state: DumperSharedState,
-    crew_role_canonical_names: dict[str, str],
+    context: PeopleDumpContext,
 ) -> schema.PersonDetail:
     path = make_out_path(Path("people"), inst.id)
     source_data = models.Person(**json.loads(inst.data))
     person_detail = people.make_person_detail(
         source_data,
         inst.content,
-        trivia=trivia.make_person_trivia(inst.id),
+        trivia=context.trivia_by_person.get(inst.id),
         has_bio=True,
+        credits=context.credits,
     )
     search.add_document(
         state,
         search.get_person_document(
             person_detail,
-            crew_role_canonical_names,
+            context.crew_role_canonical_names,
             has_bio=True,
             plaintext=inst.plaintext,
         ),
@@ -243,24 +258,25 @@ def dump_real_person(
 
 
 def dump_real_people(state: DumperSharedState):
-    crew_role_canonical_names = roles.get_crew_role_canonical_names()
+    context = PeopleDumpContext.load()
     for person_inst in people.get_real_people():
-        dump_real_person(person_inst, state, crew_role_canonical_names)
+        dump_real_person(person_inst, state, context)
 
 
 def dump_virtual_person(
-    ref, state: DumperSharedState, crew_role_canonical_names: dict[str, str]
+    ref, state: DumperSharedState, context: PeopleDumpContext
 ) -> schema.PersonDetail:
     path = make_out_path(Path("people"), ref.person_id)
     person_detail = people.make_person_detail(
         people.make_virtual_person_model(ref),
-        trivia=trivia.make_person_trivia(ref.person_id),
+        trivia=context.trivia_by_person.get(ref.person_id),
         has_bio=False,
+        credits=context.credits,
     )
     search.add_document(
         state,
         search.get_person_document(
-            person_detail, crew_role_canonical_names, has_bio=False
+            person_detail, context.crew_role_canonical_names, has_bio=False
         ),
     )
     write_file(path, person_detail)
@@ -268,11 +284,11 @@ def dump_virtual_person(
 
 
 def dump_virtual_people(state: DumperSharedState):
-    crew_role_canonical_names = roles.get_crew_role_canonical_names()
+    context = PeopleDumpContext.load()
     real_people_ids = [x.id for x in database.Person.select(database.Person.id)]
     virtual_people_query = people.get_people_from_roles(excluded_ids=real_people_ids)
     for ref in virtual_people_query:
-        dump_virtual_person(ref, state, crew_role_canonical_names)
+        dump_virtual_person(ref, state, context)
 
 
 def make_person_index_item(
@@ -325,9 +341,10 @@ def dump_people_index(state: DumperSharedState):
 def dump_collaborators(state: DumperSharedState):
     index = people.CollaboratorIndex()
     for ref in people.get_people_from_roles():
-        path = make_out_path(Path("collaborators"), ref.person_id)
+        person_id = people.known_person_id(ref.person_id)
+        path = make_out_path(Path("collaborators"), person_id)
         write_file(
-            path, schema.PersonCollaboratorCollection(index.for_person(ref.person_id))
+            path, schema.PersonCollaboratorCollection(index.for_person(person_id))
         )
 
 

@@ -102,24 +102,40 @@ def make_person_credits(
     ]
 
 
-def get_person_show_roles(person_id: str) -> list[schema.PersonShowRoles]:
-    query = (
-        database.PersonRole.select(database.PersonRole, database.Show)
-        .where(
-            database.PersonRole.person_id == person_id,
-            database.PersonRole.target_type.in_(SHOW_ROLE_TYPES),
+def _show_roles_query() -> "peewee.ModelSelect[database.PersonRole]":
+    return (
+        database.PersonRole.select(
+            database.PersonRole.person_id,
+            database.PersonRole.target_id,
+            database.PersonRole.target_type,
+            database.PersonRole.role,
+            database.Show.id,
+            database.Show.title,
+            database.Show.year_id,
+            database.Show.year,
+            database.Show.primary_image,
         )
+        .where(database.PersonRole.target_type.in_(SHOW_ROLE_TYPES))
         .join(
             database.Show,
             on=(database.PersonRole.target_id == database.Show.id),
             attr="show",
         )
-        .order_by(database.Show.year_id, database.Show.season_sort)
+        .order_by(
+            database.Show.year_id,
+            database.Show.season_sort,
+            database.Show.date_start,
+            database.Show.id,
+        )
     )
-    # Collect all results by show_id
+
+
+def _group_show_roles(
+    rows: Iterable[database.PersonRole],
+) -> list[schema.PersonShowRoles]:
     results_by_show_id: dict[str, list] = defaultdict(list)
     shows: dict[str, database.Show] = {}
-    for result in query:
+    for result in rows:
         results_by_show_id[result.target_id].append(result)
         shows[result.target_id] = result.show  # type: ignore[attr-defined]
 
@@ -144,19 +160,87 @@ def get_person_show_roles(person_id: str) -> list[schema.PersonShowRoles]:
     ]
 
 
-def get_person_committee_roles(person_id: str) -> list[schema.PersonCommitteeRole]:
-    query = database.PersonRole.select().where(
-        database.PersonRole.person_id == person_id,
-        database.PersonRole.target_type == database.PersonRoleType.COMMITTEE,
+def get_person_show_roles(person_id: str) -> list[schema.PersonShowRoles]:
+    return _group_show_roles(
+        _show_roles_query().where(database.PersonRole.person_id == person_id)
     )
 
+
+def _committee_roles_query() -> "peewee.ModelSelect[database.PersonRole]":
+    return database.PersonRole.select(
+        database.PersonRole.person_id,
+        database.PersonRole.target_year,
+        database.PersonRole.role,
+    ).where(database.PersonRole.target_type == database.PersonRoleType.COMMITTEE)
+
+
+def _make_committee_roles(
+    rows: Iterable[database.PersonRole],
+) -> list[schema.PersonCommitteeRole]:
     return [
         schema.PersonCommitteeRole(
             year=schema.YearRef.from_start_year(person_role.target_year),
             role=person_role.role,
         )
-        for person_role in query
+        for person_role in rows
     ]
+
+
+def get_person_committee_roles(person_id: str) -> list[schema.PersonCommitteeRole]:
+    return _make_committee_roles(
+        _committee_roles_query().where(database.PersonRole.person_id == person_id)
+    )
+
+
+def get_person_years_active(person_id: str) -> set[int]:
+    query = database.PersonRole.select(
+        database.PersonRole.target_year.distinct()
+    ).where(database.PersonRole.person_id == person_id)
+    return {row.target_year for row in query}
+
+
+def known_person_id(person_id: str | None) -> str:
+    assert person_id is not None, "Query filters out roles with no person"
+    return person_id
+
+
+class PersonCredits:
+    """
+    Every person's credits, loaded from the role table in a few queries.
+
+    Dumping thousands of people a query at a time spends most of its time in query
+    overhead; this answers the same questions from memory.
+    """
+
+    def __init__(self) -> None:
+        show_rows: defaultdict[str, list[database.PersonRole]] = defaultdict(list)
+        for row in _show_roles_query().where(
+            database.PersonRole.person_id.is_null(False)
+        ):
+            show_rows[known_person_id(row.person_id)].append(row)
+        self.show_roles = {
+            person_id: _group_show_roles(rows) for person_id, rows in show_rows.items()
+        }
+
+        committee_rows: defaultdict[str, list[database.PersonRole]] = defaultdict(list)
+        for row in _committee_roles_query().where(
+            database.PersonRole.person_id.is_null(False)
+        ):
+            committee_rows[known_person_id(row.person_id)].append(row)
+        self.committee_roles = {
+            person_id: _make_committee_roles(rows)
+            for person_id, rows in committee_rows.items()
+        }
+
+        self.years_active: defaultdict[str, set[int]] = defaultdict(set)
+        for row in (
+            database.PersonRole.select(
+                database.PersonRole.person_id, database.PersonRole.target_year
+            )
+            .where(database.PersonRole.person_id.is_null(False))
+            .distinct()
+        ):
+            self.years_active[known_person_id(row.person_id)].add(row.target_year)
 
 
 def _role_count_map(query: "peewee.ModelSelect[Any]") -> dict[str, int]:
@@ -284,7 +368,9 @@ def get_people_from_roles(
     )
 
 
-def get_graduation(model: models.Person) -> schema.PersonGraduated | None:
+def get_graduation(
+    model: models.Person, credits: PersonCredits | None = None
+) -> schema.PersonGraduated | None:
     """
     Either get a PersonGraduated from the provided year for the person, or make an
     estimate based on their credits.
@@ -292,10 +378,12 @@ def get_graduation(model: models.Person) -> schema.PersonGraduated | None:
     if model.graduated:
         return schema.PersonGraduated.from_grad_year(model.graduated, estimated=False)
 
-    years_active_query = database.PersonRole.select(
-        database.PersonRole.target_year.distinct()
-    ).where(database.PersonRole.person_id == model.id)
-    years_active = [year.target_year for year in years_active_query]
+    assert model.id is not None, "Person model should have id by now"
+    years_active = (
+        credits.years_active.get(model.id, set())
+        if credits
+        else get_person_years_active(model.id)
+    )
     last_year_active = max(years_active) if years_active else None
 
     if last_year_active:
@@ -407,11 +495,16 @@ def make_person_detail(
     trivia: list[schema.Trivia] | None = None,
     *,
     has_bio: bool,
+    credits: PersonCredits | None = None,
 ) -> schema.PersonDetail:
     assert model.id is not None, "Person model should have id by now"
-    graduation = get_graduation(model)
-    show_roles = get_person_show_roles(model.id)
-    committee_roles = get_person_committee_roles(model.id)
+    graduation = get_graduation(model, credits)
+    if credits:
+        show_roles = credits.show_roles.get(model.id, [])
+        committee_roles = credits.committee_roles.get(model.id, [])
+    else:
+        show_roles = get_person_show_roles(model.id)
+        committee_roles = get_person_committee_roles(model.id)
     submitted, submitted_date = get_submission(model.submitted)
     return schema.PersonDetail(
         id=model.id,

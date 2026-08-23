@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from nthp_api.nthp_build import assets, database, models, people, schema, years
 from nthp_api.nthp_build.fields import FuzzyDate
 
@@ -76,16 +78,26 @@ def make_trivia_target(row: database.Trivia) -> schema.TriviaTarget:
     )
 
 
+def _make_person_trivia(row: database.Trivia) -> schema.Trivia:
+    return schema.Trivia(
+        quote=row.quote,
+        submitted_date=row.submitted,
+        target=make_trivia_target(row),
+    )
+
+
 def make_person_trivia(person_id: str) -> list[schema.Trivia]:
     """Trivia one person submitted, as their own document carries it."""
     query = database.Trivia.select().where(
         database.Trivia.person_id == person_id,
     )
-    return [
-        schema.Trivia(
-            quote=row.quote,
-            submitted_date=row.submitted,
-            target=make_trivia_target(row),
-        )
-        for row in query
-    ]
+    return [_make_person_trivia(row) for row in query]
+
+
+def get_trivia_by_person() -> dict[str, list[schema.Trivia]]:
+    """Trivia every person submitted, keyed by person id, in one query."""
+    by_person: defaultdict[str, list[schema.Trivia]] = defaultdict(list)
+    for row in database.Trivia.select().where(database.Trivia.person_id.is_null(False)):
+        assert row.person_id is not None, "Query filters out anonymous trivia"
+        by_person[row.person_id].append(_make_person_trivia(row))
+    return dict(by_person)
