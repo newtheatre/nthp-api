@@ -4,6 +4,10 @@ import yaml
 
 MERGE_KEY = "<<"
 
+# libyaml parses several times faster than the pure Python scanner; PyYAML's wheels
+# ship it, but a source build may not.
+BaseLoader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+
 
 class DuplicateKey(NamedTuple):
     key: str
@@ -11,7 +15,7 @@ class DuplicateKey(NamedTuple):
     duplicate_line: int
 
 
-class DuplicateKeyDetectingLoader(yaml.SafeLoader):
+class DuplicateKeyDetectingLoader(BaseLoader):  # type: ignore[misc,valid-type]
     def __init__(self, stream: Any) -> None:
         super().__init__(stream)
         self.duplicate_keys: list[DuplicateKey] = []
