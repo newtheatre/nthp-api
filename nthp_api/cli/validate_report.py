@@ -55,7 +55,7 @@ def make_problems_table(problems: list[Problem], *, plain: bool) -> Table:
 
 
 def render_result(console: Console, result: FileResult, *, plain: bool) -> None:
-    heading = Text(relative_to_cwd(result.path), style=None if plain else "bold blue")
+    heading = Text(relative_to_cwd(result.path), style="" if plain else "bold blue")
     if result.document_type is not None:
         heading.append(f"  [{result.document_type.name}]", style="dim")
     console.print(heading)
@@ -77,7 +77,7 @@ def render_report(
                 console.print(
                     Text(
                         f"{relative_to_cwd(result.path)} — no problems",
-                        style=None if plain else "green",
+                        style="" if plain else "green",
                     )
                 )
             continue
@@ -87,5 +87,5 @@ def render_report(
         f"{len(failed)} with problems"
     )
     console.print(
-        Text(summary, style=None if plain else ("bold red" if failed else "bold green"))
+        Text(summary, style="" if plain else ("bold red" if failed else "bold green"))
     )

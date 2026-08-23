@@ -107,16 +107,16 @@ def render_check(
     plain: bool,
 ) -> None:
     style = SEVERITY_STYLES[check.severity]
-    heading = Text(f"{check.title} ({len(findings)})", style=None if plain else style)
+    heading = Text(f"{check.title} ({len(findings)})", style="" if plain else style)
     heading.append(f"  [{check.name}]", style="dim")
     console.print(heading)
-    console.print(Text(check.explanation, style=None if plain else "dim"))
+    console.print(Text(check.explanation, style="" if plain else "dim"))
     if verbose and check.note is not None:
         note = check.note()
         if note:
-            console.print(Text(f"  {note}", style=None if plain else "dim"))
+            console.print(Text(f"  {note}", style="" if plain else "dim"))
     if not findings:
-        console.print(Text("  Nothing to report.", style=None if plain else "green"))
+        console.print(Text("  Nothing to report.", style="" if plain else "green"))
         console.print()
         return
     if verbose or not check_grouping_helps(findings):
@@ -126,7 +126,7 @@ def render_check(
             console.print(
                 Text(
                     f"  … and {len(findings) - ROW_LIMIT} more, run with --verbose",
-                    style=None if plain else "dim",
+                    style="" if plain else "dim",
                 )
             )
     else:
@@ -136,7 +136,7 @@ def render_check(
             console.print(
                 Text(
                     f"  … and {distinct - ROW_LIMIT} more values, run with --verbose",
-                    style=None if plain else "dim",
+                    style="" if plain else "dim",
                 )
             )
     console.print()
@@ -148,7 +148,7 @@ def make_summary_table(results: dict[Check, list[Finding]], *, plain: bool) -> T
     table.add_column("Findings", justify="right")
     table.add_column("Severity")
     for check, findings in results.items():
-        style = None if plain else SEVERITY_STYLES[check.severity]
+        style = "" if plain else SEVERITY_STYLES[check.severity]
         table.add_row(
             check.name,
             str(len(findings)),
@@ -172,11 +172,11 @@ def render_report(
 ) -> None:
     for check, findings in results.items():
         render_check(console, check, findings, verbose=verbose, plain=plain)
-    console.print(Text("Summary", style=None if plain else "bold"))
+    console.print(Text("Summary", style="" if plain else "bold"))
     console.print(make_summary_table(results, plain=plain))
     console.print(
         Text(
             "Nothing here fails a build; these are the archive's rough edges.",
-            style=None if plain else "dim",
+            style="" if plain else "dim",
         )
     )
