@@ -322,17 +322,13 @@ def dump_people_index(state: DumperSharedState):
     write_file(path, collection)
 
 
-def dump_collaborators_for_person(ref, state: DumperSharedState):
-    path = make_out_path(Path("collaborators"), ref.person_id)
-    collaborators = people.get_person_collaborators(ref.person_id)
-    collection = schema.PersonCollaboratorCollection(list(collaborators))
-    write_file(path, collection)
-
-
 def dump_collaborators(state: DumperSharedState):
-    people_query = people.get_people_from_roles()
-    for ref in people_query:
-        dump_collaborators_for_person(ref, state)
+    index = people.CollaboratorIndex()
+    for ref in people.get_people_from_roles():
+        path = make_out_path(Path("collaborators"), ref.person_id)
+        write_file(
+            path, schema.PersonCollaboratorCollection(index.for_person(ref.person_id))
+        )
 
 
 def dump_people_by_committee_role(definition: roles.RoleDefinition):

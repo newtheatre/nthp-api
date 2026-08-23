@@ -208,56 +208,62 @@ def get_committee_role_counts() -> dict[str, int]:
     return _role_count_map(query)
 
 
+class CollaboratorIndex:
+    """
+    Every person's collaborators, built from the whole role table in one pass.
+
+    A collaborator is a person who has worked on a show or other object (such as
+    committee) with the source person. Building per person queries the role table
+    thousands of times; this loads it once.
+    """
+
+    def __init__(self) -> None:
+        self.targets_by_person: defaultdict[str, set[str]] = defaultdict(set)
+        self.people_by_target: defaultdict[str, set[tuple[str, str]]] = defaultdict(set)
+        query = database.PersonRole.select(
+            database.PersonRole.person_id,
+            database.PersonRole.person_name,
+            database.PersonRole.target_id,
+            database.PersonRole.is_person,
+        ).where(database.PersonRole.person_id.is_null(False))
+        for role in query.iterator():
+            self.targets_by_person[role.person_id].add(role.target_id)
+            if role.is_person and role.person_name is not None:
+                self.people_by_target[role.target_id].add(
+                    (role.person_id, role.person_name)
+                )
+        self.headshots = {
+            person.id: person.headshot
+            for person in database.Person.select(
+                database.Person.id, database.Person.headshot
+            )
+        }
+
+    def for_person(self, person_id: str) -> list[schema.PersonCollaborator]:
+        collaborator_map: defaultdict[tuple[str, str], set[str]] = defaultdict(set)
+        for target_id in self.targets_by_person.get(person_id, ()):
+            for collaborator in self.people_by_target.get(target_id, ()):
+                if collaborator[0] != person_id:
+                    collaborator_map[collaborator].add(target_id)
+        return [
+            schema.PersonCollaborator(
+                person=schema.PersonRef(
+                    id=collaborator_id,
+                    title=collaborator_name,
+                    is_person=True,
+                    has_bio=collaborator_id in self.headshots,
+                    headshot=assets.get_image_ref(self.headshots.get(collaborator_id)),
+                ),
+                target_ids=sorted(target_ids),
+            )
+            for (collaborator_id, collaborator_name), target_ids in sorted(
+                collaborator_map.items()
+            )
+        ]
+
+
 def get_person_collaborators(person_id: str) -> list[schema.PersonCollaborator]:
-    """
-    Get all collaborators for a person. A collaborator is a person who has worked on a
-    show or other object (such as committee) with the source person.
-    :param person_id: Which person to get collaborators for
-    :return: A set of collaborators
-    """
-    # Get a list of targets to look for collaborators, shows where person_id is present
-    target_query = database.PersonRole.select(
-        database.PersonRole.target_id.distinct()
-    ).where(database.PersonRole.person_id == person_id)
-    targets = [target.target_id for target in target_query]
-    # Find all collaborators
-    collaborator_roles_query = (
-        database.PersonRole.select()
-        .where(
-            database.PersonRole.target_id.in_(
-                targets
-            ),  # show where person_id is present
-            database.PersonRole.person_id != person_id,  # exclude source person
-            database.PersonRole.person_id.is_null(False),  # exclude null person_id
-            database.PersonRole.is_person == True,  # noqa: E712, need to use ==
-        )
-        .order_by(database.PersonRole.person_id)
-    )
-    # Map collaborators against a list of targets
-    collaborator_map: defaultdict[tuple[str, str], set[str]] = defaultdict(set)
-    for collaborator_role in collaborator_roles_query:
-        if collaborator_role.person_id is None or collaborator_role.person_name is None:
-            continue
-        collaborator_map[
-            (collaborator_role.person_id, collaborator_role.person_name)
-        ].add(collaborator_role.target_id)
-    # Return a set of collaborators
-    headshots = get_headshots_by_person_id(
-        collaborator_id for collaborator_id, _ in collaborator_map
-    )
-    return [
-        schema.PersonCollaborator(
-            person=schema.PersonRef(
-                id=collaborator_id,
-                title=collaborator_name,
-                is_person=True,
-                has_bio=collaborator_id in headshots,
-                headshot=assets.get_image_ref(headshots.get(collaborator_id)),
-            ),
-            target_ids=sorted(target_ids),
-        )
-        for (collaborator_id, collaborator_name), target_ids in collaborator_map.items()
-    ]
+    return CollaboratorIndex().for_person(person_id)
 
 
 def get_people_from_roles(
