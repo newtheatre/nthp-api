@@ -8,7 +8,12 @@ from nthp_api.smugmugger import SmugMugImageInfo
 
 @pytest.mark.parametrize(
     "input,expected",
-    [("Fred Bloggs", "fred_bloggs"), ("Frëd Blöggs ", "fred_bloggs")],
+    [
+        ("Fred Bloggs", "fred_bloggs"),
+        ("Frëd Blöggs ", "fred_bloggs"),
+        ("Daniel O'Connor", "daniel_oconnor"),
+        ("Amy Brough-Aikin", "amy_brough-aikin"),
+    ],
 )
 def test_get_person_id(input: str, expected: str):
     assert people.get_person_id(input) == expected

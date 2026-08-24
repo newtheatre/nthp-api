@@ -2,12 +2,13 @@ import datetime
 import functools
 import json
 import logging
+import re
 from collections import defaultdict
 from collections.abc import Iterable
 from typing import Any, cast
 
 import peewee
-from slugify import slugify
+from text_unidecode import unidecode
 
 from nthp_api.nthp_build import assets, database, links, models, schema
 from nthp_api.nthp_build.config import settings
@@ -23,9 +24,18 @@ SHOW_ROLE_TYPES_TO_SCHEMA = {
 }
 
 
+PERSON_ID_DISALLOWED = re.compile(r"[^0-9a-z -]")
+
+
 @functools.cache
 def get_person_id(name: str) -> str:
-    return slugify(name, separator="_")
+    """
+    The old site's `make_hp_path` rule, which `_people/` filenames follow: specials
+    such as apostrophes are dropped and hyphens kept, so `Daniel O'Connor` is
+    `daniel_oconnor` and `Amy Brough-Aikin` is `amy_brough-aikin`.
+    """
+    cleaned = PERSON_ID_DISALLOWED.sub("", unidecode(name).lower())
+    return "_".join(cleaned.split())
 
 
 def save_person_roles(
