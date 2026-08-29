@@ -24,6 +24,7 @@ WRITER_SEPARATORS = re.compile(r",?\s+(?:and|&)\s+|,\s+")
 NON_PERSON_PLAYWRIGHTS = {
     schema.PlaywrightType.VARIOUS.value,
     schema.PlaywrightType.UNKNOWN.value,
+    "nnt creatives",
 }
 
 

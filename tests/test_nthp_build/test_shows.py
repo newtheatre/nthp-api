@@ -495,7 +495,7 @@ class TestStudentPlaywrightCredit:
             == []
         )
 
-    @pytest.mark.parametrize("playwright", ["various", "Unknown"])
+    @pytest.mark.parametrize("playwright", ["various", "Unknown", "NNT Creatives"])
     def test_non_person_playwrights_get_no_credit(self, playwright: str):
         """content/_shows/20_21/speaking_solo.md and the like."""
         show = self.make_show(playwright=playwright, student_written=True)
