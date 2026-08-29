@@ -38,6 +38,19 @@ def get_person_id(name: str) -> str:
     return "_".join(cleaned.split())
 
 
+def is_named_person(person_ref: models.PersonRef) -> bool:
+    """
+    Whether a credit names an actual New Theatre person.
+
+    `person: false` marks a company or organisation, as authored. A name of
+    `unknown` (any case) marks a credit whose person is not known, as the old
+    site's `_plugins/person_list.rb` treated it: a name, not a person.
+    """
+    if not person_ref.person:
+        return False
+    return person_ref.name is None or person_ref.name.strip().lower() != "unknown"
+
+
 def save_person_roles(
     target: str,  # TODO: should be target_id
     target_type: str,  # TODO: why not PersonRoleType?
@@ -52,7 +65,7 @@ def save_person_roles(
             person_name=person_ref.name,
             role=person_ref.role,
             note=person_ref.note,
-            is_person=person_ref.person,
+            is_person=is_named_person(person_ref),
             comment=person_ref.comment,
         )
         person_roles.append(person_role)

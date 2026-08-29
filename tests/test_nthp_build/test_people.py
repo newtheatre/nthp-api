@@ -39,6 +39,14 @@ ALICE_SECOND_ROLE_PERSON_REF = models.PersonRef(
     role="Yet another role",
     name="Alice Froggs",
 )
+UNKNOWN_PERSON_REF = models.PersonRef(
+    role="Director",
+    name="unknown",
+)
+UNKNOWN_CAPITALISED_PERSON_REF = models.PersonRef(
+    role="Producer",
+    name="Unknown",
+)
 
 
 class TestSavePersonRoles:
@@ -52,6 +60,36 @@ class TestSavePersonRoles:
         assert len(person_roles) == 1
         assert database.PersonRole.select().count() == 1
         assert database.PersonRole.select().get().person_id == "fred_bloggs"
+
+    def test_save_unknown_name_is_not_a_person(self, test_db):
+        person_roles = people.save_person_roles(
+            target=THE_TEMPEST,
+            target_type=database.PersonRoleType.CAST,
+            target_year=1999,
+            person_list=[UNKNOWN_PERSON_REF, UNKNOWN_CAPITALISED_PERSON_REF],
+        )
+        assert len(person_roles) == 2  # noqa: PLR2004
+        assert all(role.is_person is False for role in person_roles)
+        assert {role.person_name for role in person_roles} == {"unknown", "Unknown"}
+        assert database.PersonRole.select().count() == 2  # noqa: PLR2004
+        assert (
+            database.PersonRole.select()
+            .where(database.PersonRole.is_person == True)  # noqa: E712
+            .count()
+            == 0
+        )
+        assert list(people.get_people_from_roles()) == []
+
+    def test_save_normal_name_still_a_person(self, test_db):
+        people.save_person_roles(
+            target=THE_TEMPEST,
+            target_type=database.PersonRoleType.CAST,
+            target_year=1999,
+            person_list=[FRED_PERSON_REF, UNKNOWN_PERSON_REF],
+        )
+        people_from_roles = list(people.get_people_from_roles())
+        assert len(people_from_roles) == 1
+        assert people_from_roles[0].person_id == "fred_bloggs"
 
     def test_save_multiple(self, test_db):
         person_roles = people.save_person_roles(
