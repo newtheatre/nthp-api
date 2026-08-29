@@ -386,6 +386,24 @@ def get_people_from_roles(
     )
 
 
+def get_real_person_ids() -> list[str]:
+    return [inst.id for inst in database.Person.select(database.Person.id)]
+
+
+def count_people_with_pages() -> int:
+    """
+    How many people get a detail page, as `dump_people_index` builds it.
+
+    Everyone the archive holds a document for, plus everyone else named in a
+    credit: someone with a bio but no credits has a page all the same.
+    """
+    real_person_ids = get_real_person_ids()
+    return (
+        len(real_person_ids)
+        + get_people_from_roles(excluded_ids=real_person_ids).count()
+    )
+
+
 def get_graduation(
     model: models.Person, credits: PersonCredits | None = None
 ) -> schema.PersonGraduated | None:

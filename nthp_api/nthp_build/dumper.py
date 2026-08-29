@@ -327,7 +327,7 @@ def dump_people_index(state: DumperSharedState):
         "committee_role_counts": people.get_committee_role_counts(),
     }
 
-    real_people_ids = [inst.id for inst in database.Person.select(database.Person.id)]
+    real_people_ids = people.get_real_person_ids()
     items = [
         make_person_index_item(
             models.Person(**json.loads(person_inst.data)), has_bio=True, **counts
@@ -503,7 +503,7 @@ def dump_site_stats(state: DumperSharedState) -> None:
             build_number=settings.build_number,
             commit=settings.commit,
             show_count=database.Show.select().count(),
-            person_count=people.get_people_from_roles().count(),
+            person_count=people.count_people_with_pages(),
             person_with_bio_count=database.Person.select().count(),
             person_with_headshot_count=database.Person.select()
             .where(database.Person.headshot.is_null(False))

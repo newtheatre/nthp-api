@@ -1375,7 +1375,8 @@ class SiteStats(NthpSchema):
         examples=[1234],
     )
     person_count: int = Field(
-        description="Number of people in the database.",
+        description="Number of people with a page, those with a bio record and "
+        "those known only from credits alike.",
         examples=[1234],
     )
     person_with_bio_count: int = Field(

@@ -150,3 +150,23 @@ class TestDumpPeopleIndex:
             if path.stem != "index"
         }
         assert entry_ids == detail_ids
+
+
+@freezegun.freeze_time("2026-08-18")
+class TestPersonCount:
+    def test_counts_every_person_with_a_page(self, populated_db, output_dir):
+        dumper.dump_site_stats(state=DumperSharedState(search_documents=[]))
+        stats = json.loads((output_dir / "index.json").read_text())
+        assert stats["personCount"] == len(dump_index(output_dir))
+
+    def test_counts_a_person_with_a_bio_but_no_roles(self, populated_db, output_dir):
+        without_roles = "gladys_hoggs"
+        make_real_person(
+            without_roles,
+            models.Person(id=without_roles, title="Gladys Hoggs"),
+        )
+        dumper.dump_site_stats(state=DumperSharedState(search_documents=[]))
+        stats = json.loads((output_dir / "index.json").read_text())
+        entry_ids = [entry["id"] for entry in dump_index(output_dir)]
+        assert without_roles in entry_ids
+        assert stats["personCount"] == len(entry_ids)
