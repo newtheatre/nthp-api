@@ -129,7 +129,9 @@ def get_show_playwright(  # noqa: PLR0911
             descriptor=f"by {show.playwright}",
             person_id=(
                 people.get_person_id(show.playwright)
-                if show.student_written and not has_multiple_writers(show.playwright)
+                if show.student_written
+                and not has_multiple_writers(show.playwright)
+                and show.playwright.lower() not in NON_PERSON_PLAYWRIGHTS
                 else None
             ),
             student_written=show.student_written,

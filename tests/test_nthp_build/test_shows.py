@@ -53,6 +53,22 @@ from nthp_api.nthp_build.parallel import DumperSharedState
             ),
         ),
         (
+            {
+                "playwright": "NNT Creatives",
+                "devised": False,
+                "improvised": False,
+                "student_written": True,
+            },
+            schema.PlaywrightShow(
+                id="nnt_creatives",
+                type=schema.PlaywrightType.PLAYWRIGHT,
+                name="NNT Creatives",
+                descriptor="by NNT Creatives",
+                student_written=True,
+                person_id=None,
+            ),
+        ),
+        (
             {"playwright": "unknown", "devised": False, "improvised": False},
             schema.PlaywrightShow(
                 type=schema.PlaywrightType.UNKNOWN,
